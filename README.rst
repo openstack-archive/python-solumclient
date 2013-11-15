@@ -1,13 +1,7 @@
-===============================
-python-solumclient
-===============================
+Python bindings to the Solum API
+================================
 
-Client library for Solum API
+This is a client library for Solum built on the Solum API.
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/python-solumclient
-
-Features
---------
-
-* TODO
+* Documentation: http://wiki.openstack.org/wiki/Solum
