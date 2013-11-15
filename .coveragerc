@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = solumclient
+omit = solumclient/tests/*,solumclient/openstack/*
+
+[report]
+ignore-errors = True
