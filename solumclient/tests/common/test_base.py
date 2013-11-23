@@ -37,6 +37,30 @@ fixture2 = {
     }
 }
 
+fixture3 = {
+    '/foo_resources': {
+        'GET': (
+            {},
+            [
+                {'id': 1, 'name': 'foo'},
+                {'id': 2, 'name': 'bar'}
+            ]
+        ),
+    }
+}
+
+fixture4 = {
+    '/foo_resources': {
+        'GET': (
+            {},
+            {'foo_resources': [
+                {'id': 1, 'name': 'foo'},
+                {'id': 2, 'name': 'bar'}
+            ]}
+        ),
+    }
+}
+
 
 class FooResource(apiclient_base.Resource):
     pass
@@ -50,6 +74,12 @@ class FooResourceManager(solum_base.BaseManager):
 
     def get_with_response_key(self):
         return self._get("/foo_resource", "foo_resource")
+
+    def list(self):
+        return self._list("/foo_resources")
+
+    def list_with_response_key(self):
+        return self._list("/foo_resources", "foo_resources")
 
 
 class TestClient(client.BaseClient):
@@ -74,3 +104,13 @@ class BaseManagerTest(test_base.TestCase):
         http_client = fake_client.FakeHTTPClient(fixtures=fixture2)
         tc = TestClient(http_client)
         tc.foo_resource.get_with_response_key()
+
+    def test_list(self):
+        http_client = fake_client.FakeHTTPClient(fixtures=fixture3)
+        tc = TestClient(http_client)
+        tc.foo_resource.list()
+
+    def test_list_with_response_key(self):
+        http_client = fake_client.FakeHTTPClient(fixtures=fixture4)
+        tc = TestClient(http_client)
+        tc.foo_resource.list_with_response_key()

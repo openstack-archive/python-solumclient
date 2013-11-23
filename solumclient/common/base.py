@@ -31,3 +31,35 @@ class BaseManager(base.BaseManager):
             data = body[response_key]
 
         return self.resource_class(self, data, loaded=True)
+
+    def _list(self, url, response_key=None, obj_class=None, json=None):
+        """List the collection.
+
+        :param url: a partial URL, e.g., '/servers'
+        :param response_key: the key to be looked up in response dictionary,
+            e.g., 'servers'
+        :param obj_class: class for constructing the returned objects
+            (self.resource_class will be used by default)
+        :param json: data that will be encoded as JSON and passed in POST
+            request (GET will be sent by default)
+        """
+        if json:
+            body = self.client.post(url, json=json).json()
+        else:
+            body = self.client.get(url).json()
+
+        if obj_class is None:
+            obj_class = self.resource_class
+
+        if response_key is None:
+            data = body
+        else:
+            data = body[response_key]
+        # NOTE(ja): keystone returns values as list as {'values': [ ... ]}
+        #           unlike other services which just return the list...
+        try:
+            data = data['values']
+        except (KeyError, TypeError):
+            pass
+
+        return [obj_class(self, res, loaded=True) for res in data if res]
