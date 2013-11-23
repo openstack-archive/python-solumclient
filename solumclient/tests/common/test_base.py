@@ -1,0 +1,76 @@
+# Copyright 2013 - Noorul Islam K M
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+from solumclient.common import base as solum_base
+from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common.apiclient import client
+from solumclient.openstack.common.apiclient import fake_client
+from solumclient.tests import base as test_base
+
+
+fixture1 = {
+    '/foo_resource': {
+        'GET': (
+            {},
+            {'id': 1, 'name': 'foo'}
+        ),
+    }
+}
+
+fixture2 = {
+    '/foo_resource': {
+        'GET': (
+            {},
+            {'foo_resource': {'id': 1, 'name': 'foo'}}
+        ),
+    }
+}
+
+
+class FooResource(apiclient_base.Resource):
+    pass
+
+
+class FooResourceManager(solum_base.BaseManager):
+    resource_class = FooResource
+
+    def get(self):
+        return self._get("/foo_resource")
+
+    def get_with_response_key(self):
+        return self._get("/foo_resource", "foo_resource")
+
+
+class TestClient(client.BaseClient):
+
+    service_type = "test"
+
+    def __init__(self, http_client, extensions=None):
+        super(TestClient, self).__init__(
+            http_client, extensions=extensions)
+
+        self.foo_resource = FooResourceManager(self)
+
+
+class BaseManagerTest(test_base.TestCase):
+
+    def test_get(self):
+        http_client = fake_client.FakeHTTPClient(fixtures=fixture1)
+        tc = TestClient(http_client)
+        tc.foo_resource.get()
+
+    def test_get_with_response_key(self):
+        http_client = fake_client.FakeHTTPClient(fixtures=fixture2)
+        tc = TestClient(http_client)
+        tc.foo_resource.get_with_response_key()
