@@ -19,10 +19,15 @@ test_solumclient
 Tests for `solumclient` module.
 """
 
+from solumclient.openstack.common import log as logging
 from solumclient.tests import base
+
+
+LOG = logging.getLogger(__name__)
 
 
 class TestSolumclient(base.TestCase):
 
-    def test_something(self):
-        pass
+    def test_can_use_oslo_logging(self):
+        # Just showing that we can import and use logging
+        LOG.info('Nothing to see here.')
