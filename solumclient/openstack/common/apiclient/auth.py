@@ -58,7 +58,7 @@ def load_auth_system_opts(parser):
     """
     group = parser.add_argument_group("Common auth options")
     BaseAuthPlugin.add_common_opts(group)
-    for name, auth_plugin in _discovered_plugins.iteritems():
+    for name, auth_plugin in six.iteritems(_discovered_plugins):
         group = parser.add_argument_group(
             "Auth-system '%s' options" % name,
             conflict_handler="resolve")
@@ -89,7 +89,7 @@ def load_plugin_from_args(args):
         plugin.sufficient_options()
         return plugin
 
-    for plugin_auth_system in sorted(_discovered_plugins.iterkeys()):
+    for plugin_auth_system in sorted(six.iterkeys(_discovered_plugins)):
         plugin_class = _discovered_plugins[plugin_auth_system]
         plugin = plugin_class()
         plugin.parse_opts(args)

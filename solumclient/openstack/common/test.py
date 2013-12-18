@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
 # All Rights Reserved.
 #
@@ -31,7 +29,7 @@ class BaseTestCase(testtools.TestCase):
         super(BaseTestCase, self).setUp()
         self._set_timeout()
         self._fake_output()
-        self.useFixture(fixtures.FakeLogger('solumclient.openstack.common'))
+        self.useFixture(fixtures.FakeLogger())
         self.useFixture(fixtures.NestedTempfile())
         self.useFixture(fixtures.TempHomeDir())
 
