@@ -1,0 +1,35 @@
+# Copyright 2013 - Noorul Islam K M
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import argparse
+
+from solumclient import solum
+from solumclient.tests import base
+
+
+class TestSolum(base.TestCase):
+    """Test the Solum CLI."""
+    def test_application(self):
+        """Test the application code."""
+        parser = argparse.ArgumentParser()
+        app_obj = solum.AppCommands(parser)
+        self.assertRaises(SystemExit, app_obj.create)
+        self.assertRaises(SystemExit, app_obj.delete)
+
+    def test_assembly(self):
+        """Test the assembly code."""
+        parser = argparse.ArgumentParser()
+        assembly_obj = solum.AssemblyCommands(parser)
+        self.assertRaises(SystemExit, assembly_obj.create)
+        self.assertRaises(SystemExit, assembly_obj.delete)
