@@ -21,8 +21,9 @@ class Component(apiclient_base.Resource):
         return "<Component %s>" % self._info
 
 
-class ComponentManager(solum_base.BaseManager):
+class ComponentManager(solum_base.CrudManager):
     resource_class = Component
+    collection_key = 'components'
 
     def list(self, **kwargs):
-        return self._list('/v1/components')
+        return super(ComponentManager, self).list(base_url="/v1", **kwargs)

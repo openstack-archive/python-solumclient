@@ -13,9 +13,10 @@
 # under the License.
 
 from solumclient.openstack.common.apiclient import base
+from solumclient.openstack.common.py3kcompat import urlutils
 
 
-class BaseManager(base.BaseManager):
+class ManagerMixin():
     def _get(self, url, response_key=None):
         """Get an object from collection.
 
@@ -63,3 +64,22 @@ class BaseManager(base.BaseManager):
             pass
 
         return [obj_class(self, res, loaded=True) for res in data if res]
+
+
+class BaseManager(ManagerMixin, base.BaseManager):
+    pass
+
+
+class CrudManager(ManagerMixin, base.CrudManager):
+    def list(self, base_url=None, **kwargs):
+        """List the collection.
+
+        :param base_url: if provided, the generated URL will be appended to it
+        """
+        kwargs = self._filter_kwargs(kwargs)
+
+        return self._list(
+            '%(base_url)s%(query)s' % {
+                'base_url': self.build_url(base_url=base_url, **kwargs),
+                'query': '?%s' % urlutils.urlencode(kwargs) if kwargs else '',
+            })

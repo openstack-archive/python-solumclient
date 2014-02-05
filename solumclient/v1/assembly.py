@@ -21,8 +21,9 @@ class Assembly(apiclient_base.Resource):
         return "<Assembly %s>" % self._info
 
 
-class AssemblyManager(solum_base.BaseManager):
+class AssemblyManager(solum_base.CrudManager):
     resource_class = Assembly
+    collection_key = 'assemblies'
 
     def list(self, **kwargs):
-        return self._list('/v1/assemblies')
+        return super(AssemblyManager, self).list(base_url="/v1", **kwargs)
