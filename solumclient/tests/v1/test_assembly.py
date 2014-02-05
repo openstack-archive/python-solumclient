@@ -48,7 +48,22 @@ assembly_list = [
     }
 ]
 
-fixtures = {
+assembly_fixture = {
+    'uri': 'http://example.com/v1/assemblies/x1',
+    'name': 'database',
+    'type': 'assembly',
+    'description': 'A mysql database',
+    'tags': ['small'],
+    'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+    'user_id': '55f41cf46df74320b9486a35f5d28a11',
+    'component_links': [{
+        'href': 'http://example.com:9777/v1/components/x1',
+        'target_name': 'x1'}],
+    'operations_uri': 'http://example.com:9777/v1/operations/o1',
+    'sensors_uri': 'http://example.com:9777/v1/sensors/s1'
+}
+
+fixtures_list = {
     '/v1/assemblies': {
         'GET': (
             {},
@@ -58,19 +73,90 @@ fixtures = {
 }
 
 
+fixtures_get = {
+    '/v1/assemblies/x1': {
+        'GET': (
+            {},
+            assembly_fixture
+        ),
+    }
+}
+
+
+fixtures_create = {
+    '/v1/assemblies': {
+        'POST': (
+            {},
+            assembly_fixture
+        ),
+    }
+}
+
+fixtures_put = {
+    '/v1/assemblies/x1': {
+        'PUT': (
+            {},
+            assembly_fixture
+        ),
+    }
+}
+
+
 class AssemblyManagerTest(base.TestCase):
 
-    def setUp(self):
-        super(AssemblyManagerTest, self).setUp()
-        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures)
-        api_client = solumclient.Client(fake_http_client)
-        self.mgr = assembly.AssemblyManager(api_client)
-
     def test_list_all(self):
-        assemblies = self.mgr.list()
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        assemblies = mgr.list()
         self.assertEqual(len(assemblies), 2)
         self.assertIn('Assembly', repr(assemblies[0]))
         self.assertEqual(assemblies[0].uri,
                          'http://example.com/v1/assemblies/x1')
         self.assertEqual(assemblies[1].uri,
                          'http://example.com/v1/assemblies/x2')
+
+    def test_create(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        assembly_obj = mgr.create()
+        self.assertIn('Assembly', repr(assembly_obj))
+        self.assertEqual(assembly_obj.uri,
+                         'http://example.com/v1/assemblies/x1')
+        self.assertEqual(assembly_obj.type,
+                         'assembly')
+        self.assertEqual(assembly_obj.project_id,
+                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
+        self.assertEqual(assembly_obj.user_id,
+                         '55f41cf46df74320b9486a35f5d28a11')
+
+    def test_get(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        assembly_obj = mgr.get(assembly_id='x1')
+        self.assertIn('Assembly', repr(assembly_obj))
+        self.assertEqual(assembly_obj.uri,
+                         'http://example.com/v1/assemblies/x1')
+        self.assertEqual(assembly_obj.type,
+                         'assembly')
+        self.assertEqual(assembly_obj.project_id,
+                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
+        self.assertEqual(assembly_obj.user_id,
+                         '55f41cf46df74320b9486a35f5d28a11')
+
+    def test_put(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        assembly_obj = mgr.put(assembly_id='x1')
+        self.assertIn('Assembly', repr(assembly_obj))
+        self.assertEqual(assembly_obj.uri,
+                         'http://example.com/v1/assemblies/x1')
+        self.assertEqual(assembly_obj.type,
+                         'assembly')
+        self.assertEqual(assembly_obj.project_id,
+                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
+        self.assertEqual(assembly_obj.user_id,
+                         '55f41cf46df74320b9486a35f5d28a11')
