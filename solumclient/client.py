@@ -32,3 +32,29 @@ def Client(version, **kwargs):
         solum_url=kwargs.get('solum_url'))
     http_client = client.HTTPClient(keystone_auth)
     return client_class(http_client)
+
+
+def get_client(api_version, **kwargs):
+    """Get an authtenticated client, based on the credentials
+       in the keyword args.
+
+    :param api_version: the API version to use
+    :param kwargs: keyword args containing credentials, either:
+            * os_auth_token: pre-existing token to re-use
+            * solum_url: solum API endpoint
+            or:
+            * os_username: name of user
+            * os_password: user's password
+            * os_auth_url: endpoint to authenticate against
+            * os_tenant_name: name of tenant
+    """
+    cli_kwargs = {
+        'username': kwargs.get('os_username'),
+        'password': kwargs.get('os_password'),
+        'tenant_name': kwargs.get('os_tenant_name'),
+        'token': kwargs.get('os_auth_token'),
+        'auth_url': kwargs.get('os_auth_url'),
+        'solum_url': kwargs.get('solum_url')
+    }
+
+    return Client(api_version, **cli_kwargs)
