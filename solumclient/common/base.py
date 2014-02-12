@@ -65,6 +65,28 @@ class ManagerMixin():
 
         return [obj_class(self, res, loaded=True) for res in data if res]
 
+    def _post(self, url, json, response_key=None, return_raw=False):
+        """Create an object.
+
+        :param url: a partial URL, e.g., '/servers'
+        :param json: data that will be encoded as JSON and passed in POST
+            request (GET will be sent by default)
+        :param response_key: the key to be looked up in response dictionary,
+            e.g., 'servers'
+        :param return_raw: flag to force returning raw JSON instead of
+            Python object of self.resource_class
+        """
+        body = self.client.post(url, json=json).json()
+
+        if response_key is None:
+            data = body
+        else:
+            data = body[response_key]
+
+        if return_raw:
+            return data
+        return self.resource_class(self, data)
+
 
 class BaseManager(ManagerMixin, base.BaseManager):
     pass
@@ -83,3 +105,14 @@ class CrudManager(ManagerMixin, base.CrudManager):
                 'base_url': self.build_url(base_url=base_url, **kwargs),
                 'query': '?%s' % urlutils.urlencode(kwargs) if kwargs else '',
             })
+
+    def get(self, **kwargs):
+        kwargs = self._filter_kwargs(kwargs)
+        return self._get(
+            self.build_url(**kwargs))
+
+    def create(self, **kwargs):
+        kwargs = self._filter_kwargs(kwargs)
+        return self._post(
+            self.build_url(**kwargs),
+            {self.key: kwargs})

@@ -24,6 +24,16 @@ class Assembly(apiclient_base.Resource):
 class AssemblyManager(solum_base.CrudManager):
     resource_class = Assembly
     collection_key = 'assemblies'
+    key = 'assembly'
 
     def list(self, **kwargs):
         return super(AssemblyManager, self).list(base_url="/v1", **kwargs)
+
+    def create(self, **kwargs):
+        return super(AssemblyManager, self).create(base_url="/v1", **kwargs)
+
+    def get(self, **kwargs):
+        return super(AssemblyManager, self).get(base_url="/v1", **kwargs)
+
+    def put(self, **kwargs):
+        return super(AssemblyManager, self).put(base_url="/v1", **kwargs)
