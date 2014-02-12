@@ -24,6 +24,16 @@ class Component(apiclient_base.Resource):
 class ComponentManager(solum_base.CrudManager):
     resource_class = Component
     collection_key = 'components'
+    key = 'component'
 
     def list(self, **kwargs):
         return super(ComponentManager, self).list(base_url="/v1", **kwargs)
+
+    def create(self, **kwargs):
+        return super(ComponentManager, self).create(base_url="/v1", **kwargs)
+
+    def get(self, **kwargs):
+        return super(ComponentManager, self).get(base_url="/v1", **kwargs)
+
+    def put(self, **kwargs):
+        return super(ComponentManager, self).put(base_url="/v1", **kwargs)

@@ -55,7 +55,25 @@ component_list = [
     }
 ]
 
-fixtures = {
+component_fixture = {
+    'uri': 'http://example.com/v1/components/c1',
+    'name': 'mysql-db',
+    'type': 'component',
+    'description': 'A mysql db component',
+    'tags': ['database'],
+    'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+    'user_id': '55f41cf46df74320b9486a35f5d28a11',
+    'assembly_link': {
+        'href': 'http://example.com:9777/v1/assembly/a1',
+        'target_name': 'a1'},
+    'service_links': [{
+        'href': 'http://example.com:9777/v1/services/s1',
+        'target_name': 's1'}],
+    'operations_uri': 'http://example.com:9777/v1/operations/o1',
+    'sensors_uri': 'http://example.com:9777/v1/sensors/o2'
+}
+
+fixtures_list = {
     '/v1/components': {
         'GET': (
             {},
@@ -64,16 +82,42 @@ fixtures = {
     }
 }
 
+fixtures_get = {
+    '/v1/components/c1': {
+        'GET': (
+            {},
+            component_fixture
+        ),
+    }
+}
+
+
+fixtures_create = {
+    '/v1/components': {
+        'POST': (
+            {},
+            component_fixture
+        ),
+    }
+}
+
+fixtures_put = {
+    '/v1/components/c1': {
+        'PUT': (
+            {},
+            component_fixture
+        ),
+    }
+}
+
 
 class ComponentManagerTest(base.TestCase):
 
-    def setUp(self):
+    def test_list_all(self):
         super(ComponentManagerTest, self).setUp()
-        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures)
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
         api_client = solumclient.Client(fake_http_client)
         self.mgr = component.ComponentManager(api_client)
-
-    def test_list_all(self):
         components = self.mgr.list()
         self.assertEqual(len(components), 2)
         self.assertIn('Component', repr(components[0]))
@@ -81,3 +125,48 @@ class ComponentManagerTest(base.TestCase):
                          'http://example.com/v1/components/c1')
         self.assertEqual(components[1].uri,
                          'http://example.com/v1/components/c2')
+
+    def test_create(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = component.ComponentManager(api_client)
+        component_obj = mgr.create()
+        self.assertIn('Component', repr(component_obj))
+        self.assertEqual(component_obj.uri,
+                         'http://example.com/v1/components/c1')
+        self.assertEqual(component_obj.type,
+                         'component')
+        self.assertEqual(component_obj.project_id,
+                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
+        self.assertEqual(component_obj.user_id,
+                         '55f41cf46df74320b9486a35f5d28a11')
+
+    def test_get(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = component.ComponentManager(api_client)
+        component_obj = mgr.get(component_id='c1')
+        self.assertIn('Component', repr(component_obj))
+        self.assertEqual(component_obj.uri,
+                         'http://example.com/v1/components/c1')
+        self.assertEqual(component_obj.type,
+                         'component')
+        self.assertEqual(component_obj.project_id,
+                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
+        self.assertEqual(component_obj.user_id,
+                         '55f41cf46df74320b9486a35f5d28a11')
+
+    def test_put(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
+        api_client = solumclient.Client(fake_http_client)
+        mgr = component.ComponentManager(api_client)
+        component_obj = mgr.put(component_id='c1')
+        self.assertIn('Component', repr(component_obj))
+        self.assertEqual(component_obj.uri,
+                         'http://example.com/v1/components/c1')
+        self.assertEqual(component_obj.type,
+                         'component')
+        self.assertEqual(component_obj.project_id,
+                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
+        self.assertEqual(component_obj.user_id,
+                         '55f41cf46df74320b9486a35f5d28a11')
