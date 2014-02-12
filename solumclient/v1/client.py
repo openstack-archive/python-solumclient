@@ -21,6 +21,8 @@ from solumclient.v1 import platform
 class Client(client.BaseClient):
     """Client for the Solum v1 API."""
 
+    service_type = "application_deployment"
+
     def __init__(self, http_client, extensions=None):
         """Initialize a new client for the Solum v1 API."""
         super(Client, self).__init__(http_client, extensions)

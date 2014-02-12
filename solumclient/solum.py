@@ -29,11 +29,15 @@ Notes:
 * Internationalization will not be added in M1 since this is a prototype
 """
 
+from __future__ import print_function
+
 import argparse
 import sys
 
-from solumclient.common import cli_utils
+import six
 
+from solumclient.common import cli_utils
+from solumclient.openstack.common import strutils
 
 SOLUM_CLI_VER = "2014-01-30"
 
@@ -98,8 +102,7 @@ class AssemblyCommands(cli_utils.CommandsBase):
 
     def list(self):
         """List all assemblies."""
-        #TODO(noorul): Add REST communications
-        print("assembly list")
+        print(self.client.assemblies.list())
 
 
 def main():
@@ -128,7 +131,12 @@ def main():
         return se_except
 
     if resource in resources:
-        resources[resource](parser)
+        try:
+            resources[resource](parser)
+        except Exception as e:
+            print(strutils.safe_encode(six.text_type(e)), file=sys.stderr)
+            sys.exit(1)
+
     else:
         cli_utils.show_help(resources)
         print("\n")
