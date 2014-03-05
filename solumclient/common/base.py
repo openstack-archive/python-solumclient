@@ -114,5 +114,4 @@ class CrudManager(ManagerMixin, base.CrudManager):
     def create(self, **kwargs):
         kwargs = self._filter_kwargs(kwargs)
         return self._post(
-            self.build_url(**kwargs),
-            {self.key: kwargs})
+            self.build_url(**kwargs), kwargs)

@@ -26,7 +26,7 @@ class KeystoneAuthPlugin(auth.BaseAuthPlugin):
         "tenant_name",
         "token",
         "auth_url",
-        "solum_url"
+        "endpoint"
     ]
 
     def _do_authenticate(self, http_client):
@@ -43,13 +43,13 @@ class KeystoneAuthPlugin(auth.BaseAuthPlugin):
     def token_and_endpoint(self, endpoint_type, service_type):
         token = endpoint = None
 
-        if self.opts.get('token') and self.opts.get('solum_url'):
+        if self.opts.get('token') and self.opts.get('endpoint'):
             token = self.opts.get('token')
-            endpoint = self.opts.get('solum_url')
+            endpoint = self.opts.get('endpoint')
 
         elif hasattr(self, '_ksclient'):
             token = self._ksclient.auth_token
-            endpoint = (self.opts.get('solum_url') or
+            endpoint = (self.opts.get('endpoint') or
                         self._ksclient.service_catalog.url_for(
                             service_type=service_type,
                             endpoint_type=endpoint_type))
@@ -63,7 +63,7 @@ class KeystoneAuthPlugin(auth.BaseAuthPlugin):
         """
 
         if self.opts.get('token'):
-            lookup_table = ["token", "solum_url"]
+            lookup_table = ["token", "endpoint"]
         else:
             lookup_table = ["username", "password", "tenant_name", "auth_url"]
 
