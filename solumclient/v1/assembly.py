@@ -37,3 +37,6 @@ class AssemblyManager(solum_base.CrudManager):
 
     def put(self, **kwargs):
         return super(AssemblyManager, self).put(base_url="/v1", **kwargs)
+
+    def delete(self, **kwargs):
+        return super(AssemblyManager, self).delete(base_url="/v1", **kwargs)

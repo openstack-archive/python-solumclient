@@ -93,28 +93,35 @@ class AssemblyCommands(cli_utils.CommandsBase):
 
     def create(self):
         """Create an assembly."""
-        self.parser.add_argument('plan_name',
-                                 help="Tenant/project-wide unique plan name")
+        self.parser.add_argument('plan_uuid',
+                                 help="Tenant/project-wide unique plan uuid")
         self.parser.add_argument('--assembly',
                                  help="Assembly name")
         args = self.parser.parse_args()
-        #TODO(noorul): Add REST communications
-        print("assembly create plan_name=%s assembly=%s" % (
-            args.plan_name,
+        print("assembly create plan_uuid=%s assembly=%s" % (
+            args.plan_uuid,
             args.assembly))
+        assembly = self.client.assemblies.create(name=args.assembly,
+                                                 plan_uuid=args.plan_uuid)
+        fields = ['uuid', 'name', 'description']
+        data = dict([(f, getattr(assembly, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
 
     def delete(self):
         """Delete an assembly."""
-        self.parser.add_argument('assembly_name',
-                                 help="Assembly name")
+        self.parser.add_argument('assembly_uuid',
+                                 help="Assembly uuid")
         args = self.parser.parse_args()
-        #TODO(noorul): Add REST communications
-        print("assembly delete assembly_name=%s" % (
-            args.assembly_name))
+        print("assembly delete assembly_uuid=%s" % (
+            args.assembly_uuid))
+        self.client.assemblies.delete(assembly_id=args.assembly_uuid)
 
     def list(self):
         """List all assemblies."""
-        print(self.client.assemblies.list())
+        fields = ['uuid', 'name', 'description']
+        response = self.client.assemblies.list()
+        cliutils.print_list(response, fields)
 
 
 def main():
