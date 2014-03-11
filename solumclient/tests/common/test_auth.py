@@ -29,7 +29,7 @@ class KeystoneAuthPluginTest(base.TestCase):
             password="fake-password",
             tenant_name="fake-tenant-name",
             auth_url="http://auth",
-            solum_url="http://solum")
+            endpoint="http://solum")
         self.cs = client.HTTPClient(auth_plugin=plugin)
 
     def test_authenticate(self, mock_ksclient):
@@ -59,7 +59,7 @@ class KeystoneAuthPluginTokenTest(base.TestCase):
     def test_token_and_endpoint(self, mock_ksclient):
         plugin = auth.KeystoneAuthPlugin(
             token="fake-token",
-            solum_url="http://solum")
+            endpoint="http://solum")
         cs = client.HTTPClient(auth_plugin=plugin)
 
         cs.authenticate()
