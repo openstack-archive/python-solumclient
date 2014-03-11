@@ -106,7 +106,7 @@ class TestSolum(base.TestCase):
         self.make_env()
         required = [
             '.*?^Solum Python Command Line Client',
-            '.*?\[\]'
+            '.*?^.*uuid.*name.*description.*'
         ]
 
         mock_assembly_list.side_effect = (
