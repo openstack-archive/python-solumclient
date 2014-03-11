@@ -32,11 +32,14 @@ Notes:
 from __future__ import print_function
 
 import argparse
+import json
 import sys
 
 import six
+import yaml
 
 from solumclient.common import cli_utils
+from solumclient.openstack.common import cliutils
 from solumclient.openstack.common import strutils
 
 SOLUM_CLI_VER = "2014-01-30"
@@ -47,33 +50,42 @@ class AppCommands(cli_utils.CommandsBase):
 
     def create(self):
         """Create an application."""
-        self.parser.add_argument('plan_name',
-                                 help="Tenant/project-wide unique plan name")
-        self.parser.add_argument('--repo',
-                                 help="Code repository URL")
-        self.parser.add_argument('--build',
-                                 default='yes',
-                                 help="Build flag")
+        self.parser.add_argument('plan_file',
+                                 help="Plan file")
         args = self.parser.parse_args()
-        #TODO(noorul): Add REST communications
-        print("app create plan_name=%s repo=%s build=%s" % (
-            args.plan_name,
-            args.repo,
-            args.build))
+        print("app create plan_file=%s" % args.plan_file)
+        with open(args.plan_file) as definition_file:
+            definition = definition_file.read()
+
+        # Convert yaml to json until we add yaml support in API layer.
+        try:
+            data = yaml.load(definition)
+        except yaml.YAMLError as exc:
+            print("Error in plan file: %s", str(exc))
+            sys.exit(1)
+
+        json_data = json.dumps(data)
+        plan = self.client.plans.create(json_data)
+
+        fields = ['uuid', 'name', 'description']
+        data = dict([(f, getattr(plan, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
 
     def delete(self):
         """Delete an application."""
-        self.parser.add_argument('plan_name',
-                                 help="Tenant/project-wide unique plan name")
+        self.parser.add_argument('plan_uuid',
+                                 help="Tenant/project-wide unique plan uuid")
         args = self.parser.parse_args()
-        #TODO(noorul): Add REST communications
-        print("app delete plan_name=%s" % (
-            args.plan_name))
+        print("app delete plan_uuid=%s" % args.plan_uuid)
+        self.client.plans.delete(plan_id=args.plan_uuid)
 
     def list(self):
         """List all applications."""
-        #TODO(noorul): Add REST communications
         print("app list")
+        fields = ['uuid', 'name', 'description']
+        response = self.client.plans.list()
+        cliutils.print_list(response, fields)
 
 
 class AssemblyCommands(cli_utils.CommandsBase):

@@ -25,6 +25,7 @@ from solumclient.openstack.common.apiclient import auth
 from solumclient import solum
 from solumclient.tests import base
 from solumclient.v1 import assembly
+from solumclient.v1 import plan
 
 FAKE_ENV = {'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
@@ -113,6 +114,24 @@ class TestSolum(base.TestCase):
         )
 
         out = self.shell("assembly list")
+        for r in required:
+            self.assertThat(out,
+                            matchers.MatchesRegex(r,
+                                                  self.re_options))
+
+    @mock.patch.object(plan.PlanManager, "create")
+    def test_app_create(self, mock_app_create):
+        self.make_env()
+        required = [
+            '.*?^Solum Python Command Line Client',
+            '.*?^app create plan_file=/dev/null'
+        ]
+
+        mock_app_create.side_effect = (
+            lambda plan_content: []
+        )
+
+        out = self.shell("app create /dev/null")
         for r in required:
             self.assertThat(out,
                             matchers.MatchesRegex(r,
