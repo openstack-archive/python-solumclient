@@ -127,6 +127,12 @@ class TestSolum(base.TestCase):
         self.shell("assembly delete fake-assembly-id")
         mock_assembly_delete.assert_called(assembly_id='fake-assembly-id')
 
+    @mock.patch.object(assembly.AssemblyManager, "get")
+    def test_assembly_get(self, mock_assembly_get):
+        self.make_env()
+        self.shell("assembly get test_uuid_1")
+        mock_assembly_get.assert_called_once_with(assembly_id='test_uuid_1')
+
     @mock.patch.object(plan.PlanManager, "create")
     def test_app_create(self, mock_app_create):
         self.make_env()
