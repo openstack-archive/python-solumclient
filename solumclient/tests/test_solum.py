@@ -104,35 +104,11 @@ class TestSolum(base.TestCase):
     @mock.patch.object(assembly.AssemblyManager, "list")
     def test_assembly_list(self, mock_assembly_list):
         self.make_env()
-        required = [
-            '.*?^Solum Python Command Line Client',
-            '.*?^.*uuid.*name.*description.*'
-        ]
-
-        mock_assembly_list.side_effect = (
-            lambda: []
-        )
-
-        out = self.shell("assembly list")
-        for r in required:
-            self.assertThat(out,
-                            matchers.MatchesRegex(r,
-                                                  self.re_options))
+        self.shell("assembly list")
+        mock_assembly_list.assert_called()
 
     @mock.patch.object(plan.PlanManager, "create")
     def test_app_create(self, mock_app_create):
         self.make_env()
-        required = [
-            '.*?^Solum Python Command Line Client',
-            '.*?^app create plan_file=/dev/null'
-        ]
-
-        mock_app_create.side_effect = (
-            lambda plan_content: []
-        )
-
-        out = self.shell("app create /dev/null")
-        for r in required:
-            self.assertThat(out,
-                            matchers.MatchesRegex(r,
-                                                  self.re_options))
+        self.shell("app create /dev/null")
+        mock_app_create.assert_called()
