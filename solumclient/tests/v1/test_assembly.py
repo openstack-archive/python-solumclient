@@ -15,7 +15,7 @@
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
 from solumclient.v1 import assembly
-from solumclient.v1 import client as solumclient
+from solumclient.v1 import client as sclient
 
 assembly_list = [
     {
@@ -106,7 +106,7 @@ class AssemblyManagerTest(base.TestCase):
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assemblies = mgr.list()
         self.assertEqual(len(assemblies), 2)
@@ -118,7 +118,7 @@ class AssemblyManagerTest(base.TestCase):
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.create()
         self.assertIn('Assembly', repr(assembly_obj))
@@ -133,7 +133,7 @@ class AssemblyManagerTest(base.TestCase):
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.get(assembly_id='x1')
         self.assertIn('Assembly', repr(assembly_obj))
@@ -148,7 +148,7 @@ class AssemblyManagerTest(base.TestCase):
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.put(assembly_id='x1')
         self.assertIn('Assembly', repr(assembly_obj))

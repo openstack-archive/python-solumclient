@@ -14,7 +14,7 @@
 
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as solumclient
+from solumclient.v1 import client as sclient
 from solumclient.v1 import component
 
 
@@ -116,7 +116,7 @@ class ComponentManagerTest(base.TestCase):
     def test_list_all(self):
         super(ComponentManagerTest, self).setUp()
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         self.mgr = component.ComponentManager(api_client)
         components = self.mgr.list()
         self.assertEqual(len(components), 2)
@@ -128,7 +128,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.create()
         self.assertIn('Component', repr(component_obj))
@@ -143,7 +143,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.get(component_id='c1')
         self.assertIn('Component', repr(component_obj))
@@ -158,7 +158,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.put(component_id='c1')
         self.assertIn('Component', repr(component_obj))

@@ -14,7 +14,7 @@
 
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as solumclient
+from solumclient.v1 import client as sclient
 from solumclient.v1 import platform
 
 
@@ -46,7 +46,7 @@ class PlatformManagerTest(base.TestCase):
     def setUp(self):
         super(PlatformManagerTest, self).setUp()
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         self.mgr = platform.PlatformManager(api_client)
 
     def test_get(self):
