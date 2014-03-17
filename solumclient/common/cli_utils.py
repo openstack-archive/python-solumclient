@@ -138,7 +138,7 @@ def show_help(resources, name='targets or nouns'):
     print("  app create [--repo=repo_url] [--build=no] plan_name")
     print("  app delete plan_name")
     print("  app list")
-    print("  assembly create [--assembly=assembly_name] plan_name")
+    print("  assembly create [--assembly=assembly_name] plan_uri")
     print("  assembly delete assembly_name")
     print("  assembly list")
     print("\n")
