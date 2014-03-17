@@ -19,6 +19,8 @@ from solumclient.openstack.common.apiclient import client
 class Client(client.BaseClient):
     """Client for the Solum v1 API."""
 
+    service_type = "image_builder"
+
     def __init__(self, http_client, extensions=None):
         """Initialize a new client for the Builder v1 API."""
         super(Client, self).__init__(http_client, extensions)
