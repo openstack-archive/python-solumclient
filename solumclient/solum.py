@@ -53,7 +53,6 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('plan_file',
                                  help="Plan file")
         args = self.parser.parse_args()
-        print("app create plan_file=%s" % args.plan_file)
         with open(args.plan_file) as definition_file:
             definition = definition_file.read()
 
@@ -77,12 +76,10 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('plan_uuid',
                                  help="Tenant/project-wide unique plan uuid")
         args = self.parser.parse_args()
-        print("app delete plan_uuid=%s" % args.plan_uuid)
         self.client.plans.delete(plan_id=args.plan_uuid)
 
     def list(self):
         """List all applications."""
-        print("app list")
         fields = ['uuid', 'name', 'description']
         response = self.client.plans.list()
         cliutils.print_list(response, fields)
@@ -98,9 +95,6 @@ class AssemblyCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--assembly',
                                  help="Assembly name")
         args = self.parser.parse_args()
-        print("assembly create plan_uuid=%s assembly=%s" % (
-            args.plan_uuid,
-            args.assembly))
         assembly = self.client.assemblies.create(name=args.assembly,
                                                  plan_uuid=args.plan_uuid)
         fields = ['uuid', 'name', 'description']
@@ -113,8 +107,6 @@ class AssemblyCommands(cli_utils.CommandsBase):
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid")
         args = self.parser.parse_args()
-        print("assembly delete assembly_uuid=%s" % (
-            args.assembly_uuid))
         self.client.assemblies.delete(assembly_id=args.assembly_uuid)
 
     def list(self):
