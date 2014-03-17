@@ -107,8 +107,40 @@ class TestSolum(base.TestCase):
         self.shell("assembly list")
         mock_assembly_list.assert_called()
 
+    @mock.patch.object(assembly.AssemblyManager, "create")
+    def test_assembly_create(self, mock_assembly_create):
+        self.make_env()
+        self.shell("assembly create fake-plan-id --assembly=test")
+        mock_assembly_create.assert_called(name='test',
+                                           plan_uuid='fake-plan-id')
+
+    @mock.patch.object(assembly.AssemblyManager, "create")
+    def test_assembly_create_without_name(self, mock_assembly_create):
+        self.make_env()
+        self.shell("assembly create fake-plan-id")
+        mock_assembly_create.assert_called(name=None,
+                                           plan_uuid='fake-plan-id')
+
+    @mock.patch.object(assembly.AssemblyManager, "delete")
+    def test_assembly_delete(self, mock_assembly_delete):
+        self.make_env()
+        self.shell("assembly delete fake-assembly-id")
+        mock_assembly_delete.assert_called(assembly_id='fake-assembly-id')
+
     @mock.patch.object(plan.PlanManager, "create")
     def test_app_create(self, mock_app_create):
         self.make_env()
         self.shell("app create /dev/null")
         mock_app_create.assert_called()
+
+    @mock.patch.object(plan.PlanManager, "list")
+    def test_app_list(self, mock_app_list):
+        self.make_env()
+        self.shell("app list")
+        mock_app_list.assert_called()
+
+    @mock.patch.object(plan.PlanManager, "delete")
+    def test_app_delete(self, mock_app_delete):
+        self.make_env()
+        self.shell("app delete fake-id")
+        mock_app_delete.assert_called_with(plan_id='fake-id')
