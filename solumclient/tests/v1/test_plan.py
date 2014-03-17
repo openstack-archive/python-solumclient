@@ -14,7 +14,7 @@
 
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as solumclient
+from solumclient.v1 import client as sclient
 from solumclient.v1 import plan
 
 
@@ -134,7 +134,7 @@ class PlanManagerTest(base.TestCase):
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plans = mgr.list()
         self.assertEqual(len(plans), 2)
@@ -146,7 +146,7 @@ class PlanManagerTest(base.TestCase):
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.create(plan_file_fixture)
         self.assertIn('Plan', repr(plan_obj))
@@ -159,7 +159,7 @@ class PlanManagerTest(base.TestCase):
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.get(plan_id='p1')
         self.assertIn('Plan', repr(plan_obj))
@@ -172,7 +172,7 @@ class PlanManagerTest(base.TestCase):
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
-        api_client = solumclient.Client(fake_http_client)
+        api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.put(plan_file_fixture, plan_id='p1')
         self.assertIn('Plan', repr(plan_obj))
