@@ -135,12 +135,13 @@ class CommandsBase(object):
 def show_help(resources, name='targets or nouns'):
     """Help screen."""
     print("Full list of commands:")
-    print("  app create [--repo=repo_url] [--build=no] plan_name")
-    print("  app delete plan_name")
+    print("  app create plan_file")
+    print("  app delete plan_id")
     print("  app list")
     print("  assembly create [--assembly=assembly_name] plan_uri")
-    print("  assembly delete assembly_name")
+    print("  assembly delete assembly_id")
     print("  assembly list")
+    print("  assembly get assembly_id")
     print("\n")
 
     print("Available %s:" % name)
