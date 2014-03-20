@@ -21,6 +21,11 @@ Initial M1 Solum CLI commands implemented (but not REST communications):
 * assembly create [--assembly="assembly_name"] plan_name
 * assembly delete assembly_name
 * assembly list
+* languagepack create lp_file
+* languagepack list
+* languagepack get lp_id
+* languagepack delete lp_id
+
 
 Notes:
 * This code is expected to be replaced by the OpenStack Client (OSC) when
@@ -136,6 +141,56 @@ class AssemblyCommands(cli_utils.CommandsBase):
         cliutils.print_dict(data, wrap=72)
 
 
+class LanguagePackCommands(cli_utils.CommandsBase):
+    """Language Pack targets."""
+
+    def create(self):
+        """Create a language pack."""
+        self.parser.add_argument('lp_file',
+                                 help="Language pack file.")
+        args = self.parser.parse_args()
+        with open(args.lp_file) as lang_pack_file:
+            try:
+                data = json.load(lang_pack_file)
+            except ValueError as exc:
+                print("Error in language pack file: %s", str(exc))
+                sys.exit(1)
+
+        json_data = json.dumps(data)
+        languagepack = self.client.languagepacks.create(json_data)
+        fields = ['uuid', 'name', 'description', 'compiler_versions',
+                  'os_platform']
+        data = dict([(f, getattr(languagepack, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+    def delete(self):
+        """Delete a language pack."""
+        self.parser.add_argument('lp_id',
+                                 help="Language pack id")
+        args = self.parser.parse_args()
+        self.client.languagepacks.delete(lp_id=args.lp_id)
+
+    def list(self):
+        """List all language packs."""
+        fields = ['uuid', 'name', 'description', 'compiler_versions',
+                  'os_platform']
+        response = self.client.languagepacks.list()
+        cliutils.print_list(response, fields)
+
+    def get(self):
+        """Get a language pack."""
+        self.parser.add_argument('lp_id',
+                                 help="Language pack id")
+        args = self.parser.parse_args()
+        response = self.client.languagepacks.get(lp_id=args.lp_id)
+        fields = ['uuid', 'name', 'description', 'compiler_versions',
+                  'os_platform']
+        data = dict([(f, getattr(response, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+
 def main():
     """Basically the entry point."""
     parser = argparse.ArgumentParser(conflict_handler='resolve')
@@ -145,6 +200,7 @@ def main():
     resources = {
         'app': AppCommands,
         'assembly': AssemblyCommands,
+        'languagepack': LanguagePackCommands
     }
 
     choices = resources.keys()

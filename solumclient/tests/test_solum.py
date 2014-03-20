@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import re
 import sys
 
@@ -25,6 +26,7 @@ from solumclient.openstack.common.apiclient import auth
 from solumclient import solum
 from solumclient.tests import base
 from solumclient.v1 import assembly
+from solumclient.v1 import languagepack
 from solumclient.v1 import plan
 
 FAKE_ENV = {'OS_USERNAME': 'username',
@@ -100,6 +102,7 @@ class TestSolum(base.TestCase):
                                 matchers.MatchesRegex(r,
                                                       self.re_options))
 
+    # Assembly Tests #
     @mock.patch.object(assembly.AssemblyManager, "list")
     def test_assembly_list(self, mock_assembly_list):
         self.make_env()
@@ -133,6 +136,7 @@ class TestSolum(base.TestCase):
         self.shell("assembly get test_uuid_1")
         mock_assembly_get.assert_called_once_with(assembly_id='test_uuid_1')
 
+    # Plan Tests #
     @mock.patch.object(plan.PlanManager, "create")
     def test_app_create(self, mock_app_create):
         self.make_env()
@@ -156,3 +160,33 @@ class TestSolum(base.TestCase):
         self.make_env()
         self.shell("app get fake-id")
         mock_app_get.assert_called_once_with(plan_id='fake-id')
+
+    # LanguagePack Tests #
+    @mock.patch.object(languagepack.LanguagePackManager, "list")
+    def test_languagepack_list(self, mock_lp_list):
+        self.make_env()
+        self.shell("languagepack list")
+        mock_lp_list.assert_called_once()
+
+    @mock.patch.object(json, "load")
+    @mock.patch.object(languagepack.LanguagePackManager, "create")
+    def test_languagepack_create(self, mock_lp_create, mock_json_load):
+        mock_json_load.side_effect = """{
+            "language-pack-type": "Java",
+            "language-pack-name": "Java version 1.4.",
+            }"""
+        self.make_env()
+        self.shell("languagepack create /dev/null")
+        mock_lp_create.assert_called_once()
+
+    @mock.patch.object(languagepack.LanguagePackManager, "delete")
+    def test_languagepack_delete(self, mock_lp_delete):
+        self.make_env()
+        self.shell("languagepack delete fake-lp-id")
+        mock_lp_delete.assert_called_once_with(lp_id='fake-lp-id')
+
+    @mock.patch.object(languagepack.LanguagePackManager, "get")
+    def test_languagepack_get(self, mock_lp_get):
+        self.make_env()
+        self.shell("languagepack get fake-lp-id1")
+        mock_lp_get.assert_called_once_with(lp_id='fake-lp-id1')

@@ -142,6 +142,10 @@ def show_help(resources, name='targets or nouns'):
     print("  assembly delete assembly_id")
     print("  assembly list")
     print("  assembly get assembly_id")
+    print("  languagepack create lp_file")
+    print("  languagepack list")
+    print("  languagepack get lp_id")
+    print("  languagepack delete lp_id")
     print("\n")
 
     print("Available %s:" % name)
