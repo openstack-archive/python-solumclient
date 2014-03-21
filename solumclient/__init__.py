@@ -16,4 +16,4 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
-    'solumclient').version_string()
+    'python-solumclient').version_string()
