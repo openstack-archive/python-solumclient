@@ -64,7 +64,7 @@ class AppCommands(cli_utils.CommandsBase):
         json_data = json.dumps(data)
         plan = self.client.plans.create(json_data)
 
-        fields = ['uuid', 'name', 'description']
+        fields = ['uuid', 'name', 'description', 'uri']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
