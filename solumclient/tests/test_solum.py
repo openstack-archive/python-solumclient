@@ -88,7 +88,6 @@ class TestSolum(base.TestCase):
 
     def test_help(self):
         required = [
-            '.*?^Solum Python Command Line Client',
             '.*?^usage:'
             '.*?^positional arguments'
             '.*?^optional arguments'

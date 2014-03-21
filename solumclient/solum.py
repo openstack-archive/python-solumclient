@@ -42,8 +42,6 @@ from solumclient.common import cli_utils
 from solumclient.openstack.common import cliutils
 from solumclient.openstack.common import strutils
 
-SOLUM_CLI_VER = "2014-01-30"
-
 
 class AppCommands(cli_utils.CommandsBase):
     """Application targets."""
@@ -134,7 +132,6 @@ class AssemblyCommands(cli_utils.CommandsBase):
 
 def main():
     """Basically the entry point."""
-    print("Solum Python Command Line Client %s\n" % SOLUM_CLI_VER)
     parser = argparse.ArgumentParser(conflict_handler='resolve')
     parser.the_error = parser.error
     parser.error = lambda m: None
