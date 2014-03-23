@@ -132,53 +132,44 @@ fixtures_put = {
 
 class PlanManagerTest(base.TestCase):
 
+    def assert_plan_obj(self, plan_obj):
+        self.assertIn('Plan', repr(plan_obj))
+        self.assertIn('Artifact', repr(plan_obj.artifacts[0]))
+        self.assertIn('ServiceReference', repr(plan_obj.services[0]))
+        self.assertEqual(plan_fixture['uri'], plan_obj.uri)
+        self.assertEqual(plan_fixture['type'], plan_obj.type)
+        self.assertEqual(plan_fixture['project_id'], plan_obj.project_id)
+        self.assertEqual(plan_fixture['user_id'], plan_obj.user_id)
+
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
         api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plans = mgr.list()
-        self.assertEqual(len(plans), 2)
+        self.assertEqual(2, len(plans))
         self.assertIn('Plan', repr(plans[0]))
         self.assertIn('Artifact', repr(plans[0].artifacts[0]))
         self.assertIn('ServiceReference', repr(plans[0].services[0]))
-        self.assertEqual(plans[0].uri, plan_list[0]['uri'])
-        self.assertEqual(plans[1].uri, plan_list[1]['uri'])
+        self.assertEqual(plan_list[0]['uri'], plans[0].uri)
+        self.assertEqual(plan_list[1]['uri'], plans[1].uri)
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
         api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.create(plan_file_fixture)
-        self.assertIn('Plan', repr(plan_obj))
-        self.assertIn('Artifact', repr(plan_obj.artifacts[0]))
-        self.assertIn('ServiceReference', repr(plan_obj.services[0]))
-        self.assertEqual(plan_obj.uri, plan_fixture['uri'])
-        self.assertEqual(plan_obj.type, plan_fixture['type'])
-        self.assertEqual(plan_obj.project_id, plan_fixture['project_id'])
-        self.assertEqual(plan_obj.user_id, plan_fixture['user_id'])
+        self.assert_plan_obj(plan_obj)
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
         api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.get(plan_id='p1')
-        self.assertIn('Plan', repr(plan_obj))
-        self.assertIn('Artifact', repr(plan_obj.artifacts[0]))
-        self.assertIn('ServiceReference', repr(plan_obj.services[0]))
-        self.assertEqual(plan_obj.uri, plan_fixture['uri'])
-        self.assertEqual(plan_obj.type, plan_fixture['type'])
-        self.assertEqual(plan_obj.project_id, plan_fixture['project_id'])
-        self.assertEqual(plan_obj.user_id, plan_fixture['user_id'])
+        self.assert_plan_obj(plan_obj)
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
         api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.put(plan_file_fixture, plan_id='p1')
-        self.assertIn('Plan', repr(plan_obj))
-        self.assertIn('Artifact', repr(plan_obj.artifacts[0]))
-        self.assertIn('ServiceReference', repr(plan_obj.services[0]))
-        self.assertEqual(plan_obj.uri, plan_fixture['uri'])
-        self.assertEqual(plan_obj.type, plan_fixture['type'])
-        self.assertEqual(plan_obj.project_id, plan_fixture['project_id'])
-        self.assertEqual(plan_obj.user_id, plan_fixture['user_id'])
+        self.assert_plan_obj(plan_obj)
