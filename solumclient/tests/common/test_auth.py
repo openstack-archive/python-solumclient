@@ -16,7 +16,7 @@ from keystoneclient.v2_0 import client as ksclient
 import mock
 
 from solumclient.common import auth
-from solumclient.openstack.common.apiclient import client
+from solumclient.common import client
 from solumclient.tests import base
 
 

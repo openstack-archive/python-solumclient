@@ -13,7 +13,8 @@
 # under the License.
 
 from solumclient.common import auth
-from solumclient.openstack.common.apiclient import client
+from solumclient.common import client
+from solumclient.openstack.common.apiclient import client as api_client
 
 API_NAME = 'builder'
 VERSION_MAP = {
@@ -22,7 +23,8 @@ VERSION_MAP = {
 
 
 def Client(version, **kwargs):
-    client_class = client.BaseClient.get_class(API_NAME, version, VERSION_MAP)
+    client_class = api_client.BaseClient.get_class(API_NAME, version,
+                                                   VERSION_MAP)
     keystone_auth = auth.KeystoneAuthPlugin(
         username=kwargs.get('username'),
         password=kwargs.get('password'),
