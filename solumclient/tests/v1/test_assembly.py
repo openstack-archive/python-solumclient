@@ -104,6 +104,14 @@ fixtures_put = {
 
 class AssemblyManagerTest(base.TestCase):
 
+    def assert_assembly_object(self, assembly_obj):
+        self.assertIn('Assembly', repr(assembly_obj))
+        self.assertEqual(assembly_obj.uri, assembly_fixture['uri'])
+        self.assertEqual(assembly_obj.type, assembly_fixture['type'])
+        self.assertEqual(assembly_obj.project_id,
+                         assembly_fixture['project_id'])
+        self.assertEqual(assembly_obj.user_id, assembly_fixture['user_id'])
+
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
         api_client = sclient.Client(fake_http_client)
@@ -112,51 +120,27 @@ class AssemblyManagerTest(base.TestCase):
         self.assertEqual(len(assemblies), 2)
         self.assertIn('Assembly', repr(assemblies[0]))
         self.assertEqual(assemblies[0].uri,
-                         'http://example.com/v1/assemblies/x1')
+                         assembly_list[0]['uri'])
         self.assertEqual(assemblies[1].uri,
-                         'http://example.com/v1/assemblies/x2')
+                         assembly_list[1]['uri'])
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
         api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.create()
-        self.assertIn('Assembly', repr(assembly_obj))
-        self.assertEqual(assembly_obj.uri,
-                         'http://example.com/v1/assemblies/x1')
-        self.assertEqual(assembly_obj.type,
-                         'assembly')
-        self.assertEqual(assembly_obj.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(assembly_obj.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assert_assembly_object(assembly_obj)
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
         api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.get(assembly_id='x1')
-        self.assertIn('Assembly', repr(assembly_obj))
-        self.assertEqual(assembly_obj.uri,
-                         'http://example.com/v1/assemblies/x1')
-        self.assertEqual(assembly_obj.type,
-                         'assembly')
-        self.assertEqual(assembly_obj.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(assembly_obj.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assert_assembly_object(assembly_obj)
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
         api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.put(assembly_id='x1')
-        self.assertIn('Assembly', repr(assembly_obj))
-        self.assertEqual(assembly_obj.uri,
-                         'http://example.com/v1/assemblies/x1')
-        self.assertEqual(assembly_obj.type,
-                         'assembly')
-        self.assertEqual(assembly_obj.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(assembly_obj.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assert_assembly_object(assembly_obj)
