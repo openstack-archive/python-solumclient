@@ -93,9 +93,6 @@ class AssemblyCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--assembly',
                                  help="Assembly name")
         args = self.parser.parse_args()
-        print("assembly create plan_uri=%s assembly=%s" % (
-            args.plan_uri,
-            args.assembly))
         assembly = self.client.assemblies.create(name=args.assembly,
                                                  plan_uri=args.plan_uri)
         fields = ['uuid', 'name', 'description', 'status']
@@ -121,8 +118,6 @@ class AssemblyCommands(cli_utils.CommandsBase):
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid")
         args = self.parser.parse_args()
-        print("assembly get assembly_uuid=%s" % (
-            args.assembly_uuid))
         response = self.client.assemblies.get(assembly_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status']
         data = dict([(f, getattr(response, f, ''))
