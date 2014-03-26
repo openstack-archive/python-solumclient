@@ -106,11 +106,11 @@ class AssemblyManagerTest(base.TestCase):
 
     def assert_assembly_object(self, assembly_obj):
         self.assertIn('Assembly', repr(assembly_obj))
-        self.assertEqual(assembly_obj.uri, assembly_fixture['uri'])
-        self.assertEqual(assembly_obj.type, assembly_fixture['type'])
-        self.assertEqual(assembly_obj.project_id,
-                         assembly_fixture['project_id'])
-        self.assertEqual(assembly_obj.user_id, assembly_fixture['user_id'])
+        self.assertEqual(assembly_fixture['uri'], assembly_obj.uri)
+        self.assertEqual(assembly_fixture['type'], assembly_obj.type)
+        self.assertEqual(assembly_fixture['project_id'],
+                         assembly_obj.project_id)
+        self.assertEqual(assembly_fixture['user_id'], assembly_obj.user_id)
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
@@ -119,10 +119,8 @@ class AssemblyManagerTest(base.TestCase):
         assemblies = mgr.list()
         self.assertEqual(len(assemblies), 2)
         self.assertIn('Assembly', repr(assemblies[0]))
-        self.assertEqual(assemblies[0].uri,
-                         assembly_list[0]['uri'])
-        self.assertEqual(assemblies[1].uri,
-                         assembly_list[1]['uri'])
+        self.assertEqual(assembly_list[0]['uri'], assemblies[0].uri)
+        self.assertEqual(assembly_list[1]['uri'], assemblies[1].uri)
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)

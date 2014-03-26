@@ -45,7 +45,7 @@ class KeystoneAuthPluginTest(base.TestCase):
         (token, endpoint) = self.cs.auth_plugin.token_and_endpoint(
             "fake-endpoint-type", "fake-service-type")
         self.assertIsInstance(token, mock.MagicMock)
-        self.assertEqual(endpoint, "http://solum")
+        self.assertEqual("http://solum", endpoint)
 
     def test_token_and_endpoint_before_auth(self, mock_ksclient):
         (token, endpoint) = self.cs.auth_plugin.token_and_endpoint(
@@ -65,5 +65,5 @@ class KeystoneAuthPluginTokenTest(base.TestCase):
         cs.authenticate()
         (token, endpoint) = cs.auth_plugin.token_and_endpoint(
             "fake-endpoint-type", "fake-service-type")
-        self.assertEqual(token, 'fake-token')
-        self.assertEqual(endpoint, 'http://solum')
+        self.assertEqual('fake-token', token)
+        self.assertEqual('http://solum', endpoint)

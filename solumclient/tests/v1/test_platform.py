@@ -52,11 +52,8 @@ class PlatformManagerTest(base.TestCase):
     def test_get(self):
         platform = self.mgr.get()
         self.assertIn('Platform', repr(platform))
-        self.assertEqual(platform.uri,
-                         'http://example.com/v1')
-        self.assertEqual(platform.type,
-                         'platform')
-        self.assertEqual(platform.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(platform.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assertEqual('http://example.com/v1', platform.uri)
+        self.assertEqual('platform', platform.type)
+        self.assertEqual('1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                         platform.project_id)
+        self.assertEqual('55f41cf46df74320b9486a35f5d28a11', platform.user_id)
