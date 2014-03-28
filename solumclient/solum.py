@@ -76,6 +76,17 @@ class AppCommands(cli_utils.CommandsBase):
         args = self.parser.parse_args()
         self.client.plans.delete(plan_id=args.plan_uuid)
 
+    def get(self):
+        """Show an application's resource."""
+        self.parser.add_argument('plan_uuid',
+                                 help="Plan uuid")
+        args = self.parser.parse_args()
+        response = self.client.plans.get(plan_id=args.plan_uuid)
+        fields = ['uuid', 'name', 'description', 'uri']
+        data = dict([(f, getattr(response, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
     def list(self):
         """List all applications."""
         fields = ['uuid', 'name', 'description']

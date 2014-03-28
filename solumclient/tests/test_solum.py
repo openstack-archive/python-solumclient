@@ -150,3 +150,9 @@ class TestSolum(base.TestCase):
         self.make_env()
         self.shell("app delete fake-id")
         mock_app_delete.assert_called_once_with(plan_id='fake-id')
+
+    @mock.patch.object(plan.PlanManager, "get")
+    def test_app_get(self, mock_app_get):
+        self.make_env()
+        self.shell("app get fake-id")
+        mock_app_get.assert_called_once_with(plan_id='fake-id')
