@@ -133,7 +133,7 @@ class TestSolum(base.TestCase):
     @mock.patch.object(assembly.AssemblyManager, "get")
     def test_assembly_get(self, mock_assembly_get):
         self.make_env()
-        self.shell("assembly get test_uuid_1")
+        self.shell("assembly show test_uuid_1")
         mock_assembly_get.assert_called_once_with(assembly_id='test_uuid_1')
 
     # Plan Tests #
@@ -158,7 +158,7 @@ class TestSolum(base.TestCase):
     @mock.patch.object(plan.PlanManager, "get")
     def test_app_get(self, mock_app_get):
         self.make_env()
-        self.shell("app get fake-id")
+        self.shell("app show fake-id")
         mock_app_get.assert_called_once_with(plan_id='fake-id')
 
     # LanguagePack Tests #
@@ -188,5 +188,5 @@ class TestSolum(base.TestCase):
     @mock.patch.object(languagepack.LanguagePackManager, "get")
     def test_languagepack_get(self, mock_lp_get):
         self.make_env()
-        self.shell("languagepack get fake-lp-id1")
+        self.shell("languagepack show fake-lp-id1")
         mock_lp_get.assert_called_once_with(lp_id='fake-lp-id1')

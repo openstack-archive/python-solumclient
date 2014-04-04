@@ -18,12 +18,14 @@ Initial M1 Solum CLI commands implemented (but not REST communications):
 * app create --repo="repo_url" [--build=no] plan_name
 * app delete plan_name
 * app list
+* app show plan_id
 * assembly create [--assembly="assembly_name"] plan_name
 * assembly delete assembly_name
 * assembly list
+* assembly show assembly_id
 * languagepack create lp_file
 * languagepack list
-* languagepack get lp_id
+* languagepack show lp_id
 * languagepack delete lp_id
 
 
@@ -81,7 +83,7 @@ class AppCommands(cli_utils.CommandsBase):
         args = self.parser.parse_args()
         self.client.plans.delete(plan_id=args.plan_uuid)
 
-    def get(self):
+    def show(self):
         """Show an application's resource."""
         self.parser.add_argument('plan_uuid',
                                  help="Plan uuid")
@@ -129,7 +131,7 @@ class AssemblyCommands(cli_utils.CommandsBase):
         response = self.client.assemblies.list()
         cliutils.print_list(response, fields)
 
-    def get(self):
+    def show(self):
         """Show an assembly's resource."""
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid")
@@ -178,7 +180,7 @@ class LanguagePackCommands(cli_utils.CommandsBase):
         response = self.client.languagepacks.list()
         cliutils.print_list(response, fields)
 
-    def get(self):
+    def show(self):
         """Get a language pack."""
         self.parser.add_argument('lp_id',
                                  help="Language pack id")
