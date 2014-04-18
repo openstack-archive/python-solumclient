@@ -95,12 +95,11 @@ class TestSolum(base.TestCase):
             '.*?^optional arguments'
 
         ]
-        for argstr in ['--help', 'help']:
-            help_text = self.shell(argstr)
-            for r in required:
-                self.assertThat(help_text,
-                                matchers.MatchesRegex(r,
-                                                      self.re_options))
+        help_text = self.shell('--help')
+        for r in required:
+            self.assertThat(help_text,
+                            matchers.MatchesRegex(r,
+                                                  self.re_options))
 
     # Assembly Tests #
     @mock.patch.object(assembly.AssemblyManager, "list")

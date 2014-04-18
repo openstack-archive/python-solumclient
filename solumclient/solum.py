@@ -216,9 +216,10 @@ def main():
     try:
         parsed, _ = parser.parse_known_args()
         resource = parsed.resource
-    except Exception as se_except:
+    except Exception:
+        print("Invalid target specified to act upon.\n")
         parser.print_help()
-        return se_except
+        sys.exit(1)
 
     if resource in resources:
         try:
