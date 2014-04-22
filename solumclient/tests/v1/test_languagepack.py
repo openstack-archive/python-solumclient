@@ -19,7 +19,7 @@ from solumclient.v1 import languagepack
 
 languagepack_list = [
     {
-        'uri': 'http://example.com/v1/languagepacks/x1',
+        'uri': 'http://example.com/v1/language_packs/x1',
         'name': 'database',
         'language_pack_type': 'python',
         'description': 'Python Language pack',
@@ -33,7 +33,7 @@ languagepack_list = [
         'service_id': 1
     },
     {
-        'uri': 'http://example.com/v1/languagepacks/x2',
+        'uri': 'http://example.com/v1/language_packs/x2',
         'name': 'database',
         'language_pack_type': 'java',
         'description': 'Java Language pack',
@@ -49,7 +49,7 @@ languagepack_list = [
 ]
 
 languagepack_fixture = {
-    'uri': 'http://example.com/v1/languagepacks/x1',
+    'uri': 'http://example.com/v1/language_packs/x1',
     'name': 'database',
     'language_pack_type': 'java',
     'description': 'Java Language pack',
@@ -64,7 +64,7 @@ languagepack_fixture = {
 }
 
 fixtures_list = {
-    '/v1/languagepacks': {
+    '/v1/language_packs': {
         'GET': (
             {},
             languagepack_list
@@ -74,7 +74,7 @@ fixtures_list = {
 
 
 fixtures_get = {
-    '/v1/languagepacks/x1': {
+    '/v1/language_packs/x1': {
         'GET': (
             {},
             languagepack_fixture
@@ -84,7 +84,7 @@ fixtures_get = {
 
 
 fixtures_create = {
-    '/v1/languagepacks': {
+    '/v1/language_packs': {
         'POST': (
             {},
             languagepack_fixture
@@ -126,5 +126,5 @@ class LanguagePackManagerTest(base.TestCase):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
         api_client = sclient.Client(fake_http_client)
         mgr = languagepack.LanguagePackManager(api_client)
-        languagepack_obj = mgr.get(languagepack_id='x1')
+        languagepack_obj = mgr.get(lp_id='x1')
         self.assert_lp_object(languagepack_obj)

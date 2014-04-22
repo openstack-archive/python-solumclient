@@ -23,8 +23,8 @@ class LanguagePack(apiclient_base.Resource):
 
 class LanguagePackManager(solum_base.CrudManager):
     resource_class = LanguagePack
-    collection_key = 'languagepacks'
-    key = 'languagepack'
+    collection_key = 'language_packs'
+    key = 'lp'
 
     def list(self, **kwargs):
         return super(LanguagePackManager, self).list(base_url="/v1", **kwargs)
