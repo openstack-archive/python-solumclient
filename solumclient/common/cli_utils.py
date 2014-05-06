@@ -15,8 +15,11 @@
 
 import os
 
+from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
+
 from solumclient import client as solum_client
 from solumclient.common import exc
+from solumclient.openstack.common.apiclient import exceptions
 
 
 class CommandsBase(object):
@@ -108,6 +111,9 @@ class CommandsBase(object):
             try:
                 self.parser.error = self.parser.the_error
                 self._actions[action]()
+            except (exceptions.ClientException, ks_exc.ClientException):
+                # Don't print usage help on functional errors.
+                raise
             except Exception:
                 print(self._actions[action].__doc__)
                 self.parser.print_help()
