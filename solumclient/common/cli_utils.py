@@ -115,9 +115,12 @@ class CommandsBase(object):
                 # Don't print usage help on functional errors.
                 raise
             except Exception:
-                print(self._actions[action].__doc__)
                 self.parser.print_help()
                 raise
+        else:
+            self.help()
+            raise exceptions.CommandError('"%s" is not a valid action' %
+                                          action)
 
     @property
     def _actions(self):
@@ -134,27 +137,11 @@ class CommandsBase(object):
 
     def help(self):
         """Print this help message."""
-        print(self.__doc__)
         show_help(self._actions, 'actions')
 
 
 def show_help(resources, name='targets or nouns'):
     """Help screen."""
-    print("Full list of commands:")
-    print("  app create plan_file")
-    print("  app delete plan_id")
-    print("  app list")
-    print("  app show plan_id")
-    print("  assembly create [--assembly=assembly_name] plan_uri")
-    print("  assembly delete assembly_id")
-    print("  assembly list")
-    print("  assembly show assembly_id")
-    print("  languagepack create lp_file")
-    print("  languagepack list")
-    print("  languagepack show lp_id")
-    print("  languagepack delete lp_id")
-    print("\n")
-
     print("Available %s:" % name)
     for resource in sorted(resources):
         commands = resources.get(resource)
