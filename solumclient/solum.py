@@ -108,12 +108,21 @@ class AssemblyCommands(cli_utils.CommandsBase):
     def create(self):
         """Create an assembly."""
         self.parser.add_argument('plan_uri',
-                                 help="Tenant/project-wide unique plan uri")
+                                 help="Tenant/project-wide unique "
+                                 "plan (uri/uuid or name)")
         self.parser.add_argument('--assembly',
                                  help="Assembly name")
         args = self.parser.parse_args()
+        plan_uri = args.plan_uri
+        if '/' not in plan_uri:
+            # might be a plan uuid/name
+            # let's try and be helpful and get the real plan_uri.
+            plan = self.client.plans.find(name_or_id=args.plan_uri)
+            plan_uri = plan.uri
+            print('Note: using plan_uri=%s' % plan_uri)
+
         assembly = self.client.assemblies.create(name=args.assembly,
-                                                 plan_uri=args.plan_uri)
+                                                 plan_uri=plan_uri)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri']
         data = dict([(f, getattr(assembly, f, ''))

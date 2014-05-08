@@ -125,6 +125,21 @@ class TestSolum(base.TestCase):
             name=None,
             plan_uri='http://example.com/a.yaml')
 
+    @mock.patch.object(plan.PlanManager, "find")
+    @mock.patch.object(assembly.AssemblyManager, "create")
+    def test_assembly_create_with_plan_name(self, mock_assembly_create,
+                                            mock_app_find):
+        class FakePlan(object):
+            uri = 'http://example.com/the-plan.yaml'
+
+        self.make_env()
+        mock_app_find.return_value = FakePlan()
+        self.shell("assembly create the-plan-name --assembly=test")
+        mock_app_find.assert_called_once_with(name_or_id='the-plan-name')
+        mock_assembly_create.assert_called_once_with(
+            name='test',
+            plan_uri='http://example.com/the-plan.yaml')
+
     @mock.patch.object(assembly.AssemblyManager, "find")
     def test_assembly_delete(self, mock_assembly_find):
         self.make_env()
