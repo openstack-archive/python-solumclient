@@ -14,6 +14,7 @@
 
 from solumclient.common import base as solum_base
 from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common import uuidutils
 
 
 class Assembly(apiclient_base.Resource):
@@ -21,7 +22,7 @@ class Assembly(apiclient_base.Resource):
         return "<Assembly %s>" % self._info
 
 
-class AssemblyManager(solum_base.CrudManager):
+class AssemblyManager(solum_base.CrudManager, solum_base.FindMixin):
     resource_class = Assembly
     collection_key = 'assemblies'
     key = 'assembly'
@@ -40,3 +41,15 @@ class AssemblyManager(solum_base.CrudManager):
 
     def delete(self, **kwargs):
         return super(AssemblyManager, self).delete(base_url="/v1", **kwargs)
+
+    def find(self, **kwargs):
+        if 'assembly_id' in kwargs:
+            return super(AssemblyManager, self).get(base_url="/v1", **kwargs)
+        elif 'name_or_id' in kwargs:
+            name_or_uuid = kwargs['name_or_id']
+            if uuidutils.is_uuid_like(name_or_uuid):
+                return super(AssemblyManager, self).get(
+                    base_url="/v1",
+                    assembly_id=name_or_uuid)
+            else:
+                return super(AssemblyManager, self).findone(name=name_or_uuid)

@@ -79,16 +79,17 @@ class AppCommands(cli_utils.CommandsBase):
     def delete(self):
         """Delete an application."""
         self.parser.add_argument('plan_uuid',
-                                 help="Tenant/project-wide unique plan uuid")
+                                 help="Tenant/project-wide unique "
+                                 "plan uuid or name")
         args = self.parser.parse_args()
-        self.client.plans.delete(plan_id=args.plan_uuid)
+        self.client.plans.find(name_or_id=args.plan_uuid).delete()
 
     def show(self):
         """Show an application's resource."""
         self.parser.add_argument('plan_uuid',
-                                 help="Plan uuid")
+                                 help="Plan uuid or name")
         args = self.parser.parse_args()
-        response = self.client.plans.get(plan_id=args.plan_uuid)
+        response = self.client.plans.find(name_or_id=args.plan_uuid)
         fields = ['uuid', 'name', 'description', 'uri']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
@@ -122,9 +123,9 @@ class AssemblyCommands(cli_utils.CommandsBase):
     def delete(self):
         """Delete an assembly."""
         self.parser.add_argument('assembly_uuid',
-                                 help="Assembly uuid")
+                                 help="Assembly uuid or name")
         args = self.parser.parse_args()
-        self.client.assemblies.delete(assembly_id=args.assembly_uuid)
+        self.client.assemblies.find(name_or_id=args.assembly_uuid).delete()
 
     def list(self):
         """List all assemblies."""
@@ -135,9 +136,9 @@ class AssemblyCommands(cli_utils.CommandsBase):
     def show(self):
         """Show an assembly's resource."""
         self.parser.add_argument('assembly_uuid',
-                                 help="Assembly uuid")
+                                 help="Assembly uuid or name")
         args = self.parser.parse_args()
-        response = self.client.assemblies.get(assembly_id=args.assembly_uuid)
+        response = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri']
         data = dict([(f, getattr(response, f, ''))

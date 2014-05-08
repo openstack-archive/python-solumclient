@@ -15,6 +15,7 @@
 import json
 import re
 import sys
+import uuid
 
 import fixtures
 import mock
@@ -111,29 +112,40 @@ class TestSolum(base.TestCase):
     @mock.patch.object(assembly.AssemblyManager, "create")
     def test_assembly_create(self, mock_assembly_create):
         self.make_env()
-        self.shell("assembly create fake-plan-uri --assembly=test")
-        mock_assembly_create.assert_called_once_with(name='test',
-                                                     plan_uri='fake-plan-uri')
+        self.shell("assembly create http://example.com/a.yaml --assembly=test")
+        mock_assembly_create.assert_called_once_with(
+            name='test',
+            plan_uri='http://example.com/a.yaml')
 
     @mock.patch.object(assembly.AssemblyManager, "create")
     def test_assembly_create_without_name(self, mock_assembly_create):
         self.make_env()
-        self.shell("assembly create fake-plan-uri")
-        mock_assembly_create.assert_called_once_with(name=None,
-                                                     plan_uri='fake-plan-uri')
+        self.shell("assembly create http://example.com/a.yaml")
+        mock_assembly_create.assert_called_once_with(
+            name=None,
+            plan_uri='http://example.com/a.yaml')
 
-    @mock.patch.object(assembly.AssemblyManager, "delete")
-    def test_assembly_delete(self, mock_assembly_delete):
+    @mock.patch.object(assembly.AssemblyManager, "find")
+    def test_assembly_delete(self, mock_assembly_find):
         self.make_env()
-        self.shell("assembly delete fake-assembly-id")
-        mock_assembly_delete.assert_called_once_with(
-            assembly_id='fake-assembly-id')
+        the_id = str(uuid.uuid4())
+        self.shell("assembly delete %s" % the_id)
+        mock_assembly_find.assert_called_once_with(
+            name_or_id=the_id)
+        mock_assembly_find.return_value.delete.assert_called_once_with()
 
-    @mock.patch.object(assembly.AssemblyManager, "get")
-    def test_assembly_get(self, mock_assembly_get):
+    @mock.patch.object(assembly.AssemblyManager, "find")
+    def test_assembly_get(self, mock_assembly_find):
         self.make_env()
-        self.shell("assembly show test_uuid_1")
-        mock_assembly_get.assert_called_once_with(assembly_id='test_uuid_1')
+        the_id = str(uuid.uuid4())
+        self.shell("assembly show %s" % the_id)
+        mock_assembly_find.assert_called_once_with(name_or_id=the_id)
+
+    @mock.patch.object(assembly.AssemblyManager, "find")
+    def test_assembly_get_by_name(self, mock_assembly_find):
+        self.make_env()
+        self.shell("assembly show app2")
+        mock_assembly_find.assert_called_once_with(name_or_id='app2')
 
     # Plan Tests #
     @mock.patch.object(plan.PlanManager, "create")
@@ -148,17 +160,20 @@ class TestSolum(base.TestCase):
         self.shell("app list")
         mock_app_list.assert_called_once_with()
 
-    @mock.patch.object(plan.PlanManager, "delete")
-    def test_app_delete(self, mock_app_delete):
+    @mock.patch.object(plan.PlanManager, "find")
+    def test_app_delete(self, mock_app_find):
         self.make_env()
-        self.shell("app delete fake-id")
-        mock_app_delete.assert_called_once_with(plan_id='fake-id')
+        the_id = str(uuid.uuid4())
+        self.shell("app delete %s" % the_id)
+        mock_app_find.assert_called_once_with(name_or_id=the_id)
+        mock_app_find.return_value.delete.assert_called_once_with()
 
-    @mock.patch.object(plan.PlanManager, "get")
-    def test_app_get(self, mock_app_get):
+    @mock.patch.object(plan.PlanManager, "find")
+    def test_app_get(self, mock_app_find):
         self.make_env()
-        self.shell("app show fake-id")
-        mock_app_get.assert_called_once_with(plan_id='fake-id')
+        the_id = str(uuid.uuid4())
+        self.shell("app show %s" % the_id)
+        mock_app_find.assert_called_once_with(name_or_id=the_id)
 
     # LanguagePack Tests #
     @mock.patch.object(languagepack.LanguagePackManager, "list")

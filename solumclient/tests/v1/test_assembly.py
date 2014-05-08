@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
 from solumclient.v1 import assembly
@@ -121,6 +122,28 @@ class AssemblyManagerTest(base.TestCase):
         self.assertIn('Assembly', repr(assemblies[0]))
         self.assertEqual(assembly_list[0]['uri'], assemblies[0].uri)
         self.assertEqual(assembly_list[1]['uri'], assemblies[1].uri)
+
+    def test_find_one(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = sclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        assemblies = mgr.findall(name='database')
+        self.assertEqual(len(assemblies), 1)
+        self.assertIn('Assembly', repr(assemblies[0]))
+        self.assertEqual(assembly_list[0]['uri'], assemblies[0].uri)
+
+    def test_find_one_only(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = sclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        result = mgr.find(name_or_id='database')
+        self.assertEqual(assembly_list[0]['uri'], result.uri)
+
+    def test_find_none(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = sclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        self.assertRaises(exceptions.NotFound, mgr.find, name_or_id='what')
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)

@@ -16,6 +16,7 @@ import six
 
 from solumclient.common import base as solum_base
 from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common import uuidutils
 
 
 class Requirement(apiclient_base.Resource):
@@ -74,7 +75,7 @@ class Plan(apiclient_base.Resource):
                 pass
 
 
-class PlanManager(solum_base.CrudManager):
+class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
     resource_class = Plan
     collection_key = 'plans'
     key = 'plan'
@@ -93,6 +94,17 @@ class PlanManager(solum_base.CrudManager):
 
     def get(self, **kwargs):
         return super(PlanManager, self).get(base_url="/v1", **kwargs)
+
+    def find(self, **kwargs):
+        if 'plan_id' in kwargs:
+            return super(PlanManager, self).get(base_url="/v1", **kwargs)
+        elif 'name_or_id' in kwargs:
+            name_or_uuid = kwargs['name_or_id']
+            if uuidutils.is_uuid_like(name_or_uuid):
+                return super(PlanManager, self).get(base_url="/v1",
+                                                    plan_id=name_or_uuid)
+            else:
+                return super(PlanManager, self).findone(name=name_or_uuid)
 
     def put(self, plan, **kwargs):
         kwargs = self._filter_kwargs(kwargs)
