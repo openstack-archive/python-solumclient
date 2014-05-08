@@ -13,6 +13,7 @@
 # under the License.
 
 from solumclient.openstack.common.apiclient import base
+from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.py3kcompat import urlutils
 
 
@@ -90,6 +91,50 @@ class ManagerMixin():
 
 class BaseManager(ManagerMixin, base.BaseManager):
     pass
+
+
+class FindMixin():
+    """Just `findone()`/`findall()` methods.
+
+    Note: this is largely a copy of apiclient.base.ManagerWithFind
+          but without the inheritance and the find() method which
+          does not clash with the Manager find() - now called findone().
+    """
+
+    def findone(self, **kwargs):
+        """Find a single item with attributes matching ``**kwargs``.
+
+        This isn't very efficient: it loads the entire list then filters on
+        the Python side.
+        """
+        matches = self.findall(**kwargs)
+        num_matches = len(matches)
+        if num_matches == 0:
+            msg = "No %s matching %s." % (self.resource_class.__name__, kwargs)
+            raise exceptions.NotFound(msg)
+        elif num_matches > 1:
+            raise exceptions.NoUniqueMatch()
+        else:
+            return matches[0]
+
+    def findall(self, **kwargs):
+        """Find all items with attributes matching ``**kwargs``.
+
+        This isn't very efficient: it loads the entire list then filters on
+        the Python side.
+        """
+        found = []
+        searches = kwargs.items()
+
+        for obj in self.list():
+            try:
+                if all(getattr(obj, attr) == value
+                       for (attr, value) in searches):
+                    found.append(obj)
+            except AttributeError:
+                continue
+
+        return found
 
 
 class CrudManager(ManagerMixin, base.CrudManager):
