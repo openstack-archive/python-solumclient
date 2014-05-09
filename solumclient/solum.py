@@ -48,6 +48,8 @@ import yaml
 from solumclient.common import cli_utils
 from solumclient.openstack.common import cliutils
 from solumclient.openstack.common import strutils
+from solumclient.v1 import assembly as cli_assem
+from solumclient.v1 import plan as cli_plan
 
 
 class AppCommands(cli_utils.CommandsBase):
@@ -82,7 +84,8 @@ class AppCommands(cli_utils.CommandsBase):
                                  help="Tenant/project-wide unique "
                                  "plan uuid or name")
         args = self.parser.parse_args()
-        self.client.plans.find(name_or_id=args.plan_uuid).delete()
+        plan = self.client.plans.find(name_or_id=args.plan_uuid)
+        cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
     def show(self):
         """Show an application's resource."""
@@ -134,7 +137,9 @@ class AssemblyCommands(cli_utils.CommandsBase):
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid or name")
         args = self.parser.parse_args()
-        self.client.assemblies.find(name_or_id=args.assembly_uuid).delete()
+        assem = self.client.assemblies.find(name_or_id=args.assembly_uuid)
+        cli_assem.AssemblyManager(self.client).delete(assembly_id=
+                                                      str(assem.uuid))
 
     def list(self):
         """List all assemblies."""

@@ -140,14 +140,15 @@ class TestSolum(base.TestCase):
             name='test',
             plan_uri='http://example.com/the-plan.yaml')
 
+    @mock.patch.object(assembly.AssemblyManager, "delete")
     @mock.patch.object(assembly.AssemblyManager, "find")
-    def test_assembly_delete(self, mock_assembly_find):
+    def test_assembly_delete(self, mock_assembly_find, mock_assembly_delete):
         self.make_env()
         the_id = str(uuid.uuid4())
         self.shell("assembly delete %s" % the_id)
         mock_assembly_find.assert_called_once_with(
             name_or_id=the_id)
-        mock_assembly_find.return_value.delete.assert_called_once_with()
+        mock_assembly_delete.assert_called_once()
 
     @mock.patch.object(assembly.AssemblyManager, "find")
     def test_assembly_get(self, mock_assembly_find):
@@ -175,13 +176,14 @@ class TestSolum(base.TestCase):
         self.shell("app list")
         mock_app_list.assert_called_once_with()
 
+    @mock.patch.object(plan.PlanManager, "delete")
     @mock.patch.object(plan.PlanManager, "find")
-    def test_app_delete(self, mock_app_find):
+    def test_app_delete(self, mock_app_find, mock_app_delete):
         self.make_env()
         the_id = str(uuid.uuid4())
         self.shell("app delete %s" % the_id)
         mock_app_find.assert_called_once_with(name_or_id=the_id)
-        mock_app_find.return_value.delete.assert_called_once_with()
+        mock_app_delete.assert_called_once()
 
     @mock.patch.object(plan.PlanManager, "find")
     def test_app_get(self, mock_app_find):
