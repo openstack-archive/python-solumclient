@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
 import json
 import re
 import sys
@@ -179,27 +180,20 @@ class TestSolum(base.TestCase):
     @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(plan.PlanManager, "create")
     def test_app_create(self, mock_app_create, mock_print_dict):
-        def dict_equals(dicta, dictb):
-            unmatched_items = set(dicta) ^ set(dictb)
-            return len(unmatched_items) == 0
+        FakeResource = collections.namedtuple("FakeResource",
+                                              "uuid name description uri")
 
-        mock_app_create.return_value = dict(uuid='foo',
-                                            name='foo',
-                                            description='foo',
-                                            uri='foo')
+        mock_app_create.return_value = FakeResource('foo', 'foo', 'foo', 'foo')
+        expected_printed_dict_args = mock_app_create.return_value._asdict()
         plan_data = yaml.load(plan_file_data)
         mopen = mock.mock_open(read_data=plan_file_data)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
             self.shell("app create /dev/null")
-            mock_app_create.assert_called_once()
-            mock_print_dict.assert_called_once()
-            self.assertTrue(
-                dict_equals(mock_app_create.call_args[1], plan_data))
-            self.assertTrue(
-                dict_equals(
-                    mock_print_dict.call_args[0][0],
-                    mock_app_create.return_value))
+            mock_app_create.assert_called_once_with(**plan_data)
+            mock_print_dict.assert_called_once_with(
+                expected_printed_dict_args,
+                wrap=72)
 
     @mock.patch.object(plan.PlanManager, "list")
     def test_app_list(self, mock_app_list):
