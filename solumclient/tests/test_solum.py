@@ -16,6 +16,7 @@ import json
 import re
 import sys
 import uuid
+import yaml
 
 import fixtures
 import mock
@@ -24,6 +25,7 @@ from stevedore import extension
 from testtools import matchers
 
 from solumclient.openstack.common.apiclient import auth
+from solumclient.openstack.common import cliutils
 from solumclient import solum
 from solumclient.tests import base
 from solumclient.v1 import assembly
@@ -34,6 +36,16 @@ FAKE_ENV = {'OS_USERNAME': 'username',
             'OS_PASSWORD': 'password',
             'OS_TENANT_NAME': 'tenant_name',
             'OS_AUTH_URL': 'http://no.where'}
+
+plan_file_data = (
+    'name: ex1\n'
+    'description: Nodejs express.\n'
+    'artifacts:\n'
+    '- name: nodeus\n'
+    '  artifact_type: application.heroku\n'
+    '  content:\n'
+    '    href: https://github.com/paulczar/example-nodejs-express.git\n'
+    '  language_pack: auto')
 
 
 class MockEntrypoint(object):
@@ -164,11 +176,30 @@ class TestSolum(base.TestCase):
         mock_assembly_find.assert_called_once_with(name_or_id='app2')
 
     # Plan Tests #
+    @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(plan.PlanManager, "create")
-    def test_app_create(self, mock_app_create):
-        self.make_env()
-        self.shell("app create /dev/null")
-        mock_app_create.assert_called()
+    def test_app_create(self, mock_app_create, mock_print_dict):
+        def dict_equals(dicta, dictb):
+            unmatched_items = set(dicta) ^ set(dictb)
+            return len(unmatched_items) == 0
+
+        mock_app_create.return_value = dict(uuid='foo',
+                                            name='foo',
+                                            description='foo',
+                                            uri='foo')
+        plan_data = yaml.load(plan_file_data)
+        mopen = mock.mock_open(read_data=plan_file_data)
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            self.shell("app create /dev/null")
+            mock_app_create.assert_called_once()
+            mock_print_dict.assert_called_once()
+            self.assertTrue(
+                dict_equals(mock_app_create.call_args[1], plan_data))
+            self.assertTrue(
+                dict_equals(
+                    mock_print_dict.call_args[0][0],
+                    mock_app_create.return_value))
 
     @mock.patch.object(plan.PlanManager, "list")
     def test_app_list(self, mock_app_list):

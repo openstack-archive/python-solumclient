@@ -70,8 +70,7 @@ class AppCommands(cli_utils.CommandsBase):
             print("Error in plan file: %s", str(exc))
             sys.exit(1)
 
-        json_data = json.dumps(data)
-        plan = self.client.plans.create(json_data)
+        plan = self.client.plans.create(**data)
 
         fields = ['uuid', 'name', 'description', 'uri']
         data = dict([(f, getattr(plan, f, ''))

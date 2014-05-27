@@ -160,3 +160,11 @@ class CrudManager(ManagerMixin, base.CrudManager):
         kwargs = self._filter_kwargs(kwargs)
         return self._post(
             self.build_url(**kwargs), kwargs)
+
+    def update(self, **kwargs):
+        kwargs = self._filter_kwargs(kwargs)
+        params = kwargs.copy()
+        params.pop('%s_id' % self.key)
+
+        return self._put(
+            self.build_url(**kwargs), params)

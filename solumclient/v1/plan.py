@@ -83,14 +83,9 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
     def list(self, **kwargs):
         return super(PlanManager, self).list(base_url="/v1", **kwargs)
 
-    def create(self, plan, **kwargs):
-        kwargs = self._filter_kwargs(kwargs)
-        kwargs['data'] = plan
-        kwargs.setdefault("headers", kwargs.get("headers", {}))
-        kwargs['headers']['Content-Type'] = 'application/json'
-        body = self.client.post(self.build_url(base_url="/v1", **kwargs),
-                                **kwargs).json()
-        return self.resource_class(self, body)
+    def create(self, **kwargs):
+        return super(PlanManager,
+                     self).create(base_url="/v1", **kwargs)
 
     def get(self, **kwargs):
         return super(PlanManager, self).get(base_url="/v1", **kwargs)
@@ -106,14 +101,9 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
             else:
                 return super(PlanManager, self).findone(name=name_or_uuid)
 
-    def put(self, plan, **kwargs):
-        kwargs = self._filter_kwargs(kwargs)
-        kwargs['data'] = plan
-        kwargs.setdefault("headers", kwargs.get("headers", {}))
-        kwargs['headers']['Content-Type'] = 'application/json'
-        body = self.client.put(self.build_url(base_url="/v1", **kwargs),
-                               **kwargs).json()
-        return self.resource_class(self, body)
+    def update(self, **kwargs):
+        return super(PlanManager,
+                     self).update(base_url="/v1", **kwargs)
 
     def delete(self, **kwargs):
         return super(PlanManager, self).delete(base_url="/v1", **kwargs)
