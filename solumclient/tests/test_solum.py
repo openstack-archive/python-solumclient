@@ -48,6 +48,9 @@ plan_file_data = (
     '    href: https://github.com/paulczar/example-nodejs-express.git\n'
     '  language_pack: auto')
 
+languagepack_file_data = (
+    '{"language-pack-type":"Java", "language-pack-name":"Java version 1.4."}')
+
 
 class MockEntrypoint(object):
     def __init__(self, name, plugin):
@@ -224,16 +227,25 @@ class TestSolum(base.TestCase):
         self.shell("languagepack list")
         mock_lp_list.assert_called_once()
 
-    @mock.patch.object(json, "load")
+    @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(languagepack.LanguagePackManager, "create")
-    def test_languagepack_create(self, mock_lp_create, mock_json_load):
-        mock_json_load.side_effect = """{
-            "language-pack-type": "Java",
-            "language-pack-name": "Java version 1.4.",
-            }"""
-        self.make_env()
-        self.shell("languagepack create /dev/null")
-        mock_lp_create.assert_called_once()
+    def test_languagepack_create(self, mock_lp_create, mock_print_dict):
+        FakeResource = collections.namedtuple("FakeResource",
+                                              "uuid name description "
+                                              "compiler_versions os_platform")
+
+        mock_lp_create.return_value = FakeResource(
+            'foo', 'foo', 'foo', 'foo', 'foo')
+        expected_printed_dict_args = mock_lp_create.return_value._asdict()
+        lp_data = json.loads(languagepack_file_data)
+        mopen = mock.mock_open(read_data=languagepack_file_data)
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            self.shell("languagepack create /dev/null")
+            mock_lp_create.assert_called_once_with(**lp_data)
+            mock_print_dict.assert_called_once_with(
+                expected_printed_dict_args,
+                wrap=72)
 
     @mock.patch.object(languagepack.LanguagePackManager, "delete")
     def test_languagepack_delete(self, mock_lp_delete):

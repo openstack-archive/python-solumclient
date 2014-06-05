@@ -174,8 +174,7 @@ class LanguagePackCommands(cli_utils.CommandsBase):
                 print("Error in language pack file: %s", str(exc))
                 sys.exit(1)
 
-        json_data = json.dumps(data)
-        languagepack = self.client.languagepacks.create(json_data)
+        languagepack = self.client.languagepacks.create(**data)
         fields = ['uuid', 'name', 'description', 'compiler_versions',
                   'os_platform']
         data = dict([(f, getattr(languagepack, f, ''))
