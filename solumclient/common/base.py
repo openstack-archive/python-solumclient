@@ -12,9 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from six.moves.urllib import parse as urlparse
+
 from solumclient.openstack.common.apiclient import base
 from solumclient.openstack.common.apiclient import exceptions
-from solumclient.openstack.common.py3kcompat import urlutils
 
 
 class ManagerMixin():
@@ -148,7 +149,7 @@ class CrudManager(ManagerMixin, base.CrudManager):
         return self._list(
             '%(base_url)s%(query)s' % {
                 'base_url': self.build_url(base_url=base_url, **kwargs),
-                'query': '?%s' % urlutils.urlencode(kwargs) if kwargs else '',
+                'query': '?%s' % urlparse.urlencode(kwargs) if kwargs else '',
             })
 
     def get(self, **kwargs):
