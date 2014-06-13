@@ -27,6 +27,7 @@ Initial M1 Solum CLI commands implemented (but not REST communications):
 * languagepack list
 * languagepack show lp_id
 * languagepack delete lp_id
+* component list
 
 
 Notes:
@@ -150,6 +151,27 @@ class AssemblyCommands(cli_utils.CommandsBase):
         cliutils.print_dict(data, wrap=72)
 
 
+class ComponentCommands(cli_utils.CommandsBase):
+    """Component targets."""
+
+    def show(self):
+        """Show a component's resource."""
+        self.parser.add_argument('component_uuid',
+                                 help="Component uuid or name")
+        args = self.parser.parse_args()
+        response = self.client.components.find(name_or_id=args.component_uuid)
+        fields = ['uuid', 'name', 'description', 'uri', 'assembly_uuid']
+        data = dict([(f, getattr(response, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+    def list(self):
+        """List all components."""
+        fields = ['uuid', 'name', 'description', 'assembly_uuid']
+        response = self.client.components.list()
+        cliutils.print_list(response, fields)
+
+
 class LanguagePackCommands(cli_utils.CommandsBase):
     """Language Pack targets."""
 
@@ -208,7 +230,8 @@ def main():
     resources = {
         'app': AppCommands,
         'assembly': AssemblyCommands,
-        'languagepack': LanguagePackCommands
+        'languagepack': LanguagePackCommands,
+        'component': ComponentCommands
     }
 
     choices = resources.keys()

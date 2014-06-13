@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
 from solumclient.v1 import client as sclient
@@ -170,3 +171,25 @@ class ComponentManagerTest(base.TestCase):
                          '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
         self.assertEqual(component_obj.user_id,
                          '55f41cf46df74320b9486a35f5d28a11')
+
+    def test_find_one(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = sclient.Client(fake_http_client)
+        mgr = component.ComponentManager(api_client)
+        components = mgr.findall(name='php-web-app')
+        self.assertEqual(len(components), 1)
+        self.assertIn('Component', repr(components[0]))
+        self.assertEqual(component_list[0]['uri'], components[0].uri)
+
+    def test_find_one_only(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = sclient.Client(fake_http_client)
+        mgr = component.ComponentManager(api_client)
+        result = mgr.find(name_or_id='php-web-app')
+        self.assertEqual(component_list[0]['uri'], result.uri)
+
+    def test_find_none(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
+        api_client = sclient.Client(fake_http_client)
+        mgr = component.ComponentManager(api_client)
+        self.assertRaises(exceptions.NotFound, mgr.find, name_or_id='test')

@@ -14,6 +14,7 @@
 
 from solumclient.common import base as solum_base
 from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common import uuidutils
 
 
 class Component(apiclient_base.Resource):
@@ -21,7 +22,7 @@ class Component(apiclient_base.Resource):
         return "<Component %s>" % self._info
 
 
-class ComponentManager(solum_base.CrudManager):
+class ComponentManager(solum_base.CrudManager, solum_base.FindMixin):
     resource_class = Component
     collection_key = 'components'
     key = 'component'
@@ -37,3 +38,15 @@ class ComponentManager(solum_base.CrudManager):
 
     def put(self, **kwargs):
         return super(ComponentManager, self).put(base_url="/v1", **kwargs)
+
+    def find(self, **kwargs):
+        if 'component_id' in kwargs:
+            return super(ComponentManager, self).get(base_url="/v1", **kwargs)
+        elif 'name_or_id' in kwargs:
+            name_or_uuid = kwargs['name_or_id']
+            if uuidutils.is_uuid_like(name_or_uuid):
+                return super(ComponentManager, self).get(
+                    base_url="/v1",
+                    component_id=name_or_uuid)
+            else:
+                return super(ComponentManager, self).findone(name=name_or_uuid)

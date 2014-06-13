@@ -29,6 +29,7 @@ from solumclient.openstack.common import cliutils
 from solumclient import solum
 from solumclient.tests import base
 from solumclient.v1 import assembly
+from solumclient.v1 import component
 from solumclient.v1 import languagepack
 from solumclient.v1 import plan
 
@@ -257,3 +258,23 @@ class TestSolum(base.TestCase):
         self.make_env()
         self.shell("languagepack show fake-lp-id1")
         mock_lp_get.assert_called_once_with(lp_id='fake-lp-id1')
+
+    # Component Tests #
+    @mock.patch.object(component.ComponentManager, "list")
+    def test_component_list(self, mock_component_list):
+        self.make_env()
+        self.shell("component list")
+        mock_component_list.assert_called_once_with()
+
+    @mock.patch.object(component.ComponentManager, "find")
+    def test_component_get(self, mock_component_find):
+        self.make_env()
+        the_id = str(uuid.uuid4())
+        self.shell("component show %s" % the_id)
+        mock_component_find.assert_called_once_with(name_or_id=the_id)
+
+    @mock.patch.object(component.ComponentManager, "find")
+    def test_component_get_by_name(self, mock_component_find):
+        self.make_env()
+        self.shell("component show comp1")
+        mock_component_find.assert_called_once_with(name_or_id='comp1')
