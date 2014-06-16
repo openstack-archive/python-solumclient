@@ -137,8 +137,8 @@ class AssemblyCommands(cli_utils.CommandsBase):
                                  help="Assembly uuid or name")
         args = self.parser.parse_args()
         assem = self.client.assemblies.find(name_or_id=args.assembly_uuid)
-        cli_assem.AssemblyManager(self.client).delete(assembly_id=
-                                                      str(assem.uuid))
+        cli_assem.AssemblyManager(self.client).delete(
+            assembly_id=str(assem.uuid))
 
     def list(self):
         """List all assemblies."""

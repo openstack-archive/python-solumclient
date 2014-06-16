@@ -124,7 +124,7 @@ class CommandsBase(object):
 
     @property
     def _actions(self):
-        """Action handler"""
+        """Action handler."""
         return dict((attr, getattr(self, attr))
                     for attr in dir(self)
                     if not attr.startswith('_')

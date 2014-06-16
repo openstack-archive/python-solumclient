@@ -17,13 +17,13 @@ import json
 import re
 import sys
 import uuid
-import yaml
 
 import fixtures
 import mock
 import six
 from stevedore import extension
 from testtools import matchers
+import yaml
 
 from solumclient.openstack.common.apiclient import auth
 from solumclient.openstack.common import cliutils
