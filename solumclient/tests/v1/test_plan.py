@@ -20,10 +20,7 @@ from solumclient.v1 import plan
 
 plan_list = [
     {
-        'uri': 'http://example.com/v1/plans/p1',
         'name': 'Example plan 1',
-        'type': 'plan',
-        'tags': ['small'],
         'artifacts': (
             [{'name': 'My python app',
               'artifact_type': 'git_pull',
@@ -35,15 +32,10 @@ plan_list = [
         'services': [{'name': 'Build Service',
                       'id': 'build',
                       'characteristics': ['python_build_service']}],
-        'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-        'user_id': '55f41cf46df74320b9486a35f5d28a11',
         'description': 'A plan with no services or artifacts shown'
     },
     {
-        'uri': 'http://example.com/v1/plans/p2',
         'name': 'Example plan 2',
-        'type': 'plan',
-        'tags': ['small'],
         'artifacts': (
             [{'name': 'My java app',
               'artifact_type': 'git_pull',
@@ -55,8 +47,6 @@ plan_list = [
         'services': [{'name': 'Build Service',
                       'id': 'build',
                       'characteristics': ['python_build_service']}],
-        'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-        'user_id': '55f41cf46df74320b9486a35f5d28a11',
         'description': 'A plan with no services or artifacts shown'
     },
 ]
@@ -147,11 +137,16 @@ class PlanManagerTest(base.TestCase):
         mgr = plan.PlanManager(api_client)
         plans = mgr.list()
         self.assertEqual(2, len(plans))
-        self.assertIn('Plan', repr(plans[0]))
-        self.assertIn('Artifact', repr(plans[0].artifacts[0]))
-        self.assertIn('ServiceReference', repr(plans[0].services[0]))
-        self.assertEqual(plan_list[0]['uri'], plans[0].uri)
-        self.assertEqual(plan_list[1]['uri'], plans[1].uri)
+        self.assertEqual(plan_list[0]['name'], plans[0]['name'])
+        self.assertEqual(plan_list[1]['name'], plans[1]['name'])
+        self.assertEqual(plan_list[0]['artifacts'][0]['name'],
+                         plans[0]['artifacts'][0]['name'])
+        self.assertEqual(plan_list[1]['artifacts'][0]['name'],
+                         plans[1]['artifacts'][0]['name'])
+        self.assertEqual(plan_list[0]['services'][0]['name'],
+                         plans[0]['services'][0]['name'])
+        self.assertEqual(plan_list[1]['services'][0]['name'],
+                         plans[1]['services'][0]['name'])
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)

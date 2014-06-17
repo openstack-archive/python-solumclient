@@ -83,7 +83,17 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
     key = 'plan'
 
     def list(self, **kwargs):
-        return super(PlanManager, self).list(base_url="/v1", **kwargs)
+        kwargs = self._filter_kwargs(kwargs)
+        kwargs.setdefault("headers", kwargs.get("headers", {}))
+        kwargs['headers']['Content-Type'] = 'x-application/yaml'
+        resp = self.client.get(
+            self.build_url(base_url="/v1", **kwargs), **kwargs)
+        try:
+            resp_plan = yaml.load(resp.content)
+        except yaml.YAMLError:
+            raise exc.BaseException(message='Could not parse response '
+                                            'from Plan API resource.')
+        return resp_plan
 
     def create(self, plan, **kwargs):
         kwargs = self._filter_kwargs(kwargs)
