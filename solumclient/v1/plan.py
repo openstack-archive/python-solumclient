@@ -13,8 +13,10 @@
 # under the License.
 
 import six
+import yaml
 
 from solumclient.common import base as solum_base
+from solumclient.common import exc
 from solumclient.openstack.common.apiclient import base as apiclient_base
 from solumclient.openstack.common import uuidutils
 
@@ -83,9 +85,19 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
     def list(self, **kwargs):
         return super(PlanManager, self).list(base_url="/v1", **kwargs)
 
-    def create(self, **kwargs):
-        return super(PlanManager,
-                     self).create(base_url="/v1", **kwargs)
+    def create(self, plan, **kwargs):
+        kwargs = self._filter_kwargs(kwargs)
+        kwargs['data'] = plan
+        kwargs.setdefault("headers", kwargs.get("headers", {}))
+        kwargs['headers']['Content-Type'] = 'x-application/yaml'
+        resp = self.client.post(
+            self.build_url(base_url="/v1", **kwargs), **kwargs)
+        try:
+            resp_plan = yaml.load(resp.content)
+        except yaml.YAMLError:
+            raise exc.BaseException(message='Could not parse response '
+                                            'from Plan API resource.')
+        return self.resource_class(self, resp_plan)
 
     def get(self, **kwargs):
         return super(PlanManager, self).get(base_url="/v1", **kwargs)

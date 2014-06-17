@@ -157,7 +157,7 @@ class PlanManagerTest(base.TestCase):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
         api_client = sclient.Client(fake_http_client)
         mgr = plan.PlanManager(api_client)
-        plan_obj = mgr.create(**plan_fixture)
+        plan_obj = mgr.create('version: 1\nname: ex_plan1\ndescription: dsc1.')
         self.assert_plan_obj(plan_obj)
 
     def test_get(self):

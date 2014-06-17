@@ -43,7 +43,6 @@ import json
 import sys
 
 import six
-import yaml
 
 from solumclient.common import cli_utils
 from solumclient.openstack.common import cliutils
@@ -63,15 +62,7 @@ class AppCommands(cli_utils.CommandsBase):
         with open(args.plan_file) as definition_file:
             definition = definition_file.read()
 
-        # Convert yaml to json until we add yaml support in API layer.
-        try:
-            data = yaml.load(definition)
-        except yaml.YAMLError as exc:
-            print("Error in plan file: %s", str(exc))
-            sys.exit(1)
-
-        plan = self.client.plans.create(**data)
-
+        plan = self.client.plans.create(definition)
         fields = ['uuid', 'name', 'description', 'uri']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])

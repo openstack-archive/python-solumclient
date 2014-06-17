@@ -23,7 +23,6 @@ import mock
 import six
 from stevedore import extension
 from testtools import matchers
-import yaml
 
 from solumclient.openstack.common.apiclient import auth
 from solumclient.openstack.common import cliutils
@@ -188,12 +187,12 @@ class TestSolum(base.TestCase):
 
         mock_app_create.return_value = FakeResource('foo', 'foo', 'foo', 'foo')
         expected_printed_dict_args = mock_app_create.return_value._asdict()
-        plan_data = yaml.load(plan_file_data)
-        mopen = mock.mock_open(read_data=plan_file_data)
+        plan_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
+        mopen = mock.mock_open(read_data=plan_data)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
             self.shell("app create /dev/null")
-            mock_app_create.assert_called_once_with(**plan_data)
+            mock_app_create.assert_called_once_with(plan_data)
             mock_print_dict.assert_called_once_with(
                 expected_printed_dict_args,
                 wrap=72)
