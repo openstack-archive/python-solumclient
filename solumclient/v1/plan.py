@@ -13,10 +13,10 @@
 # under the License.
 
 import six
-import yaml
 
 from solumclient.common import base as solum_base
 from solumclient.common import exc
+from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import base as apiclient_base
 from solumclient.openstack.common import uuidutils
 
@@ -89,10 +89,10 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         resp = self.client.get(
             self.build_url(base_url="/v1", **kwargs), **kwargs)
         try:
-            resp_plan = yaml.load(resp.content)
-        except yaml.YAMLError:
-            raise exc.BaseException(message='Could not parse response '
-                                            'from Plan API resource.')
+            resp_plan = yamlutils.load(resp.content)
+        except ValueError as e:
+            raise exc.BaseException(message='Could not load Plan. '
+                                            'Reason: %s' % e.message)
         return resp_plan
 
     def create(self, plan, **kwargs):
@@ -103,10 +103,10 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         resp = self.client.post(
             self.build_url(base_url="/v1", **kwargs), **kwargs)
         try:
-            resp_plan = yaml.load(resp.content)
-        except yaml.YAMLError:
-            raise exc.BaseException(message='Could not parse response '
-                                            'from Plan API resource.')
+            resp_plan = yamlutils.load(resp.content)
+        except ValueError as e:
+            raise exc.BaseException(message='Could not load Plan. '
+                                            'Reason: %s' % e.message)
         return self.resource_class(self, resp_plan)
 
     def get(self, **kwargs):
@@ -131,10 +131,10 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         resp = self.client.put(self.build_url(base_url="/v1", **kwargs),
                                **kwargs)
         try:
-            resp_plan = yaml.load(resp.content)
-        except yaml.YAMLError:
-            raise exc.BaseException(message='Could not parse response '
-                                            'from Plan API resource.')
+            resp_plan = yamlutils.load(resp.content)
+        except ValueError as e:
+            raise exc.BaseException(message='Could not load Plan. '
+                                            'Reason: %s' % e.message)
         return self.resource_class(self, resp_plan)
 
     def delete(self, **kwargs):
