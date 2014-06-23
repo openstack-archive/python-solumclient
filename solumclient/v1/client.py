@@ -16,6 +16,7 @@ from solumclient.openstack.common.apiclient import client
 from solumclient.v1 import assembly
 from solumclient.v1 import component
 from solumclient.v1 import languagepack
+from solumclient.v1 import pipeline
 from solumclient.v1 import plan
 from solumclient.v1 import platform
 
@@ -30,6 +31,7 @@ class Client(client.BaseClient):
         super(Client, self).__init__(http_client, extensions)
         self.assemblies = assembly.AssemblyManager(self)
         self.components = component.ComponentManager(self)
+        self.pipelines = pipeline.PipelineManager(self)
         self.platform = platform.PlatformManager(self)
         self.plans = plan.PlanManager(self)
         self.languagepacks = languagepack.LanguagePackManager(self)

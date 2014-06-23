@@ -31,6 +31,7 @@ from solumclient.tests import base
 from solumclient.v1 import assembly
 from solumclient.v1 import component
 from solumclient.v1 import languagepack
+from solumclient.v1 import pipeline
 from solumclient.v1 import plan
 
 FAKE_ENV = {'OS_USERNAME': 'username',
@@ -77,7 +78,7 @@ class TestSolum(base.TestCase):
         self.useFixture(fixtures.MonkeyPatch('os.environ', env))
 
     @mock.patch.object(extension.ExtensionManager, "map")
-    def shell(self, argstr, mock_mgr_map):
+    def shell(self, argstr, mock_mgr_map, exit_code=0):
         class FakePlugin(BaseFakePlugin):
             def authenticate(self, cls):
                 cls.request(
@@ -97,7 +98,7 @@ class TestSolum(base.TestCase):
             solum.main()
         except SystemExit:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.assertEqual(0, exc_value.code)
+            self.assertEqual(exit_code, exc_value.code)
         finally:
             out = sys.stdout.getvalue()
             sys.stdout.close()
@@ -178,6 +179,67 @@ class TestSolum(base.TestCase):
         self.make_env()
         self.shell("assembly show app2")
         mock_assembly_find.assert_called_once_with(name_or_id='app2')
+
+    # Pipeline Tests #
+    @mock.patch.object(pipeline.PipelineManager, "list")
+    def test_pipeline_list(self, mock_pipeline_list):
+        self.make_env()
+        self.shell("pipeline list")
+        mock_pipeline_list.assert_called_once_with()
+
+    @mock.patch.object(pipeline.PipelineManager, "create")
+    def test_pipeline_create(self, mock_pipeline_create):
+        self.make_env()
+        self.shell("pipeline create http://example.com/a.yaml workbook test")
+        mock_pipeline_create.assert_called_once_with(
+            name='test',
+            workbook_name='workbook',
+            plan_uri='http://example.com/a.yaml')
+
+    @mock.patch.object(pipeline.PipelineManager, "create")
+    def test_pipeline_create_without_name(self, mock_pipeline_create):
+        self.make_env()
+        self.shell("pipeline create http://example.com/a.yaml workbook",
+                   exit_code=2)
+
+    @mock.patch.object(plan.PlanManager, "find")
+    @mock.patch.object(pipeline.PipelineManager, "create")
+    def test_pipeline_create_with_plan_name(self, mock_pipeline_create,
+                                            mock_app_find):
+        class FakePlan(object):
+            uri = 'http://example.com/the-plan.yaml'
+
+        self.make_env()
+        mock_app_find.return_value = FakePlan()
+        self.shell("pipeline create the-plan-name workbook test")
+        mock_app_find.assert_called_once_with(name_or_id='the-plan-name')
+        mock_pipeline_create.assert_called_once_with(
+            name='test',
+            workbook_name='workbook',
+            plan_uri='http://example.com/the-plan.yaml')
+
+    @mock.patch.object(pipeline.PipelineManager, "delete")
+    @mock.patch.object(pipeline.PipelineManager, "find")
+    def test_pipeline_delete(self, mock_pipeline_find, mock_pipeline_delete):
+        self.make_env()
+        the_id = str(uuid.uuid4())
+        self.shell("pipeline delete %s" % the_id)
+        mock_pipeline_find.assert_called_once_with(
+            name_or_id=the_id)
+        mock_pipeline_delete.assert_called_once()
+
+    @mock.patch.object(pipeline.PipelineManager, "find")
+    def test_pipeline_get(self, mock_pipeline_find):
+        self.make_env()
+        the_id = str(uuid.uuid4())
+        self.shell("pipeline show %s" % the_id)
+        mock_pipeline_find.assert_called_once_with(name_or_id=the_id)
+
+    @mock.patch.object(pipeline.PipelineManager, "find")
+    def test_pipeline_get_by_name(self, mock_pipeline_find):
+        self.make_env()
+        self.shell("pipeline show app2")
+        mock_pipeline_find.assert_called_once_with(name_or_id='app2')
 
     # Plan Tests #
     @mock.patch.object(cliutils, "print_dict")

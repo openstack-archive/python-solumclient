@@ -50,6 +50,7 @@ from solumclient.common import cli_utils
 from solumclient.openstack.common import cliutils
 from solumclient.openstack.common import strutils
 from solumclient.v1 import assembly as cli_assem
+from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
 
 
@@ -181,6 +182,65 @@ class ComponentCommands(cli_utils.CommandsBase):
         cliutils.print_list(response, fields)
 
 
+class PipelineCommands(cli_utils.CommandsBase):
+    """Pipeline targets."""
+
+    def create(self):
+        """Create a pipeline."""
+        self.parser.add_argument('plan_uri',
+                                 help="Tenant/project-wide unique "
+                                 "plan (uri/uuid or name)")
+        self.parser.add_argument('workbook_name',
+                                 help="Workbook name")
+        self.parser.add_argument('name',
+                                 help="Pipeline name")
+        args = self.parser.parse_args()
+        plan_uri = args.plan_uri
+        if '/' not in plan_uri:
+            # might be a plan uuid/name
+            # let's try and be helpful and get the real plan_uri.
+            plan = self.client.plans.find(name_or_id=args.plan_uri)
+            plan_uri = plan.uri
+            print('Note: using plan_uri=%s' % plan_uri)
+
+        pipeline = self.client.pipelines.create(
+            name=args.name,
+            plan_uri=plan_uri,
+            workbook_name=args.workbook_name)
+        fields = ['uuid', 'name', 'description',
+                  'trigger_uri']
+        data = dict([(f, getattr(pipeline, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+    def delete(self):
+        """Delete an pipeline."""
+        self.parser.add_argument('pipeline_uuid',
+                                 help="Pipeline uuid or name")
+        args = self.parser.parse_args()
+        pipeline = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
+        cli_pipe.PipelineManager(self.client).delete(
+            pipeline_id=str(pipeline.uuid))
+
+    def list(self):
+        """List all pipelines."""
+        fields = ['uuid', 'name', 'description']
+        response = self.client.pipelines.list()
+        cliutils.print_list(response, fields)
+
+    def show(self):
+        """Show a pipeline's resource."""
+        self.parser.add_argument('pipeline_uuid',
+                                 help="Pipeline uuid or name")
+        args = self.parser.parse_args()
+        response = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
+        fields = ['uuid', 'name', 'description',
+                  'trigger_uri']
+        data = dict([(f, getattr(response, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+
 class LanguagePackCommands(cli_utils.CommandsBase):
     """Language Pack targets."""
 
@@ -239,6 +299,7 @@ def main():
     resources = {
         'app': AppCommands,
         'assembly': AssemblyCommands,
+        'pipeline': PipelineCommands,
         'languagepack': LanguagePackCommands,
         'component': ComponentCommands
     }
