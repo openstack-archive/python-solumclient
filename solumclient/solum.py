@@ -115,6 +115,8 @@ class AssemblyCommands(cli_utils.CommandsBase):
                                  "plan (uri/uuid or name)")
         self.parser.add_argument('--assembly',
                                  help="Assembly name")
+        self.parser.add_argument('--description',
+                                 help="Assembly description")
         args = self.parser.parse_args()
         plan_uri = args.plan_uri
         if '/' not in plan_uri:
@@ -125,6 +127,7 @@ class AssemblyCommands(cli_utils.CommandsBase):
             print('Note: using plan_uri=%s' % plan_uri)
 
         assembly = self.client.assemblies.create(name=args.assembly,
+                                                 description=args.description,
                                                  plan_uri=plan_uri)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri']
