@@ -90,6 +90,15 @@ fixtures_list = {
     }
 }
 
+fixtures_list_empty = {
+    '/v1/plans': {
+        'GET': (
+            {},
+            []
+        ),
+    }
+}
+
 
 fixtures_get = {
     '/v1/plans/p1': {
@@ -140,6 +149,13 @@ class PlanManagerTest(base.TestCase):
         # FakeHTTPClient doesn't manage YAML properly but since this method
         # will use the json content-type once implemented in the API, this can
         # stay temporary disabled.
+
+    def test_list_empty(self):
+        fake_http_client = fake_client.FakeHTTPClient(
+            fixtures=fixtures_list_empty)
+        api_client = sclient.Client(fake_http_client)
+        mgr = plan.PlanManager(api_client)
+        self.assertEqual([], mgr.list())
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
