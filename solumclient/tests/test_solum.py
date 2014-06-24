@@ -132,6 +132,7 @@ class TestSolum(base.TestCase):
         self.shell("assembly create http://example.com/a.yaml --assembly=test")
         mock_assembly_create.assert_called_once_with(
             name='test',
+            description=None,
             plan_uri='http://example.com/a.yaml')
 
     @mock.patch.object(assembly.AssemblyManager, "create")
@@ -140,6 +141,7 @@ class TestSolum(base.TestCase):
         self.shell("assembly create http://example.com/a.yaml")
         mock_assembly_create.assert_called_once_with(
             name=None,
+            description=None,
             plan_uri='http://example.com/a.yaml')
 
     @mock.patch.object(plan.PlanManager, "find")
@@ -155,7 +157,27 @@ class TestSolum(base.TestCase):
         mock_app_find.assert_called_once_with(name_or_id='the-plan-name')
         mock_assembly_create.assert_called_once_with(
             name='test',
+            description=None,
             plan_uri='http://example.com/the-plan.yaml')
+
+    @mock.patch.object(assembly.AssemblyManager, "create")
+    def test_assembly_create_with_description(self, mock_assembly_create):
+        self.make_env()
+        self.shell("""assembly create http://example.com/a.yaml --assembly=test
+                  --description=description""")
+        mock_assembly_create.assert_called_once_with(
+            name='test',
+            description='description',
+            plan_uri='http://example.com/a.yaml')
+
+    @mock.patch.object(assembly.AssemblyManager, "create")
+    def test_assembly_create_without_description(self, mock_assembly_create):
+        self.make_env()
+        self.shell("assembly create http://example.com/a.yaml --assembly=test")
+        mock_assembly_create.assert_called_once_with(
+            name='test',
+            description=None,
+            plan_uri='http://example.com/a.yaml')
 
     @mock.patch.object(assembly.AssemblyManager, "delete")
     @mock.patch.object(assembly.AssemblyManager, "find")
