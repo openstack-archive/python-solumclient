@@ -19,7 +19,7 @@ Initial M1 Solum CLI commands implemented (but not REST communications):
 * app delete plan_name
 * app list
 * app show plan_id
-* assembly create [--assembly="assembly_name"] plan_name
+* assembly create assembly_name plan_name
 * assembly delete assembly_name
 * assembly list
 * assembly show assembly_id
@@ -111,14 +111,15 @@ class AssemblyCommands(cli_utils.CommandsBase):
 
     def create(self):
         """Create an assembly."""
+        self.parser.add_argument('name',
+                                 help="Assembly name")
         self.parser.add_argument('plan_uri',
                                  help="Tenant/project-wide unique "
                                  "plan (uri/uuid or name)")
-        self.parser.add_argument('--assembly',
-                                 help="Assembly name")
         self.parser.add_argument('--description',
                                  help="Assembly description")
         args = self.parser.parse_args()
+        name = args.name
         plan_uri = args.plan_uri
         if '/' not in plan_uri:
             # might be a plan uuid/name
@@ -127,7 +128,7 @@ class AssemblyCommands(cli_utils.CommandsBase):
             plan_uri = plan.uri
             print('Note: using plan_uri=%s' % plan_uri)
 
-        assembly = self.client.assemblies.create(name=args.assembly,
+        assembly = self.client.assemblies.create(name=name,
                                                  description=args.description,
                                                  plan_uri=plan_uri)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
