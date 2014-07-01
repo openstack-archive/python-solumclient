@@ -43,7 +43,6 @@ import argparse
 import json
 import sys
 
-import prettytable
 import six
 
 from solumclient.common import cli_utils
@@ -95,15 +94,7 @@ class AppCommands(cli_utils.CommandsBase):
         """List all applications."""
         fields = ['uuid', 'name', 'description']
         response = self.client.plans.list()
-        pt = prettytable.PrettyTable(fields, caching=False)
-        pt.align = 'l'
-
-        for pl in response:
-            row = []
-            for f in fields:
-                row.append(pl.get(f, ''))
-            pt.add_row(row)
-        print(strutils.safe_encode(pt.get_string()))
+        cliutils.print_list(response, fields)
 
 
 class AssemblyCommands(cli_utils.CommandsBase):

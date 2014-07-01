@@ -93,7 +93,7 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         except ValueError as e:
             raise exc.BaseException(message='Could not load Plan. '
                                             'Reason: %s' % e.message)
-        return resp_plan
+        return [Plan(self, res, loaded=True) for res in resp_plan if res]
 
     def create(self, plan, **kwargs):
         kwargs = self._filter_kwargs(kwargs)
@@ -107,7 +107,19 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         except ValueError as e:
             raise exc.BaseException(message='Could not load Plan. '
                                             'Reason: %s' % e.message)
-        return self.resource_class(self, resp_plan)
+        return Plan(self, resp_plan)
+
+    def _get(self, url, response_key=None):
+        kwargs = {'headers': {}}
+        kwargs['headers']['Content-Type'] = 'x-application/yaml'
+        resp = self.client.get(url, **kwargs)
+        try:
+            resp_plan = yamlutils.load(resp.content)
+        except ValueError as e:
+            raise exc.BaseException(message='Could not load Plan. '
+                                            'Reason: %s' % e.message)
+
+        return Plan(self, resp_plan, loaded=True)
 
     def get(self, **kwargs):
         return super(PlanManager, self).get(base_url="/v1", **kwargs)
