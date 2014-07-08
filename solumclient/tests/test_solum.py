@@ -39,16 +39,6 @@ FAKE_ENV = {'OS_USERNAME': 'username',
             'OS_TENANT_NAME': 'tenant_name',
             'OS_AUTH_URL': 'http://no.where'}
 
-plan_file_data = (
-    'name: ex1\n'
-    'description: Nodejs express.\n'
-    'artifacts:\n'
-    '- name: nodeus\n'
-    '  artifact_type: application.heroku\n'
-    '  content:\n'
-    '    href: https://github.com/paulczar/example-nodejs-express.git\n'
-    '  language_pack: auto')
-
 languagepack_file_data = (
     '{"language-pack-type":"Java", "language-pack-name":"Java version 1.4."}')
 
@@ -279,6 +269,32 @@ class TestSolum(base.TestCase):
                 expected_printed_dict_args,
                 wrap=72)
 
+    @mock.patch.object(cliutils, "print_dict")
+    @mock.patch.object(solum.AppCommands, "_show_public_keys")
+    @mock.patch.object(plan.PlanManager, "create")
+    def test_app_create_with_private_github_repo(self, mock_app_create,
+                                                 mock_show_pub_keys,
+                                                 mock_print_dict):
+        FakeResource = collections.namedtuple(
+            "FakeResource", "uuid name description uri artifacts")
+
+        mock_app_create.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
+                                                    'artifacts')
+        expected_printed_dict_args = mock_app_create.return_value._asdict()
+        expected_printed_dict_args.pop('artifacts')
+        expected_show_pub_keys_args = 'artifacts'
+        plan_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
+        mopen = mock.mock_open(read_data=plan_data)
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            self.shell("app create /dev/null")
+            mock_app_create.assert_called_once_with(plan_data)
+            mock_print_dict.assert_called_once_with(
+                expected_printed_dict_args,
+                wrap=72)
+            mock_show_pub_keys.assert_called_once_with(
+                expected_show_pub_keys_args)
+
     @mock.patch.object(plan.PlanManager, "list")
     def test_app_list(self, mock_app_list):
         self.make_env()
@@ -300,6 +316,22 @@ class TestSolum(base.TestCase):
         the_id = str(uuid.uuid4())
         self.shell("app show %s" % the_id)
         mock_app_find.assert_called_once_with(name_or_id=the_id)
+
+    @mock.patch.object(solum.AppCommands, "_show_public_keys")
+    @mock.patch.object(plan.PlanManager, "find")
+    def test_app_get_private_github_repo(self, mock_app_find,
+                                         mock_show_pub_keys):
+        self.make_env()
+        the_id = str(uuid.uuid4())
+        FakeResource = collections.namedtuple(
+            "FakeResource", "uuid name description uri artifacts")
+        mock_app_find.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
+                                                  'artifacts')
+        expected_show_pub_keys_args = 'artifacts'
+        self.shell("app show %s" % the_id)
+        mock_app_find.assert_called_once_with(name_or_id=the_id)
+        mock_show_pub_keys.assert_called_once_with(
+            expected_show_pub_keys_args)
 
     # LanguagePack Tests #
     @mock.patch.object(languagepack.LanguagePackManager, "list")

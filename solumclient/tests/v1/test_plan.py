@@ -75,12 +75,6 @@ plan_fixture = {
     'description': 'A plan with no services or artifacts shown'
 }
 
-plan_file_fixture = (
-    '{"artifacts": [{"artifact_type": "application.heroku", '
-    '"content": {"href": "http://github.com/some/project"}, '
-    '"name": "My Python App", "language-pack": "language-pack-id"}], '
-    '"name": "My Python App"}')
-
 fixtures_list = {
     '/v1/plans': {
         'GET': (

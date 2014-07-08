@@ -115,7 +115,6 @@ fixtures_put = {
 class ComponentManagerTest(base.TestCase):
 
     def test_list_all(self):
-        super(ComponentManagerTest, self).setUp()
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
         api_client = sclient.Client(fake_http_client)
         self.mgr = component.ComponentManager(api_client)
