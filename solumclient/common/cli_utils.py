@@ -17,6 +17,7 @@ import os
 
 from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
 
+from solumclient.builder import client as builder_client
 from solumclient import client as solum_client
 from solumclient.common import exc
 from solumclient.openstack.common.apiclient import exceptions
@@ -104,8 +105,13 @@ class CommandsBase(object):
             client_args['endpoint'] = client_args['solum_url']
 
         del client_args['solum_url']
-        self.client = solum_client.get_client(parsed.solum_api_version,
-                                              **client_args)
+
+        if client_args['action'] == 'build':
+            self.client = builder_client.get_client(parsed.solum_api_version,
+                                                    **client_args)
+        else:
+            self.client = solum_client.get_client(parsed.solum_api_version,
+                                                  **client_args)
 
         if action in self._actions:
             try:

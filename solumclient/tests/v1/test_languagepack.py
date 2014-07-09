@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.builder.v1 import image
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
 from solumclient.v1 import client as sclient
@@ -92,6 +93,20 @@ fixtures_create = {
     }
 }
 
+image_fixture = {
+    'name': 'lp1',
+    'source_uri': 'github.com/test'
+}
+
+fixtures_build = {
+    '/v1/images': {
+        'POST': (
+            {},
+            image_fixture
+        ),
+    }
+}
+
 
 class LanguagePackManagerTest(base.TestCase):
 
@@ -128,3 +143,15 @@ class LanguagePackManagerTest(base.TestCase):
         mgr = languagepack.LanguagePackManager(api_client)
         languagepack_obj = mgr.get(lp_id='x1')
         self.assert_lp_object(languagepack_obj)
+
+    def test_build(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_build)
+        api_client = sclient.Client(fake_http_client)
+        mgr = image.ImageManager(api_client)
+        image_obj = mgr.create(name='lp1', source_uri='github.com/test')
+        self.assert_image_object(image_obj)
+
+    def assert_image_object(self, image_obj):
+        self.assertIn('Image', repr(image_obj))
+        self.assertEqual(image_fixture['source_uri'], image_obj.source_uri)
+        self.assertEqual(image_fixture['name'], image_obj.name)

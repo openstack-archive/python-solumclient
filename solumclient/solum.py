@@ -284,6 +284,21 @@ class LanguagePackCommands(cli_utils.CommandsBase):
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
 
+    def build(self):
+        """Build a custom language pack."""
+        self.parser.add_argument('name',
+                                 help="Language pack name.")
+        self.parser.add_argument('git_url',
+                                 help=("Github url of custom "
+                                       "language pack repository."))
+        args = self.parser.parse_args()
+        response = self.client.images.create(name=args.name,
+                                             source_uri=args.git_url)
+        fields = ['uuid', 'name']
+        data = dict([(f, getattr(response, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
 
 def main():
     """Basically the entry point."""
