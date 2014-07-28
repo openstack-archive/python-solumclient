@@ -230,7 +230,7 @@ class PipelineCommands(cli_utils.CommandsBase):
         args = self.parser.parse_args()
         response = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
         fields = ['uuid', 'name', 'description',
-                  'trigger_uri']
+                  'trigger_uri', 'workbook_name', 'last_execution']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
