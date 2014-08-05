@@ -18,6 +18,7 @@ from solumclient.common import base as solum_base
 from solumclient.common import exc
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common.apiclient import exceptions as api_exc
 from solumclient.openstack.common import uuidutils
 
 
@@ -150,4 +151,12 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         return self.resource_class(self, resp_plan)
 
     def delete(self, **kwargs):
-        return super(PlanManager, self).delete(base_url="/v1", **kwargs)
+        try:
+            return super(PlanManager, self).delete(base_url="/v1", **kwargs)
+        except api_exc.InternalServerError as e:
+            message = "Could not delete Plan. Reason: %s"
+            reason = e.message
+            if "IntegrityError" in e.message:
+                reason = ("One or more dependent Assemblies must be deleted "
+                          "first.")
+            raise exc.BaseException(message=message % reason)
