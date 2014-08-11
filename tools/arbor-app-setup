@@ -27,6 +27,8 @@ import tempfile
 import yaml
 
 
+PUBLIC_HOSTNAME = 'https://test-api.labs.rs-paas.com'
+
 CREDENTIALS = {}
 
 
@@ -63,6 +65,19 @@ def _get_token(user_org_name, repo):
     else:
         print 'Failed to get token from Github'
         exit(1)
+
+
+def _filter_trigger_url(url):
+    filtered_url = url
+    url_pattern = re.compile(r'^(http|https)://'
+                             r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(/|:\d+/)'
+                             r'(.+)')
+    match = url_pattern.search(url)
+    if match:
+        filtered_url = '/'.join([PUBLIC_HOSTNAME, match.group(4)])
+    else:
+        print 'Cannot filter trigger url, to use the original one'
+    return filtered_url
 
 
 def get_planfile(plan_templ):
@@ -138,7 +153,6 @@ def create_webhook(trigger_uri):
         github_url = 'https://api.github.com/repos/%s/hooks' % repo
         headers = {'Authorization': 'Basic ' + auth,
                    'Content-Type': 'application/json'}
-        #TODO(james): change the IP in trigger_url to be a public host name
         data = {'name': 'web',
                 'events': ['pull_request', 'push'],
                 'config': {'content_type': 'json',
@@ -166,7 +180,7 @@ def main(app, plan_templ):
         print 'Cannot remove %s. Skip and move forward...' % plan_file
 
     trigger_uri = create_assembly(app, plan_uri)
-    create_webhook(trigger_uri)
+    create_webhook(_filter_trigger_url(trigger_uri))
     print 'Successfully created Arbor plan, assembly and webhooks!'
 
 
