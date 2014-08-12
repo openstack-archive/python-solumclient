@@ -69,12 +69,13 @@ def _get_token(user_org_name, repo):
 
 def _filter_trigger_url(url):
     filtered_url = url
-    url_pattern = re.compile(r'^(http|https)://'
-                             r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(/|:\d+/)'
-                             r'(.+)')
+    url_pattern = re.compile(r'^(http://)(.+)')
+    #url_pattern = re.compile(r'^(http|https)://'
+    #                         r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(/|:\d+/)'
+    #                         r'(.+)')
     match = url_pattern.search(url)
     if match:
-        filtered_url = '/'.join([PUBLIC_HOSTNAME, match.group(4)])
+        filtered_url = ''.join(['https://', match.group(2)])
     else:
         print 'Cannot filter trigger url, to use the original one'
     return filtered_url
@@ -109,13 +110,19 @@ def create_plan(plan_file):
     print out
 
     plan_uri = None
+    plan_uri_p2 = None
     for line in out.split('\n'):
         if 'uri' in line:
             plan_uri = line.split()[3]
+        if len(line.split())  == 4:
+            plan_uri_p2 = line.split()[2]
 
     if plan_uri is None:
         print 'Error: no uri found in plan creation'
         exit(1)
+
+    if plan_uri_p2:
+        plan_uri = ''.join([plan_uri, plan_uri_p2])
 
     return plan_uri
 
@@ -154,7 +161,8 @@ def create_webhook(trigger_uri):
         headers = {'Authorization': 'Basic ' + auth,
                    'Content-Type': 'application/json'}
         data = {'name': 'web',
-                'events': ['pull_request', 'push'],
+                #'events': ['pull_request', 'push'],
+                'events': ['pull_request'],
                 'config': {'content_type': 'json',
                            'url': trigger_uri}}
 
@@ -174,10 +182,10 @@ def main(app, plan_templ):
     print "************************* Starting setup *************************"
     print '\n'
     plan_uri = create_plan(plan_file)
-    try:
-        os.remove(plan_file)
-    except OSError:
-        print 'Cannot remove %s. Skip and move forward...' % plan_file
+    #try:
+    #    os.remove(plan_file)
+    #except OSError:
+    #    print 'Cannot remove %s. Skip and move forward...' % plan_file
 
     trigger_uri = create_assembly(app, plan_uri)
     create_webhook(_filter_trigger_url(trigger_uri))
