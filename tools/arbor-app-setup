@@ -83,7 +83,7 @@ def _filter_trigger_url(url):
 
 def get_planfile(plan_templ):
     # Create a Github token and insert it into plan file
-    repo_pattern = re.compile(r'github\.com/(.+?)/(.+?)($|/$|\.git$|\.git/$)')
+    repo_pattern = re.compile(r'github\.com[:/](.+?)/(.+?)($|/$|\.git$|\.git/$)')
     with open(plan_templ, 'r') as f:
         plan_dict = yaml.load(f)
         for arti in plan_dict['artifacts']:
