@@ -32,19 +32,30 @@ PUBLIC_HOSTNAME = 'https://test-api.labs.rs-paas.com'
 CREDENTIALS = {}
 
 
-def _get_token(user_org_name, repo):
+def _get_token(git_url):
     # Get an OAuth token with the scope of 'repo:status' for the user
+    if git_url in CREDENTIALS and 'token' in CREDENTIALS[git_url]:
+        return CREDENTIALS[git_url]['token']
+
+    repo_pat = re.compile(r'github\.com[:/](.+?)/(.+?)($|/$|\.git$|\.git/$)')
+    match  = repo_pat.search(git_url)
+    if match:
+        user_org_name = match.group(1)
+        repo = match.group(2)
+    else:
+        print 'Failed parsing %s' % git_url
+        exit(1)
+
     full_repo_name = '/'.join([user_org_name, repo])
-    if full_repo_name in CREDENTIALS and 'token' in CREDENTIALS[full_repo_name]:
-        return CREDENTIALS[full_repo_name]['token']
     username = raw_input("Username for repo '%s' [%s]: " % (full_repo_name,
                                                             user_org_name))
     if not username:
         username = user_org_name
     password = getpass.getpass("Password: ")
-    CREDENTIALS[full_repo_name] = {}
-    CREDENTIALS[full_repo_name]['user'] = username
-    CREDENTIALS[full_repo_name]['password'] = password
+    CREDENTIALS[git_url] = {}
+    CREDENTIALS[git_url]['user'] = username
+    CREDENTIALS[git_url]['password'] = password
+    CREDENTIALS[git_url]['full_repo'] = full_repo_name
 
     http = httplib2.Http()
     auth = base64.encodestring(username + ':' + password)
@@ -60,8 +71,8 @@ def _get_token(user_org_name, repo):
 
     if resp['status'] == '201' or resp['status'] == '200':
         content_dict = json.loads(content)
-        CREDENTIALS[full_repo_name]['token'] = str(content_dict['token'])
-        return CREDENTIALS[full_repo_name]['token']
+        CREDENTIALS[git_url]['token'] = str(content_dict['token'])
+        return CREDENTIALS[git_url]['token']
     else:
         print 'Failed to get token from Github'
         exit(1)
@@ -83,17 +94,10 @@ def _filter_trigger_url(url):
 
 def get_planfile(plan_templ):
     # Create a Github token and insert it into plan file
-    repo_pattern = re.compile(r'github\.com[:/](.+?)/(.+?)($|/$|\.git$|\.git/$)')
     with open(plan_templ, 'r') as f:
         plan_dict = yaml.load(f)
         for arti in plan_dict['artifacts']:
-            repo_uri = arti['content']['href']
-            match = repo_pattern.search(repo_uri)
-            if match:
-                arti['status_token'] = _get_token(match.group(1), match.group(2))
-            else:
-                print 'Failed parsing %s' % repo_uri
-                exit(1)
+            arti['status_token'] = _get_token(arti['content']['href'])
         plan_file = tempfile.NamedTemporaryFile(suffix='.yaml',
                                                     prefix='arbor_',
                                                     delete=False)
@@ -109,9 +113,17 @@ def create_plan(plan_file):
     out = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
     print out
 
+    key_pat = re.compile(r'(.+?)( +)<PUBLIC_KEY>( +)(ssh-rsa.+)')
     plan_uri = None
     plan_uri_p2 = None
     for line in out.split('\n'):
+        if not line.startswith('|'):
+            match = key_pat.search(line)
+            if match:
+                git_url = match.group(1)
+                pub_key = match.group(4)
+                if git_url in CREDENTIALS:
+                    CREDENTIALS[git_url]['pub_key'] = pub_key
         if 'uri' in line:
             plan_uri = line.split()[3]
         if len(line.split())  == 4:
@@ -136,6 +148,8 @@ def create_assembly(app_name, plan_uri):
     trigger_uri = None
     trigger_uri_p2 = None
     for line in out.split('\n'):
+        if not line.startswith('|'):
+            continue
         if 'trigger_uri' in line:
             trigger_uri = line.split()[3]
         if len(line.split()) == 4:
@@ -152,12 +166,13 @@ def create_assembly(app_name, plan_uri):
 
 def create_webhook(trigger_uri):
     # Create github web hooks for pull requests
-    for repo in CREDENTIALS.keys():
-        user = CREDENTIALS[repo]['user']
-        password = CREDENTIALS[repo]['password']
+    for key in CREDENTIALS.keys():
+        user = CREDENTIALS[key]['user']
+        password = CREDENTIALS[key]['password']
         auth = base64.encodestring(user + ':' + password)
         http = httplib2.Http()
-        github_url = 'https://api.github.com/repos/%s/hooks' % repo
+        github_url = ('https://api.github.com/repos/%s/hooks' %
+                      CREDENTIALS[key]['full_repo'])
         headers = {'Authorization': 'Basic ' + auth,
                    'Content-Type': 'application/json'}
         data = {'name': 'web',
@@ -172,8 +187,34 @@ def create_webhook(trigger_uri):
 
         if resp['status'] != '201' and resp['status'] != '200':
             print "Failed to create web hooks"
-            print "Make sure you have access to repo '%s'" % repo
+            print "Make sure you have access to repo '%s'" % key
             exit(1)
+
+
+def add_deploy_keys():
+    # add deploy keys for private repos
+    for key in CREDENTIALS.keys():
+        if ('pub_key' in CREDENTIALS[key] and
+                    CREDENTIALS[key]['pub_key'] is not None):
+            user = CREDENTIALS[key]['user']
+            password = CREDENTIALS[key]['password']
+            auth = base64.encodestring(user + ':' + password)
+            http = httplib2.Http()
+            github_url = ('https://api.github.com/repos/%s/keys' %
+                          CREDENTIALS[key]['full_repo'])
+            headers = {'Authorization': 'Basic ' + auth,
+                       'Content-Type': 'application/json'}
+            data = {'title': 'devops@Arbor',
+                    'key': CREDENTIALS[key]['pub_key']}
+
+            resp, _ = http.request(github_url, 'POST',
+                                         headers=headers,
+                                         body=json.dumps(data))
+
+            if resp['status'] != '201' and resp['status'] != '200':
+                print "Failed to add a deploy key"
+                print "Make sure you have access to repo '%s'" % key
+                exit(1)
 
 
 def main(app, plan_templ):
@@ -189,6 +230,7 @@ def main(app, plan_templ):
 
     trigger_uri = create_assembly(app, plan_uri)
     create_webhook(_filter_trigger_url(trigger_uri))
+    add_deploy_keys()
     print 'Successfully created Arbor plan, assembly and webhooks!'
 
 
