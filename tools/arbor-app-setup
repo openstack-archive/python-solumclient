@@ -224,6 +224,7 @@ def main(app, plan_templ):
     print "************************* Starting setup *************************"
     print '\n'
     plan_uri = create_plan(plan_file)
+    add_deploy_keys()
     #try:
     #    os.remove(plan_file)
     #except OSError:
@@ -231,7 +232,6 @@ def main(app, plan_templ):
 
     trigger_uri = create_assembly(app, plan_uri)
     create_webhook(_filter_trigger_url(trigger_uri))
-    add_deploy_keys()
     print 'Successfully created Arbor plan, assembly and webhooks!'
 
 
