@@ -121,7 +121,7 @@ class AppCommands(cli_utils.CommandsBase):
                   'https://developer.github.com/guides/' +
                   'managing-deploy-keys/#deploy-keys\n')
             for href, pub_key in public_keys.items():
-                print('%s :\n%s' % (href, pub_key))
+                print('%s <PUBLIC_KEY> %s' % (href, pub_key))
 
 
 class AssemblyCommands(cli_utils.CommandsBase):
