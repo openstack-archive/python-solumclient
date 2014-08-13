@@ -124,6 +124,7 @@ def create_plan(plan_file):
                 pub_key = match.group(4)
                 if git_url in CREDENTIALS:
                     CREDENTIALS[git_url]['pub_key'] = pub_key
+            continue
         if 'uri' in line:
             plan_uri = line.split()[3]
         if len(line.split())  == 4:
