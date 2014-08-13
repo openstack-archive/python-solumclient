@@ -40,6 +40,7 @@ Notes:
 from __future__ import print_function
 
 import argparse
+import copy
 import json
 import sys
 
@@ -65,10 +66,13 @@ class AppCommands(cli_utils.CommandsBase):
             definition = definition_file.read()
 
         plan = self.client.plans.create(definition)
-        fields = ['uuid', 'name', 'description', 'uri']
+        fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])
+        artifacts = copy.deepcopy(data['artifacts'])
+        del data['artifacts']
         cliutils.print_dict(data, wrap=72)
+        self._show_public_keys(artifacts)
 
     def delete(self):
         """Delete an application."""
@@ -85,16 +89,39 @@ class AppCommands(cli_utils.CommandsBase):
                                  help="Plan uuid or name")
         args = self.parser.parse_args()
         response = self.client.plans.find(name_or_id=args.plan_uuid)
-        fields = ['uuid', 'name', 'description', 'uri']
+        fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
+        artifacts = copy.deepcopy(data['artifacts'])
+        del data['artifacts']
         cliutils.print_dict(data, wrap=72)
+        self._show_public_keys(artifacts)
 
     def list(self):
         """List all applications."""
         fields = ['uuid', 'name', 'description']
         response = self.client.plans.list()
         cliutils.print_list(response, fields)
+
+    def _show_public_keys(self, artifacts):
+        public_keys = {}
+        if artifacts:
+            for arti in artifacts:
+                if arti.content and ('public_key' in arti.content):
+                    public_keys.update(
+                        {arti.content['href']: arti.content['public_key']})
+        if public_keys:
+            print('Important:')
+            print('  Solum has generated SSH keypair for your ' +
+                  'private github repository/ies.')
+            print('  Please add these public SSH keys as github deploy keys.')
+            print('  This enables solum assembly create to securely ' +
+                  'clone/pull your private repository/ies.')
+            print('  More details on github deploy keys: ' +
+                  'https://developer.github.com/guides/' +
+                  'managing-deploy-keys/#deploy-keys\n')
+            for href, pub_key in public_keys.items():
+                print('%s <PUBLIC_KEY> %s' % (href, pub_key))
 
 
 class AssemblyCommands(cli_utils.CommandsBase):
