@@ -26,10 +26,28 @@ import subprocess
 import tempfile
 import yaml
 
+from solumclient import client as solum_client
+from solumclient.openstack.common import cliutils
+
 
 PUBLIC_HOSTNAME = 'https://test-api.labs.rs-paas.com'
-
+SOLUM_API_VERSION = '1'
 CREDENTIALS = {}
+
+
+def _get_arbor_client():
+    args = {}
+    args['os_username'] = os.getenv('OS_USERNAME', '')
+    args['os_tenant_name'] = os.getenv('OS_TENANT_NAME', '')
+    args['os_auth_url'] = os.getenv('OS_AUTH_URL', '')
+    args['os_password'] = os.getenv('OS_PASSWORD', '')
+
+    try:
+        client = solum_client.get_client(SOLUM_API_VERSION, **args)
+        return client
+    except Exception as ex:
+        print "Error in getting Arbor client: %s" % ex
+        exit(1)
 
 
 def _get_token(git_url):
@@ -107,61 +125,48 @@ def get_planfile(plan_templ):
     return plan_file_name
 
 
-def create_plan(plan_file):
+def create_plan(client, plan_file):
     cmd = ['solum', 'app', 'create', plan_file]
     print ' '.join(cmd)
-    out = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-    print out
+    with open(plan_file) as definition_file:
+        definition = definition_file.read()
 
-    key_pat = re.compile(r'(.+?)( +)<PUBLIC_KEY>( +)(ssh-rsa.+)')
-    plan_uri = None
-    plan_uri_p2 = None
-    for line in out.split('\n'):
-        if not line.startswith('|'):
-            match = key_pat.search(line)
-            if match:
-                git_url = match.group(1)
-                pub_key = match.group(4)
-                if git_url in CREDENTIALS:
-                    CREDENTIALS[git_url]['pub_key'] = pub_key
-            continue
-        if 'uri' in line:
-            plan_uri = line.split()[3]
-        if len(line.split())  == 4:
-            plan_uri_p2 = line.split()[2]
+    plan = client.plans.create(definition)
+    fields = ['uuid', 'name', 'description', 'uri']
+    data = dict([(f, getattr(plan, f, ''))
+                 for f in fields])
+    cliutils.print_dict(data, wrap=72)
 
-    if plan_uri is None:
+    if data['uri'] is None:
         print 'Error: no uri found in plan creation'
         exit(1)
 
-    if plan_uri_p2:
-        plan_uri = ''.join([plan_uri, plan_uri_p2])
+    # get public keys in the case of private repos
+    artifacts = getattr(plan, 'artifacts', [])
+    for arti in artifacts:
+        content = getattr(arti, 'content', {})
+        if 'public_key' in content and 'href' in content:
+            CREDENTIALS[content['href']]['pub_key'] = content['public_key']
 
-    return plan_uri
+    return data['uri']
 
 
-def create_assembly(app_name, plan_uri):
+def create_assembly(client, app_name, plan_uri):
     cmd = ['solum', 'assembly', 'create', app_name, plan_uri]
     print ' '.join(cmd)
-    out = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-    print out
+    assembly = client.assemblies.create(name=app_name, plan_uri=plan_uri)
 
-    trigger_uri = None
-    trigger_uri_p2 = None
-    for line in out.split('\n'):
-        if not line.startswith('|'):
-            continue
-        if 'trigger_uri' in line:
-            trigger_uri = line.split()[3]
-        if len(line.split()) == 4:
-            trigger_uri_p2 = line.split()[2]
+    fields = ['uuid', 'name', 'description', 'status', 'application_uri',
+              'trigger_uri']
+    data = dict([(f, getattr(assembly, f, ''))
+                 for f in fields])
+    cliutils.print_dict(data, wrap=72)
 
+    trigger_uri = data['trigger_uri']
     if trigger_uri is None:
         print 'Error in trigger uri'
         exit(1)
 
-    if trigger_uri_p2:
-        trigger_uri = ''.join([trigger_uri, trigger_uri_p2])
     return trigger_uri
 
 
@@ -219,18 +224,19 @@ def add_deploy_keys():
 
 
 def main(app, plan_templ):
+    client = _get_arbor_client()
     plan_file = get_planfile(plan_templ)
     print '\n'
     print "************************* Starting setup *************************"
     print '\n'
-    plan_uri = create_plan(plan_file)
+    plan_uri = create_plan(client, plan_file)
     add_deploy_keys()
     #try:
     #    os.remove(plan_file)
     #except OSError:
     #    print 'Cannot remove %s. Skip and move forward...' % plan_file
 
-    trigger_uri = create_assembly(app, plan_uri)
+    trigger_uri = create_assembly(client, app, plan_uri)
     create_webhook(_filter_trigger_url(trigger_uri))
     print 'Successfully created Arbor plan, assembly and webhooks!'
 
