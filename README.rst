@@ -20,7 +20,7 @@ Quick start
     
     - source arborlabs.openrc
     
-    This will set up following environment variables OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_AUTH_URL, and OS_REGION_NAME.
+    This will set up environment variables OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_AUTH_URL, and OS_REGION_NAME.
 
 3 Setup arborlab client for your repository and run tests
     - arbor-app-setup <app_name> --git-uri=<githuburl> --test-cmd=<test cmd> [--public]
