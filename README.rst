@@ -23,9 +23,9 @@ Quick start
     This will set up following environment variables OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_AUTH_URL, and OS_REGION_NAME.
 
 3 Setup arborlab client for your repository and run tests
-    - arbor-app-setup --application-name=<app_name> --github-url=<githuburl> --test-cmd=<test cmd> [--private]
+    - arbor-app-setup <app_name> --git-uri=<githuburl> --test-cmd=<test cmd> [--public]
     
-    If the repository is private then pass in the '--private' optional argument.
+    If the repository is public then pass in the '--public' optional argument.
 
 Arbor-app-setup will ask for your username/password for accessing your github repo.
 The username/password will be used for creating a github webhook for your repo to trigger events on git push and pull request,
