@@ -41,11 +41,11 @@ Testing flow steps
 -------------------
 
 - Create a pull request from a branch to the master
-   - This will trigger tests; check the results on Kabana
+   - This will trigger tests; check the results on Kibana
 - Update the pull request
-   - This will re-trigger tests; check the results in Kabana
+   - This will re-trigger tests; check the results in Kibana
 - Merge the pull request
-   - This will re-trigger tests; check the results in Kabana
+   - This will re-trigger tests; check the results in Kibana
 
 
 Support
