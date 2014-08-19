@@ -10,13 +10,17 @@ Quick start
 1 Install arborlabs client
     - git clone https://github.com/rackerlabs/arborlabs_client
     - cd arborlabs_client
-    - sudo python setup.py install
+    - virtualenv .arborclient
+    - . .arborclient/bin/activate
+    - python setup.py install
 
 2 Load authentication information
   - We will create an account for you in Keystone, and provide all the auth info in a file. Assuming that you have stored
-    this auth info in a file named openrc, you can setup your environment like so:
+    this auth info in a file named arborlabs.openrc, you can setup your environment like so:
     
-    - source openrc
+    - source arborlabs.openrc
+    
+    This will set up following environment variables OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_AUTH_URL, and OS_REGION_NAME.
 
 3 Setup arborlab client for your repository and run tests
     - arbor-app-setup --application-name=<app_name> --github-url=<githuburl> --test-cmd=<test cmd> [--private]
@@ -30,11 +34,12 @@ Running arbor-app-setup will run tests for the very first time. You can check th
 
 Note:
 
-- The <test cmd> is a file that contains the testing instructions. It is the responsibility of the consumer of the Arbor labs to create this file and make it available within the git repository.
-
 - The 'arbor-app-setup' needs to be run once per repository.
 
-
+- 'test cmd' is a command that Arborlabs will use for running tests on the repo. The command has to be available on the runtime path of Arborlabs unit test executor (a Docker container). If not it should be made available in the user's repository
+as a shell script. It is the responsibility of the consumer of the Arbor labs to create such a shell script and make it available within the git repository. Arborlabs also
+supports running tests using Drone. In that case, the value of '--test-cmd' attribute should be set to 'drone' and '.drone.yml' file should be made
+available in the github repository.
 
 
 Testing flow steps
