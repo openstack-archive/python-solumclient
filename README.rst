@@ -28,7 +28,7 @@ Quick start
     If the repository is public then pass in the '--public' optional argument.
 
 Arbor-app-setup will ask for your username/password for accessing your github repo.
-The username/password will be used for creating a github webhook for your repo to trigger events on git push and pull request,
+The username/password will be used for creating a github webhook for your repo to trigger events on pull request creation, update, and merge,
 and for creating a token for Arbor to send back build statuses, (build success/failure) to github.
 Running arbor-app-setup will run tests for the very first time. You can check the test results by visiting the hosted logs.
 
