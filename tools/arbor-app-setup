@@ -22,7 +22,6 @@ import os
 import random
 import re
 import string
-import subprocess
 import tempfile
 import yaml
 
@@ -30,9 +29,13 @@ from solumclient import client as solum_client
 from solumclient.openstack.common import cliutils
 
 
-PUBLIC_HOSTNAME = 'https://test-api.labs.rs-paas.com'
 SOLUM_API_VERSION = '1'
 CREDENTIALS = {}
+PUBLIC_HOSTNAME = 'https://test-api.labs.rs-paas.com'
+PLAN_TEMPLATE = {"version" : 1,
+                 "name": "chef",
+                 "description": "chef testy",
+                 "artifacts": []}
 
 
 def _get_arbor_client():
@@ -110,18 +113,25 @@ def _filter_trigger_url(url):
     return filtered_url
 
 
-def get_planfile(plan_templ):
+def get_planfile(git_uri, cmd, public):
+    plan_dict = dict.copy(PLAN_TEMPLATE)
+    arti = {"name": "chef", "artifact_type": "heroku",
+            "content": {}, "language_pack": "auto"}
+    arti['content']['href'] = git_uri
+    if not public:
+        arti['content']['private'] = True
+    arti['unittest_cmd'] = cmd
+    plan_dict['artifacts'].append(arti)
+
     # Create a Github token and insert it into plan file
-    with open(plan_templ, 'r') as f:
-        plan_dict = yaml.load(f)
-        for arti in plan_dict['artifacts']:
-            arti['status_token'] = _get_token(arti['content']['href'])
-        plan_file = tempfile.NamedTemporaryFile(suffix='.yaml',
-                                                    prefix='arbor_',
-                                                    delete=False)
-        plan_file.write(yaml.dump(plan_dict, default_flow_style=False))
-        plan_file_name = plan_file.name
-        plan_file.close()
+    for arti in plan_dict['artifacts']:
+        arti['status_token'] = _get_token(arti['content']['href'])
+    plan_file = tempfile.NamedTemporaryFile(suffix='.yaml',
+                                            prefix='arbor_',
+                                            delete=False)
+    plan_file.write(yaml.dump(plan_dict, default_flow_style=False))
+    plan_file_name = plan_file.name
+    plan_file.close()
     return plan_file_name
 
 
@@ -223,9 +233,9 @@ def add_deploy_keys():
                 exit(1)
 
 
-def main(app, plan_templ):
+def main(args):
     client = _get_arbor_client()
-    plan_file = get_planfile(plan_templ)
+    plan_file = get_planfile(args.git_uri, args.command, args.public)
     print '\n'
     print "************************* Starting setup *************************"
     print '\n'
@@ -236,14 +246,19 @@ def main(app, plan_templ):
     #except OSError:
     #    print 'Cannot remove %s. Skip and move forward...' % plan_file
 
-    trigger_uri = create_assembly(client, app, plan_uri)
+    trigger_uri = create_assembly(client, args.app_name, plan_uri)
     create_webhook(_filter_trigger_url(trigger_uri))
     print 'Successfully created Arbor plan, assembly and webhooks!'
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("app_name", help="app name")
-    parser.add_argument("plan_file", help="app plan file")
+    parser.add_argument('app_name', help="app name")
+    parser.add_argument('--git-uri', required=True, dest='git_uri',
+                        help="git repo uri")
+    parser.add_argument('--test-cmd', required=True, dest='command',
+                        help="entrypoint to run tests")
+    parser.add_argument('--public', action='store_true', default=False,
+                        dest='public', help="public repo, defaults to False")
     args = parser.parse_args()
-    main(args.app_name, args.plan_file)
+    main(args)
