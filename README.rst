@@ -36,8 +36,7 @@ Note:
 
 - The 'arbor-app-setup' needs to be run once per repository.
 
-- 'test cmd' is a command that Arborlabs will use for running tests on the repo. The command has to be available on the runtime path of Arborlabs unit test executor (a Docker container). If not it should be made available in the user's repository as a shell script. It is the responsibility of the consumer of the Arbor labs to create such a shell script and make it available within the git repository. Arborlabs also
-supports running tests using Drone. In that case, the value of '--test-cmd' attribute should be set to 'drone' and '.drone.yml' file should be made available in the github repository.
+- 'test cmd' is a command that Arborlabs will use for running tests on the repo. The command has to be available on the runtime path of Arborlabs unit test executor (a Docker container). If not it should be made available in the user's repository as a shell script. It is the responsibility of the consumer of the Arbor labs to create such a shell script and make it available within the git repository. Arborlabs also supports running tests using Drone. In that case, the value of '--test-cmd' attribute should be set to 'drone' and '.drone.yml' file should be made available in the github repository.
 
 
 Testing flow steps
