@@ -8,24 +8,42 @@ Quick start
 --------------
 
 1 Install arborlabs client
-    - git clone https://github.com/rackerlabs/arborlabs_client
-    - cd arborlabs_client
-    - virtualenv .arborclient
-    - . .arborclient/bin/activate
-    - python setup.py install
+
+```
+$ git clone https://github.com/rackerlabs/arborlabs_client
+$ cd arborlabs_client
+$ virtualenv .arborclient
+$ . arborclient/bin/activate
+$ python setup.py install
+``` 
 
 2 Load authentication information
+
   - We will create an account for you in Keystone, and provide all the auth info in a file. Assuming that you have stored
-    this auth info in a file named arborlabs.openrc, you can setup your environment like so:
+    this auth info in a file named `arborlabs.openrc`, you can setup your environment like so:
     
-    - source arborlabs.openrc
+```
+export OS_USERNAME=<username>
+export OS_PASSWORD=<password>
+export OS_TENANT_NAME=<tenant>
+export OS_AUTH_URL=https://keystone.labs.rs-paas.com/v2.0
+export OS_REGION_NAME=RegionOne
+```
+   
+    
+```
+$ source arborlabs.openrc
+```
     
     This will set up environment variables OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_AUTH_URL, and OS_REGION_NAME.
 
 3 Setup arborlab client for your repository and run tests
-    - arbor-app-setup <app_name> --git-uri=<githuburl> --test-cmd=<test cmd> [--public]
+
+```
+$ arbor-app-setup <app_name> --git-uri=<githuburl> --test-cmd=<test cmd> [--public]
+```
     
-    If the repository is public then pass in the '--public' optional argument.
+__If the repository is public then pass in the '--public' optional argument.__
 
 Arbor-app-setup will ask for your username/password for accessing your github repo.
 The username/password will be used for creating a github webhook for your repo to trigger events on pull request creation, update, and merge,
