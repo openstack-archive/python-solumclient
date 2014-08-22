@@ -13,7 +13,7 @@ Quick start
 $ git clone https://github.com/rackerlabs/arborlabs_client
 $ cd arborlabs_client
 $ virtualenv .arborclient
-$ . arborclient/bin/activate
+$ . .arborclient/bin/activate
 $ python setup.py install
 ``` 
 
