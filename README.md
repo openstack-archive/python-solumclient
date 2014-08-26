@@ -40,9 +40,11 @@ $ source arborlabs.openrc
 3 Setup arborlab client for your repository and run tests
 
 ```
-$ arbor-app-setup <app_name> --git-uri=<githuburl> --test-cmd=<test cmd> [--public]
+$ arbor-app-setup <app_name> --git-uri=<githuburi> --test-cmd=<test cmd> [--public]
 ```
-    
+
+__If the repository is private the 'githuburi' should be in the format of git://git@github.com:<USER>/<REPO>.git__
+
 __If the repository is public then pass in the '--public' optional argument.__
 
 Arbor-app-setup will ask for your username/password for accessing your github repo.
