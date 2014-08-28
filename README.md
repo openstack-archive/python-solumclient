@@ -43,7 +43,7 @@ $ source arborlabs.openrc
 $ arbor-app-setup <app_name> --git-uri=<githuburi> --test-cmd=<test cmd> [--public]
 ```
 
-__If the repository is private the 'githuburi' should be in the format of `git://git@github.com:<USER>/<REPO>.git`__
+__If the repository is private the 'githuburi' should be in the format of `git@github.com:<USER>/<REPO>.git`__
 
 __If the repository is public then pass in the '--public' optional argument.__
 

@@ -231,9 +231,35 @@ def add_user_ssh_keys():
                 exit(1)
 
 
+def validate_args(args):
+    if len(args.command) == 0 or len(args.git_uri) == 0:
+        print "Please input for --test-cmd and --git-uri"
+        exit(1)
+
+    # try to use a correct git uri
+    pat = re.compile(r'github\.com[:/](.+?)/(.+?)($|/.*$|\.git$|\.git/.*$)')
+    match = pat.search(args.git_uri)
+    if match:
+        user_org_name = match.group(1)
+        repo = match.group(2)
+        if args.public:
+            correct_uri = 'https://github.com/%s/%s' % (user_org_name, repo)
+        else:
+            correct_uri = 'git@github.com:%s/%s.git' % (user_org_name, repo)
+        return correct_uri
+    else:
+        print "The input git uri seems not right"
+        if args.public:
+            print "The correct format is: https://github.com/<USER>/<REPO>"
+        else:
+            print "The correct format is: git@github.com:<USER>/<REPO>.git"
+        exit(1)
+
+
 def main(args):
+    git_uri = validate_args(args)
     client = _get_arbor_client()
-    plan_file = get_planfile(args.git_uri, args.command, args.public)
+    plan_file = get_planfile(git_uri, args.command, args.public)
     print '\n'
     print "************************* Starting setup *************************"
     print '\n'
