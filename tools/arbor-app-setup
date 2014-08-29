@@ -207,8 +207,11 @@ def create_webhook(trigger_uri):
             exit(1)
 
 
-def add_user_ssh_keys():
-    # add public keys to user account
+def add_ssh_keys(args):
+    if args.public:
+        return
+
+    # add public keys
     for key in CREDENTIALS.keys():
         if ('pub_key' in CREDENTIALS[key] and
                     CREDENTIALS[key]['pub_key'] is not None):
@@ -216,7 +219,11 @@ def add_user_ssh_keys():
             password = CREDENTIALS[key]['password']
             auth = base64.encodestring(user + ':' + password)
             http = httplib2.Http()
-            github_url = 'https://api.github.com/user/keys'
+            if args.user_key:
+                github_url = 'https://api.github.com/user/keys'
+            else:
+                github_url = ('https://api.github.com/repos/%s/keys' %
+                              CREDENTIALS[key]['full_repo'])
             headers = {'Authorization': 'Basic ' + auth,
                        'Content-Type': 'application/json'}
             data = {'title': 'devops@Arbor',
@@ -227,7 +234,10 @@ def add_user_ssh_keys():
                                          body=json.dumps(data))
 
             if resp['status'] != '201' and resp['status'] != '200':
-                print "Failed to add a ssh key to the account %s" % user
+                if args.user_key:
+                    print "Failed to add a ssh key to the account %s" % user
+                else:
+                    print "Failed to add a deploy key to the repo %s" % key
                 exit(1)
 
 
@@ -264,7 +274,7 @@ def main(args):
     print "************************* Starting setup *************************"
     print '\n'
     plan_uri = create_plan(client, plan_file)
-    add_user_ssh_keys()
+    add_ssh_keys(args)
     #try:
     #    os.remove(plan_file)
     #except OSError:
@@ -284,5 +294,10 @@ if __name__ == '__main__':
                         help="entrypoint to run tests")
     parser.add_argument('--public', action='store_true', default=False,
                         dest='public', help="public repo, defaults to False")
+    parser.add_argument('--user-key', action='store_true', default=False,
+                        dest='user_key', help="add SSH key to the user account"
+                                              " rather than the repo,"
+                                              " defaults to False")
+
     args = parser.parse_args()
     main(args)
