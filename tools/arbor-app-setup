@@ -207,8 +207,11 @@ def create_webhook(trigger_uri):
             exit(1)
 
 
-def add_deploy_keys():
-    # add deploy keys for private repos
+def add_ssh_keys(args):
+    if args.public:
+        return
+
+    # add public keys
     for key in CREDENTIALS.keys():
         if ('pub_key' in CREDENTIALS[key] and
                     CREDENTIALS[key]['pub_key'] is not None):
@@ -216,8 +219,11 @@ def add_deploy_keys():
             password = CREDENTIALS[key]['password']
             auth = base64.encodestring(user + ':' + password)
             http = httplib2.Http()
-            github_url = ('https://api.github.com/repos/%s/keys' %
-                          CREDENTIALS[key]['full_repo'])
+            if args.user_key:
+                github_url = 'https://api.github.com/user/keys'
+            else:
+                github_url = ('https://api.github.com/repos/%s/keys' %
+                              CREDENTIALS[key]['full_repo'])
             headers = {'Authorization': 'Basic ' + auth,
                        'Content-Type': 'application/json'}
             data = {'title': 'devops@Arbor',
@@ -228,19 +234,47 @@ def add_deploy_keys():
                                          body=json.dumps(data))
 
             if resp['status'] != '201' and resp['status'] != '200':
-                print "Failed to add a deploy key"
-                print "Make sure you have access to repo '%s'" % key
+                if args.user_key:
+                    print "Failed to add a ssh key to the account %s" % user
+                else:
+                    print "Failed to add a deploy key to the repo %s" % key
                 exit(1)
 
 
+def validate_args(args):
+    if len(args.command) == 0 or len(args.git_uri) == 0:
+        print "Please input for --test-cmd and --git-uri"
+        exit(1)
+
+    # try to use a correct git uri
+    pat = re.compile(r'github\.com[:/](.+?)/(.+?)($|/.*$|\.git$|\.git/.*$)')
+    match = pat.search(args.git_uri)
+    if match:
+        user_org_name = match.group(1)
+        repo = match.group(2)
+        if args.public:
+            correct_uri = 'https://github.com/%s/%s' % (user_org_name, repo)
+        else:
+            correct_uri = 'git@github.com:%s/%s.git' % (user_org_name, repo)
+        return correct_uri
+    else:
+        print "The input git uri seems not right"
+        if args.public:
+            print "The correct format is: https://github.com/<USER>/<REPO>"
+        else:
+            print "The correct format is: git@github.com:<USER>/<REPO>.git"
+        exit(1)
+
+
 def main(args):
+    git_uri = validate_args(args)
     client = _get_arbor_client()
-    plan_file = get_planfile(args.git_uri, args.command, args.public)
+    plan_file = get_planfile(git_uri, args.command, args.public)
     print '\n'
     print "************************* Starting setup *************************"
     print '\n'
     plan_uri = create_plan(client, plan_file)
-    add_deploy_keys()
+    add_ssh_keys(args)
     #try:
     #    os.remove(plan_file)
     #except OSError:
@@ -260,5 +294,10 @@ if __name__ == '__main__':
                         help="entrypoint to run tests")
     parser.add_argument('--public', action='store_true', default=False,
                         dest='public', help="public repo, defaults to False")
+    parser.add_argument('--user-key', action='store_true', default=False,
+                        dest='user_key', help="add SSH key to the user account"
+                                              " rather than the repo,"
+                                              " defaults to False")
+
     args = parser.parse_args()
     main(args)
