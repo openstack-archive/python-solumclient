@@ -12,16 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solumclient.common import base as solum_base
-from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common.apiclient import base
 
 
-class Platform(apiclient_base.Resource):
+class Platform(base.Resource):
     def __repr__(self):
         return "<Platform %s>" % self._info
 
 
-class PlatformManager(solum_base.BaseManager):
+class PlatformManager(base.BaseManager):
     resource_class = Platform
 
     def get(self, **kwargs):

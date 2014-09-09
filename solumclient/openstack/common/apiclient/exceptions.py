@@ -77,7 +77,7 @@ class AuthPluginOptionsMissing(AuthorizationFailure):
 
 
 class AuthSystemNotFound(AuthorizationFailure):
-    """User has specified a AuthSystem that is not installed."""
+    """User has specified an AuthSystem that is not installed."""
     def __init__(self, auth_system):
         super(AuthSystemNotFound, self).__init__(
             _("AuthSystemNotFound: %s") % repr(auth_system))
@@ -427,7 +427,7 @@ def from_response(response, method, url):
     """
 
     req_id = response.headers.get("x-openstack-request-id")
-    #NOTE(hdd) true for older versions of nova and cinder
+    # NOTE(hdd) true for older versions of nova and cinder
     if not req_id:
         req_id = response.headers.get("x-compute-request-id")
     kwargs = {
@@ -447,8 +447,8 @@ def from_response(response, method, url):
         except ValueError:
             pass
         else:
-            if isinstance(body, dict):
-                error = list(body.values())[0]
+            if isinstance(body, dict) and isinstance(body.get("error"), dict):
+                error = body["error"]
                 kwargs["message"] = error.get("message")
                 kwargs["details"] = error.get("details")
     elif content_type.startswith("text/"):

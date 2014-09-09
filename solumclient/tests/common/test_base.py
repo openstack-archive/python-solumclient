@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solumclient.common import base as solum_base
-from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common.apiclient import base
 from solumclient.openstack.common.apiclient import client
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base as test_base
@@ -62,11 +61,11 @@ fixture4 = {
 }
 
 
-class FooResource(apiclient_base.Resource):
+class FooResource(base.Resource):
     pass
 
 
-class FooResourceManager(solum_base.BaseManager):
+class FooResourceManager(base.BaseManager):
     resource_class = FooResource
 
     def get(self):
