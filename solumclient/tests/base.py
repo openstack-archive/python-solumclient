@@ -16,11 +16,10 @@
 # under the License.
 
 import fixtures
+from oslotest import base
 
-from solumclient.openstack.common import test
 
-
-class TestCase(test.BaseTestCase):
+class TestCase(base.BaseTestCase):
 
     """Test case base class for all unit tests."""
 
