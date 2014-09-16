@@ -42,6 +42,11 @@ class AssemblyManager(solum_base.CrudManager, solum_base.FindMixin):
     def delete(self, **kwargs):
         return super(AssemblyManager, self).delete(base_url="/v1", **kwargs)
 
+    def logs(self, **kwargs):
+        url = self.build_url(base_url="/v1", **kwargs)
+        url += '/logs/'
+        return self._get(url)
+
     def find(self, **kwargs):
         if 'assembly_id' in kwargs:
             return super(AssemblyManager, self).get(base_url="/v1", **kwargs)

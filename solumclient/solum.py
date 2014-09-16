@@ -171,6 +171,22 @@ class AssemblyCommands(cli_utils.CommandsBase):
         response = self.client.assemblies.list()
         cliutils.print_list(response, fields)
 
+    def logs(self):
+        """Get Logs."""
+        self.parser.add_argument('assembly_uuid',
+                                 help="Assembly uuid or name")
+        args = self.parser.parse_args()
+        assem = self.client.assemblies.find(name_or_id=args.assembly_uuid)
+        response = cli_assem.AssemblyManager(self.client).logs(
+            assembly_id=str(assem.uuid))
+
+        data = {"assembly_id": response.assembly_id}
+        for i in response.logs:
+            log_stage = i['stage']
+            data[log_stage + '_log'] = i['url']
+
+        cliutils.print_dict(data, wrap=72)
+
     def show(self):
         """Show an assembly's resource."""
         self.parser.add_argument('assembly_uuid',
