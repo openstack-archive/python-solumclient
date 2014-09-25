@@ -193,7 +193,7 @@ def create_webhook(trigger_uri):
                    'Content-Type': 'application/json'}
         data = {'name': 'web',
                 #'events': ['pull_request', 'push'],
-                'events': ['pull_request'],
+                'events': ['pull_request', 'commit_comment'],
                 'config': {'content_type': 'json',
                            'url': trigger_uri}}
 
