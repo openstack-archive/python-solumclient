@@ -40,12 +40,14 @@ $ source arborlabs.openrc
 3 Setup arborlab client for your repository and run tests
 
 ```
-$ arbor-app-setup <app_name> --git-uri=<githuburi> --test-cmd=<test cmd> [--public]
+$ arbor-app-setup <app_name> --git-uri=<githuburi> --test-cmd=<test cmd> [--public] [--user-key]
 ```
 
 __If the repository is private the 'githuburi' should be in the format of `git@github.com:<USER>/<REPO>.git`__
 
 __If the repository is public then pass in the '--public' optional argument.__
+
+__The arg --user-key means "attach the key to a user instead of a repo", which should be turned on if your repo has dependencies on other private repos. And it's strongly recommended that you use a bot account instead of personal one for this.__
 
 Arbor-app-setup will ask for your username/password for accessing your github repo.
 The username/password will be used for creating a github webhook for your repo to trigger events on pull request creation, update, and merge,
