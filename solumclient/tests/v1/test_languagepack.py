@@ -95,7 +95,8 @@ fixtures_create = {
 
 image_fixture = {
     'name': 'lp1',
-    'source_uri': 'github.com/test'
+    'source_uri': 'github.com/test',
+    'lp_metadata': 'sample_lp_metadata'
 }
 
 fixtures_build = {
@@ -148,10 +149,13 @@ class LanguagePackManagerTest(base.TestCase):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_build)
         api_client = sclient.Client(fake_http_client)
         mgr = image.ImageManager(api_client)
-        image_obj = mgr.create(name='lp1', source_uri='github.com/test')
+        image_obj = mgr.create(name='lp1',
+                               source_uri='github.com/test',
+                               lp_metadata='sample_lp_metadata')
         self.assert_image_object(image_obj)
 
     def assert_image_object(self, image_obj):
         self.assertIn('Image', repr(image_obj))
         self.assertEqual(image_fixture['source_uri'], image_obj.source_uri)
         self.assertEqual(image_fixture['name'], image_obj.name)
+        self.assertEqual(image_fixture['lp_metadata'], image_obj.lp_metadata)

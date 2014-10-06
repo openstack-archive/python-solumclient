@@ -24,6 +24,7 @@ import six
 from stevedore import extension
 from testtools import matchers
 
+from solumclient.builder.v1 import image
 from solumclient.openstack.common.apiclient import auth
 from solumclient.openstack.common import cliutils
 from solumclient import solum
@@ -359,6 +360,23 @@ class TestSolum(base.TestCase):
             mock_print_dict.assert_called_once_with(
                 expected_printed_dict_args,
                 wrap=72)
+
+    @mock.patch.object(image.ImageManager, "create")
+    def test_languagepack_build(self, mock_image_build):
+        FakeResource = collections.namedtuple("FakeResource",
+                                              "uuid name description "
+                                              "compiler_versions os_platform")
+        mock_image_build.return_value = FakeResource(
+            'foo', 'foo', 'foo', 'foo', 'foo')
+        lp_metadata = '{"OS": "Ubuntu"}'
+        mopen = mock.mock_open(read_data=lp_metadata)
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            self.shell("languagepack build lp_name github.com/test /dev/null")
+            mock_image_build.assert_called_once_with(
+                name='lp_name',
+                source_uri='github.com/test',
+                lp_metadata=lp_metadata)
 
     @mock.patch.object(languagepack.LanguagePackManager, "delete")
     def test_languagepack_delete(self, mock_lp_delete):
