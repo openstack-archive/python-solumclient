@@ -115,7 +115,7 @@ def _filter_trigger_url(url):
 
 def get_planfile(git_uri, cmd, public):
     plan_dict = dict.copy(PLAN_TEMPLATE)
-    arti = {"name": "chef", "artifact_type": "heroku",
+    arti = {"name": "chef", "artifact_type": "chef",
             "content": {}, "language_pack": "auto"}
     arti['content']['href'] = git_uri
     if not public:
