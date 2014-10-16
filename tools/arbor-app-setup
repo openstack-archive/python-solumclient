@@ -113,8 +113,10 @@ def _filter_trigger_url(url):
     return filtered_url
 
 
-def get_planfile(git_uri, cmd, public):
+def get_planfile(git_uri, app_name, cmd, public):
     plan_dict = dict.copy(PLAN_TEMPLATE)
+    plan_dict['name'] = app_name
+    plan_dict['description'] = git_uri  # Put repo uri as plan desc.
     arti = {"name": "chef", "artifact_type": "chef",
             "content": {}, "language_pack": "auto"}
     arti['content']['href'] = git_uri
@@ -269,7 +271,7 @@ def validate_args(args):
 def main(args):
     git_uri = validate_args(args)
     client = _get_arbor_client()
-    plan_file = get_planfile(git_uri, args.command, args.public)
+    plan_file = get_planfile(git_uri, args.app_name, args.command, args.public)
     print '\n'
     print "************************* Starting setup *************************"
     print '\n'
