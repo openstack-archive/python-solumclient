@@ -48,6 +48,7 @@ import sys
 import six
 
 from solumclient.common import cli_utils
+from solumclient.common import yamlutils
 from solumclient.openstack.common import cliutils
 from solumclient.openstack.common import strutils
 from solumclient.v1 import assembly as cli_assem
@@ -61,12 +62,25 @@ class AppCommands(cli_utils.CommandsBase):
     def create(self):
         """Create an application."""
         self.parser.add_argument('plan_file',
-                                 help="Plan file")
+                                 help="A yaml file that defines an app,"
+                                      " check out solum repo for examples")
+        self.parser.add_argument('--param-file',
+                                 dest='param_file',
+                                 help="A yaml file containing custom"
+                                      " parameters to be used in the"
+                                      " application, check out solum repo for"
+                                      " examples")
+
         args = self.parser.parse_args()
         with open(args.plan_file) as definition_file:
-            definition = definition_file.read()
+            plan_definition = definition_file.read()
+        definition = yamlutils.load(plan_definition)
 
-        plan = self.client.plans.create(definition)
+        if args.param_file:
+            with open(args.param_file) as param_f:
+                param_definition = param_f.read()
+            definition['parameters'] = yamlutils.load(param_definition)
+        plan = self.client.plans.create(yamlutils.dump(definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])

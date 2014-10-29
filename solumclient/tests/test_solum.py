@@ -25,6 +25,7 @@ from stevedore import extension
 from testtools import matchers
 
 from solumclient.builder.v1 import image
+from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import auth
 from solumclient.openstack.common import cliutils
 from solumclient import solum
@@ -260,8 +261,9 @@ class TestSolum(base.TestCase):
 
         mock_app_create.return_value = FakeResource('foo', 'foo', 'foo', 'foo')
         expected_printed_dict_args = mock_app_create.return_value._asdict()
-        plan_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
-        mopen = mock.mock_open(read_data=plan_data)
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
+        plan_data = yamlutils.dump(yamlutils.load(raw_data))
+        mopen = mock.mock_open(read_data=raw_data)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
             self.shell("app create /dev/null")
@@ -284,8 +286,9 @@ class TestSolum(base.TestCase):
         expected_printed_dict_args = mock_app_create.return_value._asdict()
         expected_printed_dict_args.pop('artifacts')
         expected_show_pub_keys_args = 'artifacts'
-        plan_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
-        mopen = mock.mock_open(read_data=plan_data)
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
+        plan_data = yamlutils.dump(yamlutils.load(raw_data))
+        mopen = mock.mock_open(read_data=raw_data)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
             self.shell("app create /dev/null")
