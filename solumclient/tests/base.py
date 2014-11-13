@@ -17,9 +17,10 @@
 
 import fixtures
 from oslotest import base
+import testscenarios
 
 
-class TestCase(base.BaseTestCase):
+class TestCase(testscenarios.WithScenarios, base.BaseTestCase):
 
     """Test case base class for all unit tests."""
 

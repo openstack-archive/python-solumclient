@@ -101,11 +101,6 @@ class CommandsBase(object):
                                        "either --os-auth-url or via "
                                        "env[OS_AUTH_URL]")
 
-        else:
-            client_args['endpoint'] = client_args['solum_url']
-
-        del client_args['solum_url']
-
         if client_args['action'] == 'build':
             self.client = builder_client.get_client(parsed.solum_api_version,
                                                     **client_args)
