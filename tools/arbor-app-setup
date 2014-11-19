@@ -84,7 +84,7 @@ def _get_token(git_url):
                'Content-Type': 'application/json'}
     # 'note' field has to be unique
     note = 'Arbor-status-' + ''.join(random.sample(string.lowercase, 5))
-    data = {'scopes': 'repo:status', 'note': note}
+    data = {'scopes': 'repo', 'note': note}
 
     resp, content = http.request('https://api.github.com/authorizations',
                                  'POST', headers=headers,
