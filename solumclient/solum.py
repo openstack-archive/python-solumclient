@@ -15,10 +15,10 @@
 
 """
 Initial M1 Solum CLI commands implemented (but not REST communications):
-* app create --repo="repo_url" [--build=no] plan_name
-* app delete plan_name
-* app list
-* app show plan_id
+* plan create --repo="repo_url" [--build=no] plan_name
+* plan delete plan_name
+* plan list
+* plan show plan_id
 * assembly create assembly_name plan_name
 * assembly delete assembly_name
 * assembly list
@@ -56,13 +56,13 @@ from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
 
 
-class AppCommands(cli_utils.CommandsBase):
-    """Application targets."""
+class PlanCommands(cli_utils.CommandsBase):
+    """Plan targets."""
 
     def create(self):
-        """Create an application."""
+        """Create a plan."""
         self.parser.add_argument('plan_file',
-                                 help="A yaml file that defines an app,"
+                                 help="A yaml file that defines a plan,"
                                       " check out solum repo for examples")
         self.parser.add_argument('--param-file',
                                  dest='param_file',
@@ -90,7 +90,7 @@ class AppCommands(cli_utils.CommandsBase):
         self._show_public_keys(artifacts)
 
     def delete(self):
-        """Delete an application."""
+        """Delete a plan."""
         self.parser.add_argument('plan_uuid',
                                  help="Tenant/project-wide unique "
                                  "plan uuid or name")
@@ -99,7 +99,7 @@ class AppCommands(cli_utils.CommandsBase):
         cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
     def show(self):
-        """Show an application's resource."""
+        """Show a plan's resource."""
         self.parser.add_argument('plan_uuid',
                                  help="Plan uuid or name")
         args = self.parser.parse_args()
@@ -113,7 +113,7 @@ class AppCommands(cli_utils.CommandsBase):
         self._show_public_keys(artifacts)
 
     def list(self):
-        """List all applications."""
+        """List all plans."""
         fields = ['uuid', 'name', 'description']
         response = self.client.plans.list()
         cliutils.print_list(response, fields)
@@ -359,7 +359,7 @@ def main():
     parser.error = lambda m: None
 
     resources = {
-        'app': AppCommands,
+        'plan': PlanCommands,
         'assembly': AssemblyCommands,
         'pipeline': PipelineCommands,
         'languagepack': LanguagePackCommands,

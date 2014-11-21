@@ -136,14 +136,14 @@ class TestSolum(base.TestCase):
     @mock.patch.object(plan.PlanManager, "find")
     @mock.patch.object(assembly.AssemblyManager, "create")
     def test_assembly_create_with_plan_name(self, mock_assembly_create,
-                                            mock_app_find):
+                                            mock_plan_find):
         class FakePlan(object):
             uri = 'http://example.com/the-plan.yaml'
 
         self.make_env()
-        mock_app_find.return_value = FakePlan()
+        mock_plan_find.return_value = FakePlan()
         self.shell("assembly create assembly_name the-plan-name")
-        mock_app_find.assert_called_once_with(name_or_id='the-plan-name')
+        mock_plan_find.assert_called_once_with(name_or_id='the-plan-name')
         mock_assembly_create.assert_called_once_with(
             name='assembly_name',
             description=None,
@@ -216,14 +216,14 @@ class TestSolum(base.TestCase):
     @mock.patch.object(plan.PlanManager, "find")
     @mock.patch.object(pipeline.PipelineManager, "create")
     def test_pipeline_create_with_plan_name(self, mock_pipeline_create,
-                                            mock_app_find):
+                                            mock_plan_find):
         class FakePlan(object):
             uri = 'http://example.com/the-plan.yaml'
 
         self.make_env()
-        mock_app_find.return_value = FakePlan()
+        mock_plan_find.return_value = FakePlan()
         self.shell("pipeline create the-plan-name workbook test")
-        mock_app_find.assert_called_once_with(name_or_id='the-plan-name')
+        mock_plan_find.assert_called_once_with(name_or_id='the-plan-name')
         mock_pipeline_create.assert_called_once_with(
             name='test',
             workbook_name='workbook',
@@ -255,35 +255,36 @@ class TestSolum(base.TestCase):
     # Plan Tests #
     @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(plan.PlanManager, "create")
-    def test_app_create(self, mock_app_create, mock_print_dict):
+    def test_plan_create(self, mock_plan_create, mock_print_dict):
         FakeResource = collections.namedtuple("FakeResource",
                                               "uuid name description uri")
 
-        mock_app_create.return_value = FakeResource('foo', 'foo', 'foo', 'foo')
-        expected_printed_dict_args = mock_app_create.return_value._asdict()
+        mock_plan_create.return_value = FakeResource('foo', 'foo', 'foo',
+                                                     'foo')
+        expected_printed_dict_args = mock_plan_create.return_value._asdict()
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         plan_data = yamlutils.dump(yamlutils.load(raw_data))
         mopen = mock.mock_open(read_data=raw_data)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            self.shell("app create /dev/null")
-            mock_app_create.assert_called_once_with(plan_data)
+            self.shell("plan create /dev/null")
+            mock_plan_create.assert_called_once_with(plan_data)
             mock_print_dict.assert_called_once_with(
                 expected_printed_dict_args,
                 wrap=72)
 
     @mock.patch.object(cliutils, "print_dict")
-    @mock.patch.object(solum.AppCommands, "_show_public_keys")
+    @mock.patch.object(solum.PlanCommands, "_show_public_keys")
     @mock.patch.object(plan.PlanManager, "create")
-    def test_app_create_with_private_github_repo(self, mock_app_create,
-                                                 mock_show_pub_keys,
-                                                 mock_print_dict):
+    def test_plan_create_with_private_github_repo(self, mock_plan_create,
+                                                  mock_show_pub_keys,
+                                                  mock_print_dict):
         FakeResource = collections.namedtuple(
             "FakeResource", "uuid name description uri artifacts")
 
-        mock_app_create.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
-                                                    'artifacts')
-        expected_printed_dict_args = mock_app_create.return_value._asdict()
+        mock_plan_create.return_value = FakeResource('foo', 'foo', 'foo',
+                                                     'foo', 'artifacts')
+        expected_printed_dict_args = mock_plan_create.return_value._asdict()
         expected_printed_dict_args.pop('artifacts')
         expected_show_pub_keys_args = 'artifacts'
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
@@ -291,8 +292,8 @@ class TestSolum(base.TestCase):
         mopen = mock.mock_open(read_data=raw_data)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            self.shell("app create /dev/null")
-            mock_app_create.assert_called_once_with(plan_data)
+            self.shell("plan create /dev/null")
+            mock_plan_create.assert_called_once_with(plan_data)
             mock_print_dict.assert_called_once_with(
                 expected_printed_dict_args,
                 wrap=72)
@@ -300,40 +301,40 @@ class TestSolum(base.TestCase):
                 expected_show_pub_keys_args)
 
     @mock.patch.object(plan.PlanManager, "list")
-    def test_app_list(self, mock_app_list):
+    def test_plan_list(self, mock_plan_list):
         self.make_env()
-        self.shell("app list")
-        mock_app_list.assert_called_once_with()
+        self.shell("plan list")
+        mock_plan_list.assert_called_once_with()
 
     @mock.patch.object(plan.PlanManager, "delete")
     @mock.patch.object(plan.PlanManager, "find")
-    def test_app_delete(self, mock_app_find, mock_app_delete):
+    def test_plan_delete(self, mock_plan_find, mock_plan_delete):
         self.make_env()
         the_id = str(uuid.uuid4())
-        self.shell("app delete %s" % the_id)
-        mock_app_find.assert_called_once_with(name_or_id=the_id)
-        mock_app_delete.assert_called_once()
+        self.shell("plan delete %s" % the_id)
+        mock_plan_find.assert_called_once_with(name_or_id=the_id)
+        mock_plan_delete.assert_called_once()
 
     @mock.patch.object(plan.PlanManager, "find")
-    def test_app_get(self, mock_app_find):
+    def test_plan_get(self, mock_plan_find):
         self.make_env()
         the_id = str(uuid.uuid4())
-        self.shell("app show %s" % the_id)
-        mock_app_find.assert_called_once_with(name_or_id=the_id)
+        self.shell("plan show %s" % the_id)
+        mock_plan_find.assert_called_once_with(name_or_id=the_id)
 
-    @mock.patch.object(solum.AppCommands, "_show_public_keys")
+    @mock.patch.object(solum.PlanCommands, "_show_public_keys")
     @mock.patch.object(plan.PlanManager, "find")
-    def test_app_get_private_github_repo(self, mock_app_find,
-                                         mock_show_pub_keys):
+    def test_plan_get_private_github_repo(self, mock_plan_find,
+                                          mock_show_pub_keys):
         self.make_env()
         the_id = str(uuid.uuid4())
         FakeResource = collections.namedtuple(
             "FakeResource", "uuid name description uri artifacts")
-        mock_app_find.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
-                                                  'artifacts')
+        mock_plan_find.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
+                                                   'artifacts')
         expected_show_pub_keys_args = 'artifacts'
-        self.shell("app show %s" % the_id)
-        mock_app_find.assert_called_once_with(name_or_id=the_id)
+        self.shell("plan show %s" % the_id)
+        mock_plan_find.assert_called_once_with(name_or_id=the_id)
         mock_show_pub_keys.assert_called_once_with(
             expected_show_pub_keys_args)
 
