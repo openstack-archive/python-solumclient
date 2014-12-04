@@ -49,6 +49,19 @@ class TestCli_Utils(base.TestCase):
                     'os_tenant_name': '',
                     'os_password': '',
                     'action': 'create'})),
+        ('solum_url_with_no_token', dict(
+            fake_env={'OS_USERNAME': 'username',
+                      'OS_PASSWORD': 'password',
+                      'OS_TENANT_NAME': 'tenant_name',
+                      'OS_AUTH_URL': 'http://no.where',
+                      'SOLUM_URL': 'http://10.0.2.15:9777'},
+            output={'os_auth_url': 'http://no.where',
+                    'solum_url': 'http://10.0.2.15:9777',
+                    'solum_api_version': '1',
+                    'os_username': 'username',
+                    'os_tenant_name': 'tenant_name',
+                    'os_password': 'password',
+                    'action': 'create'})),
     ]
 
     # Patch os.environ to avoid reading auth info

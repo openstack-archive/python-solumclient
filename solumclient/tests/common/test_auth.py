@@ -28,8 +28,7 @@ class KeystoneAuthPluginTest(base.TestCase):
             username="fake-username",
             password="fake-password",
             tenant_name="fake-tenant-name",
-            auth_url="http://auth",
-            endpoint="http://solum")
+            auth_url="http://auth")
         self.cs = client.HTTPClient(auth_plugin=plugin)
 
     def test_authenticate(self, mock_ksclient):
@@ -41,10 +40,14 @@ class KeystoneAuthPluginTest(base.TestCase):
             auth_url="http://auth")
 
     def test_token_and_endpoint(self, mock_ksclient):
+        plugin = auth.KeystoneAuthPlugin(
+            endpoint="http://solum",
+            token="test_token")
+        self.cs = client.HTTPClient(auth_plugin=plugin)
         self.cs.authenticate()
         (token, endpoint) = self.cs.auth_plugin.token_and_endpoint(
             "fake-endpoint-type", "fake-service-type")
-        self.assertIsInstance(token, mock.MagicMock)
+        self.assertEqual(token, "test_token")
         self.assertEqual("http://solum", endpoint)
 
     def test_token_and_endpoint_before_auth(self, mock_ksclient):
@@ -52,6 +55,25 @@ class KeystoneAuthPluginTest(base.TestCase):
             "fake-endpoint-type", "fake-service-type")
         self.assertIsNone(token, None)
         self.assertIsNone(endpoint, None)
+
+    def test_endpoint_with_no_token(self, mock_ksclient):
+        plugin = auth.KeystoneAuthPlugin(
+            username="fake-username",
+            password="fake-password",
+            tenant_name="fake-tenant-name",
+            auth_url="http://auth",
+            endpoint="http://solum")
+        self.cs = client.HTTPClient(auth_plugin=plugin)
+        self.cs.authenticate()
+        mock_ksclient.assert_called_with(
+            username="fake-username",
+            password="fake-password",
+            tenant_name="fake-tenant-name",
+            auth_url="http://auth")
+        (token, endpoint) = self.cs.auth_plugin.token_and_endpoint(
+            "fake-endpoint-type", "fake-service-type")
+        self.assertIsInstance(token, mock.MagicMock)
+        self.assertEqual("http://solum", endpoint)
 
 
 @mock.patch.object(ksclient, 'Client')

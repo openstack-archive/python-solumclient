@@ -76,7 +76,7 @@ class CommandsBase(object):
 
         client_args = parsed.__dict__
 
-        if not (parsed.os_auth_token and parsed.solum_url):
+        if not parsed.os_auth_token:
             # Remove arguments that are not to be passed to the client in this
             # case.
             del client_args['os_auth_token']
