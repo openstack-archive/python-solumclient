@@ -45,9 +45,10 @@ PLAN_TEMPLATE = {"version": 1,
 def _get_solum_client():
     args = {}
     args['os_username'] = os.getenv('OS_USERNAME', '')
+    args['os_password'] = os.getenv('OS_PASSWORD', '')
     args['os_tenant_name'] = os.getenv('OS_TENANT_NAME', '')
     args['os_auth_url'] = os.getenv('OS_AUTH_URL', '')
-    args['os_password'] = os.getenv('OS_PASSWORD', '')
+    args['solum_url'] = os.getenv('SOLUM_URL', '')
 
     try:
         client = solum_client.get_client(SOLUM_API_VERSION, **args)
