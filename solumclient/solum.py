@@ -181,9 +181,10 @@ class AssemblyCommands(cli_utils.CommandsBase):
 
     def list(self):
         """List all assemblies."""
-        fields = ['uuid', 'name', 'description', 'status']
+        fields = ['uuid', 'name', 'description', 'status', 'created_at',
+                  'updated_at']
         response = self.client.assemblies.list()
-        cliutils.print_list(response, fields)
+        cliutils.print_list(response, fields, sortby_index=5)
 
     def show(self):
         """Show an assembly's resource."""
@@ -192,7 +193,7 @@ class AssemblyCommands(cli_utils.CommandsBase):
         args = self.parser.parse_args()
         response = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
-                  'trigger_uri']
+                  'trigger_uri', 'created_at', 'updated_at']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
