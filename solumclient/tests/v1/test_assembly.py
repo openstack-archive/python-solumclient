@@ -64,6 +64,34 @@ assembly_fixture = {
     'sensors_uri': 'http://example.com:9777/v1/sensors/s1'
 }
 
+log_fixture = {
+    'assembly_id': 'a1',
+    'uri': 'http://mysolum/v1/assemblies/a1/logs/',
+    'logs': [
+        {
+            'stage': 'unit_test',
+            'url': 'http://mysolum/v1/assemblies/a1/logs/unit_test'
+        },
+        {
+            'stage': 'build',
+            'url': 'http://mysolum/v1/assemblies/a1/logs/build'
+        },
+        {
+            'stage': 'deploy',
+            'url': 'http://mysolum/v1/assemblies/a1/logs/deploy'
+        }
+    ]
+}
+
+fixtures_logs = {
+    '/v1/assemblies/a1/logs/': {
+        'GET': (
+            {},
+            log_fixture
+        ),
+    }
+}
+
 fixtures_list = {
     '/v1/assemblies': {
         'GET': (
@@ -113,6 +141,36 @@ class AssemblyManagerTest(base.TestCase):
                          assembly_obj.project_id)
         self.assertEqual(assembly_fixture['user_id'], assembly_obj.user_id)
 
+    def assert_logs_object(self, logs_obj):
+        self.assertEqual(log_fixture['assembly_id'], logs_obj.assembly_id)
+        self.assertEqual(log_fixture['uri'], logs_obj.uri)
+        self.assertIsNotNone(logs_obj.logs)
+
+        unit_test_found = False
+        build_found = False
+        deploy_found = False
+
+        unit_test_url = 'http://mysolum/v1/assemblies/a1/logs/unit_test'
+        build_url = 'http://mysolum/v1/assemblies/a1/logs/build'
+        deploy_url = 'http://mysolum/v1/assemblies/a1/logs/deploy'
+
+        for i in logs_obj.logs:
+            log_stage = i['stage']
+            log_url = i['url']
+
+            if (log_stage == 'unit_test' and log_url == unit_test_url):
+                unit_test_found = True
+
+            if (log_stage == 'build' and build_url == log_url):
+                build_found = True
+
+            if (log_stage == 'deploy' and deploy_url == log_url):
+                deploy_found = True
+
+        self.assertTrue(unit_test_found)
+        self.assertTrue(build_found)
+        self.assertTrue(deploy_found)
+
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
         api_client = sclient.Client(fake_http_client)
@@ -158,6 +216,13 @@ class AssemblyManagerTest(base.TestCase):
         mgr = assembly.AssemblyManager(api_client)
         assembly_obj = mgr.get(assembly_id='x1')
         self.assert_assembly_object(assembly_obj)
+
+    def test_get_logs(self):
+        fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_logs)
+        api_client = sclient.Client(fake_http_client)
+        mgr = assembly.AssemblyManager(api_client)
+        logs_obj = mgr.logs(assembly_id='a1')
+        self.assert_logs_object(logs_obj)
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
