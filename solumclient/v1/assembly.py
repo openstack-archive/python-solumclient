@@ -22,6 +22,11 @@ class Assembly(apiclient_base.Resource):
         return "<Assembly %s>" % self._info
 
 
+class UserLog(apiclient_base.Resource):
+    def __repr__(self):
+        return "<Log %s>" % self._info
+
+
 class AssemblyManager(solum_base.CrudManager, solum_base.FindMixin):
     resource_class = Assembly
     collection_key = 'assemblies'
@@ -43,9 +48,10 @@ class AssemblyManager(solum_base.CrudManager, solum_base.FindMixin):
         return super(AssemblyManager, self).delete(base_url="/v1", **kwargs)
 
     def logs(self, **kwargs):
+        self.resource_class = UserLog
         url = self.build_url(base_url="/v1", **kwargs)
         url += '/logs/'
-        return self._get(url)
+        return self._list(url)
 
     def find(self, **kwargs):
         if 'assembly_id' in kwargs:
