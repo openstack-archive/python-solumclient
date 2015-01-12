@@ -375,7 +375,8 @@ class TestSolum(base.TestCase):
         mopen = mock.mock_open(read_data=lp_metadata)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            self.shell("languagepack build lp_name github.com/test /dev/null")
+            self.shell("languagepack build lp_name github.com/test "
+                       "--lp_metadata=/dev/null")
             mock_image_build.assert_called_once_with(
                 name='lp_name',
                 source_uri='github.com/test',

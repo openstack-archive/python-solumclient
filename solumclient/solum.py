@@ -363,19 +363,22 @@ class LanguagePackCommands(cli_utils.CommandsBase):
         self.parser.add_argument('git_url',
                                  help=("Github url of custom "
                                        "language pack repository."))
-        self.parser.add_argument('lp_metadata',
+        self.parser.add_argument('--lp_metadata',
                                  help="Language pack file.")
         args = self.parser.parse_args()
-        with open(args.lp_metadata) as lang_pack_metadata:
-            try:
-                lp_metadata = json.dumps(json.load(lang_pack_metadata))
-            except ValueError as exc:
-                print("Error in language pack file: %s", str(exc))
-                sys.exit(1)
+        lp_metadata = None
+
+        if args.lp_metadata:
+            with open(args.lp_metadata) as lang_pack_metadata:
+                try:
+                    lp_metadata = json.dumps(json.load(lang_pack_metadata))
+                except ValueError as exc:
+                    print("Error in language pack file: %s", str(exc))
+                    sys.exit(1)
         response = self.client.images.create(name=args.name,
                                              source_uri=args.git_url,
                                              lp_metadata=lp_metadata)
-        fields = ['uuid', 'name']
+        fields = ['uuid', 'name', 'decription', 'state']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
