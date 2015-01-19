@@ -45,19 +45,32 @@ import copy
 import json
 import sys
 
-import six
-
 from solumclient.common import cli_utils
+from solumclient.common import exc
 from solumclient.common import yamlutils
 from solumclient.openstack.common import cliutils
-from solumclient.openstack.common import strutils
 from solumclient.v1 import assembly as cli_assem
 from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
 
 
 class PlanCommands(cli_utils.CommandsBase):
-    """Plan targets."""
+    """Commands for working with plans.
+
+Available commands:
+
+    solum plan list
+        Print an index of all available plans.
+
+    solum plan show <PLAN>
+        Print details about a plan.
+
+    solum plan create <PLANFILE> [--param-file <PARAMFILE>]
+        Register a plan with Solum.
+
+    solum plan delete <PLAN>
+        Destroy a plan. Plans with dependent assemblies cannot be deleted.
+    """
 
     def create(self):
         """Create a plan."""
@@ -71,15 +84,32 @@ class PlanCommands(cli_utils.CommandsBase):
                                       " application, check out solum repo for"
                                       " examples")
 
-        args = self.parser.parse_args()
-        with open(args.plan_file) as definition_file:
-            plan_definition = definition_file.read()
-        definition = yamlutils.load(plan_definition)
+        self.parser._names['plan_file'] = 'plan file'
+        args, _ = self.parser.parse_known_args()
+        try:
+            with open(args.plan_file) as definition_file:
+                plan_definition = definition_file.read()
+                definition = yamlutils.load(plan_definition)
+        except IOError:
+            message = "Could not open plan file %s." % args.plan_file
+            raise exc.CommandError(message=message)
+        except ValueError:
+            message = ("Plan file %s was not a valid YAML mapping." %
+                       args.plan_file)
+            raise exc.CommandError(message=message)
 
         if args.param_file:
-            with open(args.param_file) as param_f:
-                param_definition = param_f.read()
-            definition['parameters'] = yamlutils.load(param_definition)
+            try:
+                with open(args.param_file) as param_f:
+                    param_definition = param_f.read()
+                definition['parameters'] = yamlutils.load(param_definition)
+            except IOError:
+                message = "Could not open param file %s." % args.param_file
+                raise exc.CommandError(message=message)
+            except ValueError:
+                message = ("Param file %s was not a valid YAML mapping." %
+                           args.param_file)
+                raise exc.CommandError(message=message)
         plan = self.client.plans.create(yamlutils.dump(definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(plan, f, ''))
@@ -94,7 +124,8 @@ class PlanCommands(cli_utils.CommandsBase):
         self.parser.add_argument('plan_uuid',
                                  help="Tenant/project-wide unique "
                                  "plan uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['plan_uuid'] = 'plan'
+        args, _ = self.parser.parse_known_args()
         plan = self.client.plans.find(name_or_id=args.plan_uuid)
         cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
@@ -102,7 +133,8 @@ class PlanCommands(cli_utils.CommandsBase):
         """Show a plan's resource."""
         self.parser.add_argument('plan_uuid',
                                  help="Plan uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['plan_uuid'] = 'plan'
+        args, _ = self.parser.parse_known_args()
         response = self.client.plans.find(name_or_id=args.plan_uuid)
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(response, f, ''))
@@ -140,7 +172,25 @@ class PlanCommands(cli_utils.CommandsBase):
 
 
 class AssemblyCommands(cli_utils.CommandsBase):
-    """Assembly targets."""
+    """Commands for working with assemblies.
+
+Available commands:
+
+    solum assembly list
+        Print an index of all available assemblies.
+
+    solum assembly show <NAME>
+        Print the details of an assembly.
+
+    solum assembly create <NAME> <PLAN_URI> [--description <DESCRIPTION>]
+        Create an assembly from a registered plan.
+
+    solum assembly logs <NAME>
+        Print an index of all operation logs for an assembly.
+
+    solum assembly delete <NAME>
+        Destroy an assembly.
+    """
 
     def create(self):
         """Create an assembly."""
@@ -151,7 +201,8 @@ class AssemblyCommands(cli_utils.CommandsBase):
                                  "plan (uri/uuid or name)")
         self.parser.add_argument('--description',
                                  help="Assembly description")
-        args = self.parser.parse_args()
+        self.parser._names['plan_uri'] = 'plan URI'
+        args, _ = self.parser.parse_known_args()
         name = args.name
         plan_uri = args.plan_uri
         if '/' not in plan_uri:
@@ -174,7 +225,8 @@ class AssemblyCommands(cli_utils.CommandsBase):
         """Delete an assembly."""
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['assembly_uuid'] = 'assembly'
+        args, _ = self.parser.parse_known_args()
         assem = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         cli_assem.AssemblyManager(self.client).delete(
             assembly_id=str(assem.uuid))
@@ -190,7 +242,7 @@ class AssemblyCommands(cli_utils.CommandsBase):
         """Get Logs."""
         self.parser.add_argument('assembly',
                                  help="Assembly uuid or name")
-        args = self.parser.parse_args()
+        args, _ = self.parser.parse_known_args()
         assem = self.client.assemblies.find(name_or_id=args.assembly)
         response = cli_assem.AssemblyManager(self.client).logs(
             assembly_id=str(assem.uuid))
@@ -219,7 +271,8 @@ class AssemblyCommands(cli_utils.CommandsBase):
         """Show an assembly's resource."""
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['assembly_uuid'] = 'assembly'
+        args, _ = self.parser.parse_known_args()
         response = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri', 'created_at', 'updated_at']
@@ -229,13 +282,24 @@ class AssemblyCommands(cli_utils.CommandsBase):
 
 
 class ComponentCommands(cli_utils.CommandsBase):
-    """Component targets."""
+    """Commands for working with components.
+
+Available commands:
+
+    solum component list
+        Print an index of all available components.
+
+    solum component show <UUID>
+        Print details about a component.
+
+    """
 
     def show(self):
         """Show a component's resource."""
         self.parser.add_argument('component_uuid',
                                  help="Component uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['component_uuid'] = 'component'
+        args, _ = self.parser.parse_known_args()
         response = self.client.components.find(name_or_id=args.component_uuid)
         fields = ['uuid', 'name', 'description', 'uri', 'assembly_uuid']
         data = dict([(f, getattr(response, f, ''))
@@ -250,7 +314,22 @@ class ComponentCommands(cli_utils.CommandsBase):
 
 
 class PipelineCommands(cli_utils.CommandsBase):
-    """Pipeline targets."""
+    """Commands for working with pipelines.
+
+Available commands:
+
+    solum pipeline list
+        Print an index of all available pipelines.
+
+    solum pipeline show <PIPELINE>
+        Print details about a pipeline.
+
+    solum pipeline create <PLAN_URI> <WORKBOOK_NAME> <NAME>
+        Create a pipeline from a given workbook and registered plan.
+
+    solum pipeline delete <PIPELINE>
+        Destroy a pipeline.
+    """
 
     def create(self):
         """Create a pipeline."""
@@ -261,7 +340,9 @@ class PipelineCommands(cli_utils.CommandsBase):
                                  help="Workbook name")
         self.parser.add_argument('name',
                                  help="Pipeline name")
-        args = self.parser.parse_args()
+        self.parser._names['plan_uri'] = 'plan URI'
+        self.parser._names['workbook_name'] = 'workbook'
+        args, _ = self.parser.parse_known_args()
         plan_uri = args.plan_uri
         if '/' not in plan_uri:
             # might be a plan uuid/name
@@ -284,7 +365,8 @@ class PipelineCommands(cli_utils.CommandsBase):
         """Delete an pipeline."""
         self.parser.add_argument('pipeline_uuid',
                                  help="Pipeline uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['pipeline_uuid'] = 'pipeline'
+        args, _ = self.parser.parse_known_args()
         pipeline = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
         cli_pipe.PipelineManager(self.client).delete(
             pipeline_id=str(pipeline.uuid))
@@ -299,7 +381,8 @@ class PipelineCommands(cli_utils.CommandsBase):
         """Show a pipeline's resource."""
         self.parser.add_argument('pipeline_uuid',
                                  help="Pipeline uuid or name")
-        args = self.parser.parse_args()
+        self.parser._names['pipeline_uuid'] = 'pipeline'
+        args, _ = self.parser.parse_known_args()
         response = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
         fields = ['uuid', 'name', 'description',
                   'trigger_uri', 'workbook_name', 'last_execution']
@@ -309,13 +392,33 @@ class PipelineCommands(cli_utils.CommandsBase):
 
 
 class LanguagePackCommands(cli_utils.CommandsBase):
-    """Language Pack targets."""
+    """Commands for working with language packs.
+
+Available commands:
+
+    solum languagepack list
+        Print and index of all available language packs.
+
+    solum languagepack show <LP>
+        Print the details of a language pack.
+
+    solum languagepack create <LPFILE>
+        Create a new language pack from a file.
+
+    solum languagepack build <NAME> <GIT_REPO> <METADATA>
+        Create a new language pack from a git repo.
+
+    solum languagepack delete <LP>
+        Destroy a language pack.
+
+    """
 
     def create(self):
         """Create a language pack."""
         self.parser.add_argument('lp_file',
                                  help="Language pack file.")
-        args = self.parser.parse_args()
+        self.parser._names['lp_file'] = 'languagepack file'
+        args, _ = self.parser.parse_known_args()
         with open(args.lp_file) as lang_pack_file:
             try:
                 data = json.load(lang_pack_file)
@@ -334,7 +437,8 @@ class LanguagePackCommands(cli_utils.CommandsBase):
         """Delete a language pack."""
         self.parser.add_argument('lp_id',
                                  help="Language pack id")
-        args = self.parser.parse_args()
+        self.parser._names['lp_id'] = 'languagepack'
+        args, _ = self.parser.parse_known_args()
         self.client.languagepacks.delete(lp_id=args.lp_id)
 
     def list(self):
@@ -348,7 +452,8 @@ class LanguagePackCommands(cli_utils.CommandsBase):
         """Get a language pack."""
         self.parser.add_argument('lp_id',
                                  help="Language pack id")
-        args = self.parser.parse_args()
+        self.parser._names['lp_id'] = 'languagepack'
+        args, _ = self.parser.parse_known_args()
         response = self.client.languagepacks.get(lp_id=args.lp_id)
         fields = ['uuid', 'name', 'description', 'compiler_versions',
                   'os_platform']
@@ -365,7 +470,8 @@ class LanguagePackCommands(cli_utils.CommandsBase):
                                        "language pack repository."))
         self.parser.add_argument('--lp_metadata',
                                  help="Language pack file.")
-        args = self.parser.parse_args()
+        self.parser._names['git_url'] = 'repo URL'
+        args, _ = self.parser.parse_known_args()
         lp_metadata = None
 
         if args.lp_metadata:
@@ -384,45 +490,136 @@ class LanguagePackCommands(cli_utils.CommandsBase):
         cliutils.print_dict(data, wrap=72)
 
 
+class PermissiveParser(argparse.ArgumentParser):
+    """An ArgumentParser that handles errors without exiting.
+
+    An argparse.ArgumentParser that doesn't sys.exit(2) when it
+    gets the wrong number of arguments. Gives us better control
+    over exception handling.
+
+    """
+
+    # Used in _check_positional_arguments to give a clearer name to missing
+    # positional arguments.
+    _names = None
+
+    def __init__(self, *args, **kwargs):
+        self._names = {}
+        kwargs['add_help'] = False
+        kwargs['description'] = argparse.SUPPRESS
+        kwargs['usage'] = argparse.SUPPRESS
+        super(PermissiveParser, self).__init__(*args, **kwargs)
+
+    def error(self, message):
+        raise exc.CommandError(message=message)
+
+    def _report_missing_args(self):
+        pass
+
+    def parse_known_args(self, *args, **kwargs):
+        # Instead of sys.exit(), how about we just hand back an
+        # empty Namespace and let someone else decide when to exit.
+        ns, rem = argparse.Namespace(), []
+        try:
+            kwargs['namespace'] = ns
+            ns, rem = super(PermissiveParser, self).parse_known_args(
+                *args, **kwargs)
+        except exc.CommandError:
+            pass
+        self._check_positional_arguments(ns)
+        return ns, rem
+
+    def _check_positional_arguments(self, namespace):
+        for argument in self._positionals._group_actions:
+            argname = argument.dest
+            localname = self._names.get(argname, argname)
+            article = 'an' if localname[0] in 'AEIOUaeiou' else 'a'
+            if not vars(namespace).get(argname):
+                message = 'You must specify %(article)s %(localname)s.'
+                message %= {'article': article, 'localname': localname}
+                raise exc.CommandError(message=message)
+
+
 def main():
-    """Basically the entry point."""
-    parser = argparse.ArgumentParser(conflict_handler='resolve')
-    parser.the_error = parser.error
-    parser.error = lambda m: None
+    """Solum command-line client.
+
+For a complete description, please see README-CLI.rst.
+Available commands:
+
+    solum help
+        Show this help message.
+
+
+    solum plan list
+        Print an index of all available plans.
+
+    solum plan show <PLAN>
+        Print details about a plan.
+
+    solum plan create <PLANFILE> [--param-file <PARAMFILE>]
+        Register a plan with Solum.
+
+    solum plan delete <PLAN>
+        Destroy a plan. Plans with dependent assemblies cannot be deleted.
+
+
+    solum assembly list
+        Print an index of all available assemblies.
+
+    solum assembly create <NAME> <PLAN_URI> [--description <DESCRIPTION>]
+        Create an assembly from a registered plan.
+
+    solum assembly delete <PLAN>
+        Destroy an assembly.
+
+
+    solum component list
+        Print an index of all available components.
+
+    solum component show <UUID>
+        Print details about a component.
+
+
+    solum pipeline list
+        Print an index of all available pipelines.
+
+    solum pipeline show <PIPELINE>
+        Print details about a pipeline.
+
+    solum pipeline create <PLAN_URI> <WORKBOOK_NAME> <NAME>
+        Create a pipeline from a given workbook and registered plan.
+
+    solum pipeline delete <PIPELINE>
+        Destroy a pipeline.
+    """
+
+    parser = PermissiveParser()
 
     resources = {
         'plan': PlanCommands,
         'assembly': AssemblyCommands,
         'pipeline': PipelineCommands,
         'languagepack': LanguagePackCommands,
-        'component': ComponentCommands
+        'component': ComponentCommands,
     }
 
     choices = resources.keys()
 
     parser.add_argument('resource', choices=choices,
+                        default='help',
                         help="Target noun to act upon")
 
-    resource = None
-    try:
-        parsed, _ = parser.parse_known_args()
-        resource = parsed.resource
-    except Exception:
-        print("Invalid target specified to act upon.\n")
-        parser.print_help()
-        sys.exit(1)
+    parsed, _ = parser.parse_known_args()
+    resource = vars(parsed).get('resource')
 
     if resource in resources:
         try:
             resources[resource](parser)
         except Exception as e:
-            print(strutils.safe_encode(six.text_type(e)), file=sys.stderr)
-            sys.exit(1)
+            print("ERROR: %s" % e.message)
 
     else:
-        cli_utils.show_help(resources)
-        print("\n")
-        parser.print_help()
+        print(main.__doc__)
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
-
 import fixtures
 import mock
 
 from solumclient import client as solum_client
 from solumclient.common import cli_utils
+import solumclient.solum
 from solumclient.tests import base
 
 
@@ -41,8 +40,7 @@ class TestCli_Utils(base.TestCase):
         ('token', dict(
             fake_env={'OS_AUTH_TOKEN': '123456',
                       'SOLUM_URL': 'http://10.0.2.15:9777'},
-            output={'os_auth_token': '123456',
-                    'os_auth_url': '',
+            output={'os_auth_url': '',
                     'solum_url': 'http://10.0.2.15:9777',
                     'solum_api_version': '1',
                     'os_username': '',
@@ -75,9 +73,7 @@ class TestCli_Utils(base.TestCase):
 
     @mock.patch.object(solum_client, "get_client")
     def test_env_parsing(self, mock_get_client):
-        parser = argparse.ArgumentParser(conflict_handler='resolve')
-        parser.the_error = parser.error
-        parser.error = lambda m: None
+        parser = solumclient.solum.PermissiveParser()
 
         self.make_env()
         self.fake_argv()

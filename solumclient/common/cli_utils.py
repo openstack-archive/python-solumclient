@@ -15,12 +15,9 @@
 
 import os
 
-from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
-
 from solumclient.builder import client as builder_client
 from solumclient import client as solum_client
 from solumclient.common import exc
-from solumclient.openstack.common.apiclient import exceptions
 
 
 class CommandsBase(object):
@@ -30,11 +27,43 @@ class CommandsBase(object):
 
     def __init__(self, parser):
         self.parser = parser
+
         self._get_global_flags()
+
+        try:
+            self._get_auth_flags()
+        except exc.CommandError as ce:
+            print(self.__doc__)
+            print("ERROR: %s" % ce.message)
+            return
+
         self.parser.add_argument('action',
                                  default='help',
                                  help='Action to perform on resource')
 
+        parsed, _ = self.parser.parse_known_args()
+        action = vars(parsed).get('action')
+
+        client_args = vars(parsed)
+        if 'os_auth_token' in client_args:
+            del client_args['os_auth_token']
+        if vars(parsed).get('action') == 'build':
+            self.client = builder_client.get_client(parsed.solum_api_version,
+                                                    **client_args)
+        else:
+            self.client = solum_client.get_client(parsed.solum_api_version,
+                                                  **client_args)
+
+        if parsed.action in self._actions:
+            try:
+                return self._actions[action]()
+            except exc.CommandError as ce:
+                print(self.__doc__)
+                print("ERROR: %s" % ce.message)
+        else:
+            print(self.__doc__)
+
+    def _get_auth_flags(self):
         self.parser.add_argument('--os-username',
                                  default=env('OS_USERNAME'),
                                  help='Defaults to env[OS_USERNAME]')
@@ -59,22 +88,15 @@ class CommandsBase(object):
                                  default=env('SOLUM_URL'),
                                  help='Defaults to env[SOLUM_URL]')
 
+        api_version = env('SOLUM_API_VERSION', default='1')
         self.parser.add_argument('--solum-api-version',
-                                 default=env(
-                                     'SOLUM_API_VERSION', default='1'),
+                                 default=api_version,
                                  help='Defaults to env[SOLUM_API_VERSION] '
-                                 'or 1')
+                                      'or 1')
 
-        action = None
+        parsed, _ = self.parser.parse_known_args()
 
-        try:
-            parsed, _ = parser.parse_known_args()
-            action = parsed.action
-        except Exception:
-            # Parser has a habit of doing this when an arg is missing.
-            self.parser.print_help()
-
-        client_args = parsed.__dict__
+        client_args = vars(parsed)
 
         if not parsed.os_auth_token:
             # Remove arguments that are not to be passed to the client in this
@@ -101,28 +123,6 @@ class CommandsBase(object):
                                        "either --os-auth-url or via "
                                        "env[OS_AUTH_URL]")
 
-        if client_args['action'] == 'build':
-            self.client = builder_client.get_client(parsed.solum_api_version,
-                                                    **client_args)
-        else:
-            self.client = solum_client.get_client(parsed.solum_api_version,
-                                                  **client_args)
-
-        if action in self._actions:
-            try:
-                self.parser.error = self.parser.the_error
-                self._actions[action]()
-            except (exceptions.ClientException, ks_exc.ClientException):
-                # Don't print usage help on functional errors.
-                raise
-            except Exception:
-                self.parser.print_help()
-                raise
-        else:
-            self.help()
-            raise exceptions.CommandError('"%s" is not a valid action' %
-                                          action)
-
     @property
     def _actions(self):
         """Action handler."""
@@ -135,21 +135,6 @@ class CommandsBase(object):
         """Get global flags."""
         # Good location to add_argument() global options like --verbose
         pass
-
-    def help(self):
-        """Print this help message."""
-        show_help(self._actions, 'actions')
-
-
-def show_help(resources, name='targets or nouns'):
-    """Help screen."""
-    print("Available %s:" % name)
-    for resource in sorted(resources):
-        commands = resources.get(resource)
-        docstring = "<%s %s>" % (name.capitalize(), resource)
-        if commands.__doc__:
-            docstring = commands.__doc__
-        print("\t%-20s%s" % (resource, docstring))
 
 
 def env(*vars, **kwargs):

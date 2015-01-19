@@ -100,9 +100,7 @@ class TestSolum(base.TestCase):
 
     def test_help(self):
         required = [
-            '.*?^usage:'
-            '.*?^positional arguments'
-            '.*?^optional arguments'
+            '.*?^Available commands:'
 
         ]
         help_text = self.shell('--help')
