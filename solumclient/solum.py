@@ -490,6 +490,232 @@ Available commands:
         cliutils.print_dict(data, wrap=72)
 
 
+class AppCommands(cli_utils.CommandsBase):
+    """Commands for working with applications.
+
+Available commands:
+    solum app list
+        Print an index of all deployed applications.
+
+    solum app show <APP>
+        Print detailed information about one application.
+
+    solum app create [--planfile <PLANFILE>] [--git-url <GIT_URL>]
+                     [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
+                     [--name <NAME>] [--desc <DESCRIPTION>]
+        Register a new application with Solum.
+
+    solum app deploy <APP>
+        Deploy an application, building any applicable artifacts first.
+
+    solum app delete <APP>
+        Delete an application and all related artifacts.
+"""
+
+    def _get_assemblies_by_plan(self, plan):
+        # TODO(datsun180b): Write this.
+        return []
+
+    def _show_public_keys(self, artifacts):
+        # Shamelessly plucked from PlanCommands.
+        public_keys = {}
+        if artifacts:
+            for arti in artifacts:
+                if arti.content and ('public_key' in arti.content):
+                    public_keys.update(
+                        {arti.content['href']: arti.content['public_key']})
+        if public_keys:
+            print('Important:')
+            print('  Solum has generated SSH keypair for your ' +
+                  'private github repository/ies.')
+            print('  Please add these public SSH keys as github deploy keys.')
+            print('  This enables solum assembly create to securely ' +
+                  'clone/pull your private repository/ies.')
+            print('  More details on github deploy keys: ' +
+                  'https://developer.github.com/guides/' +
+                  'managing-deploy-keys/#deploy-keys\n')
+            for href, pub_key in public_keys.items():
+                print('%s :\n  %s' % (href, pub_key))
+
+    def list(self):
+        """Print a list of all deployed applications."""
+        # This is just "assembly list".
+        # TODO(datsun180b): List each plan and its associated
+        # assemblies.
+        fields = ['uuid', 'name', 'description', 'status', 'created_at',
+                  'updated_at']
+        assemblies = self.client.assemblies.list()
+        cliutils.print_list(assemblies, fields, sortby_index=5)
+
+    def show(self):
+        """Print detailed information about one application."""
+        # This is just "plan show <PLAN>".
+        # TODO(datsun180b): List the details of the plan, and
+        # also the current build state, build number, and running
+        # assembly status. We don't have all the pieces for that yet.
+        self.parser.add_argument('app',
+                                 help="Application name")
+        self.parser._names['app'] = 'application'
+        args, _ = self.parser.parse_known_args()
+        plan = self.client.plans.find(name_or_id=args.app)
+        fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
+        data = dict([(f, getattr(plan, f, ''))
+                     for f in fields])
+        artifacts = copy.deepcopy(data['artifacts'])
+        del data['artifacts']
+        cliutils.print_dict(data, wrap=72)
+        self._show_public_keys(artifacts)
+
+    def create(self):
+        """Register a new application with Solum."""
+        # This is just "plan create" with a little proactive
+        # parsing of the planfile.
+
+        self.parser.add_argument('--planfile',
+                                 help="Local planfile location")
+        self.parser.add_argument('--git-url',
+                                 help='Source repo')
+        self.parser.add_argument('--langpack',
+                                 help='Language pack')
+
+        self.parser.add_argument('--run-cmd',
+                                 help="Application entry point")
+        self.parser.add_argument('--name',
+                                 help="Application name")
+        self.parser.add_argument('--desc',
+                                 help="Application description")
+
+        args, _ = self.parser.parse_known_args()
+
+        # Get the plan file. Either get it from args, or supply
+        # a skeleton.
+        plan_definition = None
+        if args.planfile is not None:
+            planfile = args.planfile
+            try:
+                with open(planfile) as definition_file:
+                    definition = definition_file.read()
+                    plan_definition = yamlutils.load(definition)
+            except IOError:
+                message = "Could not open plan file %s." % planfile
+                raise exc.CommandError(message=message)
+            except ValueError:
+                message = ("Plan file %s was not a valid YAML mapping." %
+                           planfile)
+                raise exc.CommandError(message=message)
+        else:
+            plan_definition = {
+                'version': 1,
+                'artifacts': [{
+                    'artifact_type': 'heroku',
+                    'content': {},
+                    }]}
+
+        # NOTE: This assumes the plan contains exactly one artifact.
+
+        # Check for the language pack. Check args first, then planfile.
+        # If it's neither of those places, prompt for it and update the
+        # plan definition.
+        langpack = None
+        if args.langpack is not None:
+            plan_definition['artifacts'][0]['language_pack'] = args.langpack
+        elif plan_definition['artifacts'][0].get('languagepack') is None:
+            langpacks = self.client.languagepacks.list()
+            lpnames = [lp.name for lp in langpacks]
+            fields = ['uuid', 'name', 'description', 'compiler_versions',
+                      'os_platform']
+            cliutils.print_list(langpacks, fields)
+            langpack = raw_input("Please choose a languagepack from the "
+                                 "above list.\n> ")
+            while langpack not in lpnames:
+                langpack = raw_input("You must choose one of the named "
+                                     "language packs.\n> ")
+            plan_definition['artifacts'][0]['language_pack'] = langpack
+
+        # Check for the git repo URL. Check args first, then the planfile.
+        # If it's neither of those places, prompt for it and update the
+        # plan definition.
+
+        git_url = None
+        if args.git_url is not None:
+            plan_definition['artifacts'][0]['content']['href'] = args.git_url
+        if plan_definition['artifacts'][0]['content'].get('href') is None:
+            git_url = raw_input("Please specify a git repository URL for "
+                                "your application.\n> ")
+            plan_definition['artifacts'][0]['content']['href'] = git_url
+
+        # Check for the entry point. Check args first, then the planfile.
+        # If it's neither of those places, prompt for it and update the
+        # plan definition.
+        '''
+        run_cmd = None
+        if args.run_cmd is not None:
+            plan_definition['artifacts'][0]['run_cmd'] = args.run_cmd
+        if plan_definition['artifacts'][0].get('run_cmd') is None:
+            run_cmd = raw_input("Please specify an entry point for your "
+                                "application.\n> ")
+            plan_definition['artifacts'][0]['run_cmd'] = run_cmd
+        '''
+
+        # Update name and description if specified.
+        if args.name is not None:
+            plan_definition['name'] = args.name
+        if not plan_definition.get('name'):
+            name = ''
+            while not name:
+                name = raw_input("Please name the application.\n> ")
+            plan_definition['name'] = name
+
+        if args.desc is not None:
+            plan_definition['description'] = args.desc
+
+        plan = self.client.plans.create(yamlutils.dump(plan_definition))
+        fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
+        data = dict([(f, getattr(plan, f, ''))
+                     for f in fields])
+        artifacts = copy.deepcopy(data['artifacts'])
+        del data['artifacts']
+        cliutils.print_dict(data, wrap=72)
+        self._show_public_keys(artifacts)
+
+    def deploy(self):
+        """Deploy an application, building any applicable artifacts first."""
+        # This is just "assembly create" with a little bit of introspection.
+        # TODO(datsun180b): Add build() method, and add --build-id argument
+        # to this method to allow for build-only and deploy-only workflows.
+        self.parser.add_argument('app',
+                                 help="Application name")
+        self.parser._names['app'] = 'application'
+        args, _ = self.parser.parse_known_args()
+        plan = self.client.plans.find(name_or_id=args.app)
+
+        assembly = self.client.assemblies.create(name=plan.name,
+                                                 description=plan.description,
+                                                 plan_uri=plan.uri)
+        fields = ['uuid', 'name', 'description', 'status', 'application_uri',
+                  'trigger_uri']
+        data = dict([(f, getattr(assembly, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+    def delete(self):
+        """Delete an application and all related artifacts."""
+        # This is "assembly delete" followed by "plan delete".
+        self.parser.add_argument('app',
+                                 help="Application name")
+        self.parser._names['app'] = 'application'
+        args, _ = self.parser.parse_known_args()
+        plan = self.client.plans.find(name_or_id=args.app)
+        assemblies = [a for a in self.client.assemblies.list()
+                      if a.plan_uri.split('/')[-1] == plan.uuid]
+        for assembly in assemblies:
+            assem = self.client.assemblies.find(name_or_id=assembly.uuid)
+            cli_assem.AssemblyManager(self.client).delete(
+                assembly_id=str(assem.uuid))
+
+        cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
+
+
 class PermissiveParser(argparse.ArgumentParser):
     """An ArgumentParser that handles errors without exiting.
 
@@ -550,6 +776,24 @@ Available commands:
         Show this help message.
 
 
+    solum app list
+        Print an index of all deployed applications.
+
+    solum app show <APP>
+        Print detailed information about one application.
+
+    solum app create [--planfile <PLANFILE>] [--git-url <GIT_URL>]
+                     [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
+                     [--name <NAME>] [--desc <DESCRIPTION>]
+        Register a new application with Solum.
+
+    solum app deploy <APP>
+        Deploy an application, building any applicable artifacts first.
+
+    solum app delete <APP>
+        Delete an application and all related artifacts.
+
+
     solum plan list
         Print an index of all available plans.
 
@@ -596,6 +840,7 @@ Available commands:
     parser = PermissiveParser()
 
     resources = {
+        'app': AppCommands,
         'plan': PlanCommands,
         'assembly': AssemblyCommands,
         'pipeline': PipelineCommands,
