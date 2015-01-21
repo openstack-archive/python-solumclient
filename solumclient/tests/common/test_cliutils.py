@@ -36,7 +36,9 @@ class TestCli_Utils(base.TestCase):
                     'os_tenant_name': 'tenant_name',
                     'os_auth_url': 'http://no.where',
                     'os_password': 'password',
-                    'action': 'create'})),
+                    'action': 'create',
+                    'json': False,
+                    })),
         ('token', dict(
             fake_env={'OS_AUTH_TOKEN': '123456',
                       'SOLUM_URL': 'http://10.0.2.15:9777'},
@@ -46,7 +48,9 @@ class TestCli_Utils(base.TestCase):
                     'os_username': '',
                     'os_tenant_name': '',
                     'os_password': '',
-                    'action': 'create'})),
+                    'action': 'create',
+                    'json': False,
+                    })),
         ('solum_url_with_no_token', dict(
             fake_env={'OS_USERNAME': 'username',
                       'OS_PASSWORD': 'password',
@@ -59,7 +63,9 @@ class TestCli_Utils(base.TestCase):
                     'os_username': 'username',
                     'os_tenant_name': 'tenant_name',
                     'os_password': 'password',
-                    'action': 'create'})),
+                    'action': 'create',
+                    'json': False,
+                    })),
     ]
 
     # Patch os.environ to avoid reading auth info

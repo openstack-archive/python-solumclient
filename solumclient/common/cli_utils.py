@@ -14,15 +14,18 @@
 # limitations under the License.
 
 import os
+import pprint
 
 from solumclient import client as solum_client
 from solumclient.common import exc
+from solumclient.openstack.common import cliutils
 
 
 class CommandsBase(object):
     """Base command parsing class."""
     parser = None
     solum = None
+    json_output = False
 
     def __init__(self, parser):
         self.parser = parser
@@ -130,7 +133,44 @@ class CommandsBase(object):
     def _get_global_flags(self):
         """Get global flags."""
         # Good location to add_argument() global options like --verbose
-        pass
+        self.parser.add_argument('--json',
+                                 action='store_true',
+                                 help='JSON formatted output')
+
+        args, _ = self.parser.parse_known_args()
+        if args.json:
+            self.json_output = True
+
+    def _sanitized_fields(self, fields):
+        def allowed(field):
+            if field.startswith('_'):
+                return False
+            if field == 'manager':
+                return False
+            if field == 'artifacts':
+                return False
+            return True
+        return [f for f in fields
+                if allowed(f)]
+
+    def _print_dict(self, obj, fields, dict_property="Property", wrap=0):
+        fields = self._sanitized_fields(fields)
+        subset = dict([(f, getattr(obj, f, '')) for f in fields])
+        if self.json_output:
+            pprint.pprint(subset, width=wrap)
+        else:
+            cliutils.print_dict(subset, dict_property, wrap)
+
+    def _print_list(self, objs, fields, formatters=None, sortby_index=0,
+                    mixed_case_fields=None, field_labels=None):
+        fields = self._sanitized_fields(fields)
+        if self.json_output:
+            subsets = [dict([(f, getattr(obj, f, '')) for f in fields])
+                       for obj in objs]
+            pprint.pprint(subsets)
+        else:
+            cliutils.print_list(objs, fields, formatters, sortby_index,
+                                mixed_case_fields, field_labels)
 
 
 def env(*vars, **kwargs):
