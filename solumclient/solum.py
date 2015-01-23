@@ -619,7 +619,7 @@ Available commands:
         langpack = None
         if args.langpack is not None:
             plan_definition['artifacts'][0]['language_pack'] = args.langpack
-        elif plan_definition['artifacts'][0].get('languagepack') is None:
+        elif plan_definition['artifacts'][0].get('language_pack') is None:
             langpacks = self.client.languagepacks.list()
             lpnames = [lp.name for lp in langpacks]
             fields = ['uuid', 'name', 'description', 'compiler_versions',
