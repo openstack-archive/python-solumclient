@@ -28,6 +28,13 @@ class CommandError(BaseException):
     """Invalid usage of CLI."""
 
 
+class NotUnique(BaseException):
+    """Name refers to more than one of a given resource."""
+    def __init__(self, resource='resource'):
+        message = "More than one %s by that name. Retry with the UUID."
+        self.message = message % resource
+
+
 def from_response(response, method, url):
     """Returns an instance of :class:`HttpError` or subclass based on response.
 
