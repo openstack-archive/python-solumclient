@@ -337,7 +337,7 @@ class TestSolum(base.TestCase):
             expected_show_pub_keys_args)
 
     # LanguagePack Tests #
-    @mock.patch.object(languagepack.LanguagePackManager, "list")
+    @mock.patch.object(image.ImageManager, "list")
     def test_languagepack_list(self, mock_lp_list):
         self.make_env()
         self.shell("languagepack list")
@@ -381,17 +381,17 @@ class TestSolum(base.TestCase):
                 source_uri='github.com/test',
                 lp_metadata=lp_metadata)
 
-    @mock.patch.object(languagepack.LanguagePackManager, "delete")
+    @mock.patch.object(image.ImageManager, "delete")
     def test_languagepack_delete(self, mock_lp_delete):
         self.make_env()
         self.shell("languagepack delete fake-lp-id")
         mock_lp_delete.assert_called_once_with(lp_id='fake-lp-id')
 
-    @mock.patch.object(languagepack.LanguagePackManager, "get")
+    @mock.patch.object(image.ImageManager, "find")
     def test_languagepack_get(self, mock_lp_get):
         self.make_env()
         self.shell("languagepack show fake-lp-id1")
-        mock_lp_get.assert_called_once_with(lp_id='fake-lp-id1')
+        mock_lp_get.assert_called_once_with(lp_uuid='fake-lp-id1')
 
     # Component Tests #
     @mock.patch.object(component.ComponentManager, "list")
