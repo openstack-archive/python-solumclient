@@ -582,6 +582,11 @@ Available commands:
                                  help="Application name")
         self.parser.add_argument('--desc',
                                  help="Application description")
+        self.parser.add_argument('--param-file',
+                                 dest='param_file',
+                                 help="A yaml file containing custom"
+                                      " parameters to be used in the"
+                                      " application")
 
         args, _ = self.parser.parse_known_args()
 
@@ -666,6 +671,19 @@ Available commands:
 
         if args.desc is not None:
             plan_definition['description'] = args.desc
+
+        if args.param_file is not None:
+            try:
+                with open(args.param_file) as param_f:
+                    param_def = param_f.read()
+                plan_definition['parameters'] = yamlutils.load(param_def)
+            except IOError:
+                message = "Could not open param file %s." % args.param_file
+                raise exc.CommandError(message=message)
+            except ValueError:
+                message = ("Param file %s was not YAML." %
+                           args.param_file)
+                raise exc.CommandError(message=message)
 
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
