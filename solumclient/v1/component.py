@@ -13,7 +13,9 @@
 # under the License.
 
 from solumclient.common import base as solum_base
+from solumclient.common import exc
 from solumclient.openstack.common.apiclient import base as apiclient_base
+from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common import uuidutils
 
 
@@ -44,9 +46,13 @@ class ComponentManager(solum_base.CrudManager, solum_base.FindMixin):
             return super(ComponentManager, self).get(base_url="/v1", **kwargs)
         elif 'name_or_id' in kwargs:
             name_or_uuid = kwargs['name_or_id']
-            if uuidutils.is_uuid_like(name_or_uuid):
-                return super(ComponentManager, self).get(
-                    base_url="/v1",
-                    component_id=name_or_uuid)
-            else:
-                return super(ComponentManager, self).findone(name=name_or_uuid)
+            try:
+                if uuidutils.is_uuid_like(name_or_uuid):
+                    return super(ComponentManager, self).get(
+                        base_url="/v1",
+                        component_id=name_or_uuid)
+                else:
+                    return super(ComponentManager, self).findone(
+                        name=name_or_uuid)
+            except exceptions.NoUniqueMatch:
+                raise exc.NotUnique(resource='Component')
