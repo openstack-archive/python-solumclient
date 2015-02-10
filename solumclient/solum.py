@@ -48,6 +48,7 @@ import sys
 from solumclient.common import cli_utils
 from solumclient.common import exc
 from solumclient.common import yamlutils
+from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common import cliutils
 from solumclient.v1 import assembly as cli_assem
 from solumclient.v1 import pipeline as cli_pipe
@@ -467,7 +468,7 @@ Available commands:
                                  help=("Github url of custom "
                                        "language pack repository."))
         self.parser.add_argument('--lp_metadata',
-                                 help="Language pack file.")
+                                 help="Language pack metadata file.")
         self.parser._names['git_url'] = 'repo URL'
         args, _ = self.parser.parse_known_args()
         lp_metadata = None
@@ -476,12 +477,17 @@ Available commands:
             with open(args.lp_metadata) as lang_pack_metadata:
                 try:
                     lp_metadata = json.dumps(json.load(lang_pack_metadata))
-                except ValueError as exc:
-                    print("Error in language pack file: %s", str(exc))
-                    sys.exit(1)
-        response = self.bldclient.images.create(name=args.name,
-                                                source_uri=args.git_url,
-                                                lp_metadata=lp_metadata)
+                except ValueError as excp:
+                    message = ("Malformed metadata file: %s" % str(excp))
+                    raise exc.CommandError(message=message)
+        try:
+            response = self.bldclient.images.create(name=args.name,
+                                                    source_uri=args.git_url,
+                                                    lp_metadata=lp_metadata)
+        except exceptions.Conflict as conflict:
+            message = ("%s" % conflict.message)
+            raise exc.CommandError(message=message)
+
         fields = ['uuid', 'name', 'decription', 'state']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
