@@ -248,7 +248,7 @@ Available commands:
         response = cli_assem.AssemblyManager(self.client).logs(
             assembly_id=str(assem.uuid))
 
-        fields = ["assembly_uuid"]
+        fields = ["resource_uuid"]
         for log in response:
             strategy_info = json.loads(log.strategy_info)
             if log.strategy == 'local':
