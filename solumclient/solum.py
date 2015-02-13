@@ -629,10 +629,9 @@ Available commands:
         if args.langpack is not None:
             plan_definition['artifacts'][0]['language_pack'] = args.langpack
         elif plan_definition['artifacts'][0].get('language_pack') is None:
-            langpacks = self.client.languagepacks.list()
+            langpacks = self.bldclient.images.list()
             lpnames = [lp.name for lp in langpacks]
-            fields = ['uuid', 'name', 'description', 'compiler_versions',
-                      'os_platform']
+            fields = ['uuid', 'name', 'description', 'state', 'source_uri']
             cliutils.print_list(langpacks, fields)
             langpack = raw_input("Please choose a languagepack from the "
                                  "above list.\n> ")
