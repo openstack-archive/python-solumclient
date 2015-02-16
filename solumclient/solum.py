@@ -87,7 +87,7 @@ Available commands:
                                       " examples")
 
         self.parser._names['plan_file'] = 'plan file'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         try:
             with open(args.plan_file) as definition_file:
                 plan_definition = definition_file.read()
@@ -127,7 +127,7 @@ Available commands:
                                  help="Tenant/project-wide unique "
                                  "plan uuid or name")
         self.parser._names['plan_uuid'] = 'plan'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.plan_uuid)
         cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
@@ -136,7 +136,7 @@ Available commands:
         self.parser.add_argument('plan_uuid',
                                  help="Plan uuid or name")
         self.parser._names['plan_uuid'] = 'plan'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         response = self.client.plans.find(name_or_id=args.plan_uuid)
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(response, f, ''))
@@ -204,7 +204,7 @@ Available commands:
         self.parser.add_argument('--description',
                                  help="Assembly description")
         self.parser._names['plan_uri'] = 'plan URI'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         name = args.name
         plan_uri = args.plan_uri
         if '/' not in plan_uri:
@@ -228,7 +228,7 @@ Available commands:
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid or name")
         self.parser._names['assembly_uuid'] = 'assembly'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         assem = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         cli_assem.AssemblyManager(self.client).delete(
             assembly_id=str(assem.uuid))
@@ -244,7 +244,7 @@ Available commands:
         """Get Logs."""
         self.parser.add_argument('assembly',
                                  help="Assembly uuid or name")
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         assem = self.client.assemblies.find(name_or_id=args.assembly)
         response = cli_assem.AssemblyManager(self.client).logs(
             assembly_id=str(assem.uuid))
@@ -274,7 +274,7 @@ Available commands:
         self.parser.add_argument('assembly_uuid',
                                  help="Assembly uuid or name")
         self.parser._names['assembly_uuid'] = 'assembly'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         response = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri', 'created_at', 'updated_at']
@@ -301,7 +301,7 @@ Available commands:
         self.parser.add_argument('component_uuid',
                                  help="Component uuid or name")
         self.parser._names['component_uuid'] = 'component'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         response = self.client.components.find(name_or_id=args.component_uuid)
         fields = ['uuid', 'name', 'description', 'uri', 'assembly_uuid']
         data = dict([(f, getattr(response, f, ''))
@@ -344,7 +344,7 @@ Available commands:
                                  help="Pipeline name")
         self.parser._names['plan_uri'] = 'plan URI'
         self.parser._names['workbook_name'] = 'workbook'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         plan_uri = args.plan_uri
         if '/' not in plan_uri:
             # might be a plan uuid/name
@@ -368,7 +368,7 @@ Available commands:
         self.parser.add_argument('pipeline_uuid',
                                  help="Pipeline uuid or name")
         self.parser._names['pipeline_uuid'] = 'pipeline'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         pipeline = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
         cli_pipe.PipelineManager(self.client).delete(
             pipeline_id=str(pipeline.uuid))
@@ -384,7 +384,7 @@ Available commands:
         self.parser.add_argument('pipeline_uuid',
                                  help="Pipeline uuid or name")
         self.parser._names['pipeline_uuid'] = 'pipeline'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         response = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
         fields = ['uuid', 'name', 'description',
                   'trigger_uri', 'workbook_name', 'last_execution']
@@ -452,7 +452,7 @@ Available commands:
         self.parser.add_argument('lp_id',
                                  help="Language pack id")
         self.parser._names['lp_id'] = 'languagepack'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         self.client.languagepacks.delete(lp_id=args.lp_id)
 
     def list(self):
@@ -466,7 +466,7 @@ Available commands:
         self.parser.add_argument('lp_id',
                                  help="Language pack id")
         self.parser._names['lp_id'] = 'languagepack'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         response = self.client.languagepacks.find(name_or_id=args.lp_id)
         fields = ['uuid', 'name', 'description', 'state', 'source_uri']
         data = dict([(f, getattr(response, f, ''))
@@ -477,7 +477,7 @@ Available commands:
         """Get Logs."""
         self.parser.add_argument('lp_id',
                                  help="languagepack uuid or name")
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         response = cli_lp.LanguagePackManager(self.client).logs(
             lp_id=str(args.lp_id))
 
@@ -512,7 +512,7 @@ Available commands:
     solum app show <APP>
         Print detailed information about one application.
 
-    solum app create [--planfile <PLANFILE>] [--git-url <GIT_URL>]
+    solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
                      [--name <NAME>] [--desc <DESCRIPTION>]
         Register a new application with Solum.
@@ -568,7 +568,7 @@ Available commands:
         self.parser.add_argument('app',
                                  help="Application name")
         self.parser._names['app'] = 'application'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.app)
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         data = dict([(f, getattr(plan, f, ''))
@@ -583,7 +583,8 @@ Available commands:
         # This is just "plan create" with a little proactive
         # parsing of the planfile.
 
-        self.parser.add_argument('--planfile',
+        self.parser.add_argument('--plan-file',
+                                 dest='planfile',
                                  help="Local planfile location")
         self.parser.add_argument('--git-url',
                                  help='Source repo')
@@ -602,7 +603,7 @@ Available commands:
                                       " parameters to be used in the"
                                       " application")
 
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
 
         # Get the plan file. Either get it from args, or supply
         # a skeleton.
@@ -715,7 +716,7 @@ Available commands:
         self.parser.add_argument('app',
                                  help="Application name")
         self.parser._names['app'] = 'application'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.app)
 
         assembly = self.client.assemblies.create(name=plan.name,
@@ -733,7 +734,7 @@ Available commands:
         self.parser.add_argument('app',
                                  help="Application name")
         self.parser._names['app'] = 'application'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.app)
         assemblies = [a for a in self.client.assemblies.list()
                       if a.plan_uri.split('/')[-1] == plan.uuid]
@@ -771,9 +772,14 @@ class PermissiveParser(argparse.ArgumentParser):
     def _report_missing_args(self):
         pass
 
+    def parse_args(self, *args, **kwargs):
+        ns, rem = self.parse_known_args(*args, **kwargs)
+        if rem:
+            unrec = ', '.join([a.split('=')[0].lstrip('-') for a in rem])
+            raise exc.CommandError("Unrecognized arguments: %s" % unrec)
+        return ns
+
     def parse_known_args(self, *args, **kwargs):
-        # Instead of sys.exit(), how about we just hand back an
-        # empty Namespace and let someone else decide when to exit.
         ns, rem = argparse.Namespace(), []
         try:
             kwargs['namespace'] = ns
@@ -811,7 +817,7 @@ Available commands:
     solum app show <APP>
         Print detailed information about one application.
 
-    solum app create [--planfile <PLANFILE>] [--git-url <GIT_URL>]
+    solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
                      [--name <NAME>] [--desc <DESCRIPTION>]
         Register a new application with Solum.
