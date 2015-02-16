@@ -391,7 +391,7 @@ class TestSolum(base.TestCase):
     def test_languagepack_get(self, mock_lp_get):
         self.make_env()
         self.shell("languagepack show fake-lp-id1")
-        mock_lp_get.assert_called_once_with(lp_uuid='fake-lp-id1')
+        mock_lp_get.assert_called_once_with(name_or_id='fake-lp-id1')
 
     # Component Tests #
     @mock.patch.object(component.ComponentManager, "list")

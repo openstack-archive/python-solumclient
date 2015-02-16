@@ -450,11 +450,11 @@ Available commands:
 
     def show(self):
         """Get a language pack."""
-        self.parser.add_argument('lp_uuid',
+        self.parser.add_argument('lp_id',
                                  help="Language pack id")
-        self.parser._names['lp_uuid'] = 'languagepack'
+        self.parser._names['lp_id'] = 'languagepack'
         args, _ = self.parser.parse_known_args()
-        response = self.bldclient.images.find(lp_uuid=args.lp_uuid)
+        response = self.bldclient.images.find(name_or_id=args.lp_id)
         fields = ['uuid', 'name', 'description', 'state', 'source_uri']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])

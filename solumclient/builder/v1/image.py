@@ -14,7 +14,6 @@
 
 from solumclient.common import base as solum_base
 from solumclient.openstack.common.apiclient import base as apiclient_base
-from solumclient.openstack.common import uuidutils
 
 
 class Image(apiclient_base.Resource):
@@ -37,13 +36,6 @@ class ImageManager(solum_base.CrudManager, solum_base.FindMixin):
         return super(ImageManager, self).list(base_url="/v1", **kwargs)
 
     def find(self, **kwargs):
-        if 'lp_uuid' in kwargs:
-            return super(ImageManager, self).get(base_url="/v1", **kwargs)
-        elif 'name_or_id' in kwargs:
-            name_or_uuid = kwargs['name_or_id']
-            if uuidutils.is_uuid_like(name_or_uuid):
-                return super(ImageManager, self).get(
-                    base_url="/v1",
-                    lp_uuid=name_or_uuid)
-            else:
-                return super(ImageManager, self).findone(name=name_or_uuid)
+        name_or_uuid = kwargs['name_or_id']
+        return super(ImageManager, self).get(base_url="/v1",
+                                             image_id=name_or_uuid)
