@@ -51,6 +51,7 @@ from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common import cliutils
 from solumclient.v1 import assembly as cli_assem
+from solumclient.v1 import languagepack as cli_lp
 from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
 
@@ -397,71 +398,24 @@ class LanguagePackCommands(cli_utils.CommandsBase):
 
 Available commands:
 
+    solum languagepack create <NAME> <GIT_REPO> <METADATA>
+        Create a new language pack from a git repo.
+
     solum languagepack list
         Print and index of all available language packs.
 
     solum languagepack show <LP>
         Print the details of a language pack.
 
-    solum languagepack create <LPFILE>
-        Create a new language pack from a file.
-
-    solum languagepack build <NAME> <GIT_REPO> <METADATA>
-        Create a new language pack from a git repo.
-
     solum languagepack delete <LP>
         Destroy a language pack.
 
+    solum languagepack logs <UUID>
+        Show logs for a language pack.
     """
 
     def create(self):
         """Create a language pack."""
-        self.parser.add_argument('lp_file',
-                                 help="Language pack file.")
-        self.parser._names['lp_file'] = 'languagepack file'
-        args, _ = self.parser.parse_known_args()
-        with open(args.lp_file) as lang_pack_file:
-            try:
-                data = json.load(lang_pack_file)
-            except ValueError as exc:
-                print("Error in language pack file: %s", str(exc))
-                sys.exit(1)
-
-        languagepack = self.client.languagepacks.create(**data)
-        fields = ['uuid', 'name', 'description', 'compiler_versions',
-                  'os_platform']
-        data = dict([(f, getattr(languagepack, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
-
-    def delete(self):
-        """Delete a language pack."""
-        self.parser.add_argument('lp_id',
-                                 help="Language pack id")
-        self.parser._names['lp_id'] = 'languagepack'
-        args, _ = self.parser.parse_known_args()
-        self.bldclient.images.delete(lp_id=args.lp_id)
-
-    def list(self):
-        """List all language packs."""
-        fields = ['uuid', 'name', 'description', 'state', 'source_uri']
-        response = self.bldclient.images.list()
-        cliutils.print_list(response, fields)
-
-    def show(self):
-        """Get a language pack."""
-        self.parser.add_argument('lp_id',
-                                 help="Language pack id")
-        self.parser._names['lp_id'] = 'languagepack'
-        args, _ = self.parser.parse_known_args()
-        response = self.bldclient.images.find(name_or_id=args.lp_id)
-        fields = ['uuid', 'name', 'description', 'state', 'source_uri']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
-
-    def build(self):
-        """Build a custom language pack."""
         self.parser.add_argument('name',
                                  help="Language pack name.")
         self.parser.add_argument('git_url',
@@ -481,9 +435,9 @@ Available commands:
                     message = ("Malformed metadata file: %s" % str(excp))
                     raise exc.CommandError(message=message)
         try:
-            response = self.bldclient.images.create(name=args.name,
-                                                    source_uri=args.git_url,
-                                                    lp_metadata=lp_metadata)
+            response = self.client.languagepacks.create(
+                name=args.name, source_uri=args.git_url,
+                lp_metadata=lp_metadata)
         except exceptions.Conflict as conflict:
             message = ("%s" % conflict.message)
             raise exc.CommandError(message=message)
@@ -492,6 +446,60 @@ Available commands:
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
+
+    def delete(self):
+        """Delete a language pack."""
+        self.parser.add_argument('lp_id',
+                                 help="Language pack id")
+        self.parser._names['lp_id'] = 'languagepack'
+        args, _ = self.parser.parse_known_args()
+        self.client.languagepacks.delete(lp_id=args.lp_id)
+
+    def list(self):
+        """List all language packs."""
+        fields = ['uuid', 'name', 'description', 'state', 'source_uri']
+        response = self.client.languagepacks.list()
+        cliutils.print_list(response, fields)
+
+    def show(self):
+        """Get a language pack."""
+        self.parser.add_argument('lp_id',
+                                 help="Language pack id")
+        self.parser._names['lp_id'] = 'languagepack'
+        args, _ = self.parser.parse_known_args()
+        response = self.client.languagepacks.find(name_or_id=args.lp_id)
+        fields = ['uuid', 'name', 'description', 'state', 'source_uri']
+        data = dict([(f, getattr(response, f, ''))
+                     for f in fields])
+        cliutils.print_dict(data, wrap=72)
+
+    def logs(self):
+        """Get Logs."""
+        self.parser.add_argument('lp_id',
+                                 help="languagepack uuid or name")
+        args, _ = self.parser.parse_known_args()
+        response = cli_lp.LanguagePackManager(self.client).logs(
+            lp_id=str(args.lp_id))
+
+        fields = ["resource_uuid"]
+        for log in response:
+            strategy_info = json.loads(log.strategy_info)
+            if log.strategy == 'local':
+                if 'local_storage' not in fields:
+                    fields.append('local_storage')
+                log.local_storage = log.location
+            elif log.strategy == 'swift':
+                if 'swift_container' not in fields:
+                    fields.append('swift_container')
+                if 'swift_path' not in fields:
+                    fields.append('swift_path')
+                log.swift_container = strategy_info['container']
+                log.swift_path = log.location
+            else:
+                if 'location' not in fields:
+                    fields.append('location')
+
+        cliutils.print_list(response, fields)
 
 
 class AppCommands(cli_utils.CommandsBase):
@@ -629,7 +637,7 @@ Available commands:
         if args.langpack is not None:
             plan_definition['artifacts'][0]['language_pack'] = args.langpack
         elif plan_definition['artifacts'][0].get('language_pack') is None:
-            langpacks = self.bldclient.images.list()
+            langpacks = self.client.languagepacks.list()
             lpnames = [lp.name for lp in langpacks]
             fields = ['uuid', 'name', 'description', 'state', 'source_uri']
             cliutils.print_list(langpacks, fields)

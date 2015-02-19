@@ -13,7 +13,6 @@
 # under the License.
 
 import collections
-import json
 import re
 import sys
 import uuid
@@ -24,7 +23,6 @@ import six
 from stevedore import extension
 from testtools import matchers
 
-from solumclient.builder.v1 import image
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import auth
 from solumclient.openstack.common import cliutils
@@ -337,57 +335,37 @@ class TestSolum(base.TestCase):
             expected_show_pub_keys_args)
 
     # LanguagePack Tests #
-    @mock.patch.object(image.ImageManager, "list")
+    @mock.patch.object(languagepack.LanguagePackManager, "list")
     def test_languagepack_list(self, mock_lp_list):
         self.make_env()
         self.shell("languagepack list")
         mock_lp_list.assert_called_once()
 
-    @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(languagepack.LanguagePackManager, "create")
-    def test_languagepack_create(self, mock_lp_create, mock_print_dict):
+    def test_languagepack_create(self, mock_lp_create):
         FakeResource = collections.namedtuple("FakeResource",
                                               "uuid name description "
                                               "compiler_versions os_platform")
-
         mock_lp_create.return_value = FakeResource(
-            'foo', 'foo', 'foo', 'foo', 'foo')
-        expected_printed_dict_args = mock_lp_create.return_value._asdict()
-        lp_data = json.loads(languagepack_file_data)
-        mopen = mock.mock_open(read_data=languagepack_file_data)
-        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
-            self.make_env()
-            self.shell("languagepack create /dev/null")
-            mock_lp_create.assert_called_once_with(**lp_data)
-            mock_print_dict.assert_called_once_with(
-                expected_printed_dict_args,
-                wrap=72)
-
-    @mock.patch.object(image.ImageManager, "create")
-    def test_languagepack_build(self, mock_image_build):
-        FakeResource = collections.namedtuple("FakeResource",
-                                              "uuid name description "
-                                              "compiler_versions os_platform")
-        mock_image_build.return_value = FakeResource(
             'foo', 'foo', 'foo', 'foo', 'foo')
         lp_metadata = '{"OS": "Ubuntu"}'
         mopen = mock.mock_open(read_data=lp_metadata)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            self.shell("languagepack build lp_name github.com/test "
+            self.shell("languagepack create lp_name github.com/test "
                        "--lp_metadata=/dev/null")
-            mock_image_build.assert_called_once_with(
+            mock_lp_create.assert_called_once_with(
                 name='lp_name',
                 source_uri='github.com/test',
                 lp_metadata=lp_metadata)
 
-    @mock.patch.object(image.ImageManager, "delete")
+    @mock.patch.object(languagepack.LanguagePackManager, "delete")
     def test_languagepack_delete(self, mock_lp_delete):
         self.make_env()
         self.shell("languagepack delete fake-lp-id")
         mock_lp_delete.assert_called_once_with(lp_id='fake-lp-id')
 
-    @mock.patch.object(image.ImageManager, "find")
+    @mock.patch.object(languagepack.LanguagePackManager, "find")
     def test_languagepack_get(self, mock_lp_get):
         self.make_env()
         self.shell("languagepack show fake-lp-id1")

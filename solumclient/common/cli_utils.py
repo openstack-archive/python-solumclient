@@ -15,7 +15,6 @@
 
 import os
 
-from solumclient.builder import client as builder_client
 from solumclient import client as solum_client
 from solumclient.common import exc
 
@@ -48,8 +47,6 @@ class CommandsBase(object):
         if 'os_auth_token' in client_args:
             del client_args['os_auth_token']
 
-        self.bldclient = builder_client.get_client(parsed.solum_api_version,
-                                                   **client_args)
         self.client = solum_client.get_client(parsed.solum_api_version,
                                               **client_args)
 

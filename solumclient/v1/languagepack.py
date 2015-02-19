@@ -21,6 +21,11 @@ class LanguagePack(apiclient_base.Resource):
         return "<LanguagePack %s>" % self._info
 
 
+class UserLog(apiclient_base.Resource):
+    def __repr__(self):
+        return "<Log %s>" % self._info
+
+
 class LanguagePackManager(solum_base.CrudManager):
     resource_class = LanguagePack
     collection_key = 'language_packs'
@@ -40,3 +45,14 @@ class LanguagePackManager(solum_base.CrudManager):
     def delete(self, **kwargs):
         return super(LanguagePackManager,
                      self).delete(base_url="/v1", **kwargs)
+
+    def find(self, **kwargs):
+        name_or_uuid = kwargs['name_or_id']
+        return super(LanguagePackManager, self).get(base_url="/v1",
+                                                    lp_id=name_or_uuid)
+
+    def logs(self, **kwargs):
+        self.resource_class = UserLog
+        url = self.build_url(base_url="/v1", **kwargs)
+        url += '/logs/'
+        return self._list(url)
