@@ -442,7 +442,7 @@ Available commands:
             message = ("%s" % conflict.message)
             raise exc.CommandError(message=message)
 
-        fields = ['uuid', 'name', 'decription', 'state']
+        fields = ['uuid', 'name', 'description', 'state']
         data = dict([(f, getattr(response, f, ''))
                      for f in fields])
         cliutils.print_dict(data, wrap=72)
