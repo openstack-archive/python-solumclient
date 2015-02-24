@@ -570,7 +570,8 @@ Available commands:
         self.parser._names['app'] = 'application'
         args, _ = self.parser.parse_known_args()
         plan = self.client.plans.find(name_or_id=args.app)
-        fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
+        fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
+                  'trigger_uri']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])
         artifacts = copy.deepcopy(data['artifacts'])
@@ -699,7 +700,8 @@ Available commands:
                 raise exc.CommandError(message=message)
 
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
-        fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
+        fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
+                  'trigger_uri']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])
         artifacts = copy.deepcopy(data['artifacts'])
