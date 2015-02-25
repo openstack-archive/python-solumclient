@@ -50,7 +50,7 @@ class CommandsBase(object):
         self.client = solum_client.get_client(parsed.solum_api_version,
                                               **client_args)
 
-        if parsed.action in self._actions:
+        if action in self._actions:
             try:
                 return self._actions[action]()
             except exc.CommandError as ce:

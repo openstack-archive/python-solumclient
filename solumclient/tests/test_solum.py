@@ -124,6 +124,13 @@ class TestSolum(base.TestCase):
             plan_uri='http://example.com/a.yaml')
 
     @mock.patch.object(assembly.AssemblyManager, "create")
+    def test_assembly_create_with_bogus_params(self, mock_assembly_create):
+        self.make_env()
+        self.shell("assembly create app_name http://example.com/a.yaml "
+                   "--BOGUS=False",
+                   exit_code=2)
+
+    @mock.patch.object(assembly.AssemblyManager, "create")
     def test_assembly_create_without_name(self, mock_assembly_create):
         self.make_env()
         self.shell("assembly create http://example.com/a.yaml",
