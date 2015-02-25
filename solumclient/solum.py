@@ -551,13 +551,12 @@ Available commands:
 
     def list(self):
         """Print a list of all deployed applications."""
-        # This is just "assembly list".
+        # This is just "app list".
         # TODO(datsun180b): List each plan and its associated
         # assemblies.
-        fields = ['uuid', 'name', 'description', 'status', 'created_at',
-                  'updated_at']
-        assemblies = self.client.assemblies.list()
-        cliutils.print_list(assemblies, fields, sortby_index=5)
+        fields = ['uuid', 'name', 'description']
+        response = self.client.plans.list()
+        cliutils.print_list(response, fields)
 
     def show(self):
         """Print detailed information about one application."""
@@ -570,10 +569,26 @@ Available commands:
         self.parser._names['app'] = 'application'
         args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.app)
+
+        # Fetch the most recent app_uri.
+        assemblies = self.client.assemblies.list()
+        app_uri = ''
+        updated = ''
+        for a in assemblies:
+            plan_uuid = a.plan_uri.split('/')[-1]
+            if plan_uuid != plan.uuid:
+                continue
+            if a.status != 'READY':
+                continue
+            if a.updated_at >= updated:
+                updated = a.updated_at
+                app_uri = a.application_uri
+
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
                   'trigger_uri']
         data = dict([(f, getattr(plan, f, ''))
                      for f in fields])
+        data['application_uri'] = app_uri
         artifacts = copy.deepcopy(data['artifacts'])
         del data['artifacts']
         cliutils.print_dict(data, wrap=72)
