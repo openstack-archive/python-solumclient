@@ -753,13 +753,6 @@ Available commands:
         self.parser._names['app'] = 'application'
         args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.app)
-        assemblies = [a for a in self.client.assemblies.list()
-                      if a.plan_uri.split('/')[-1] == plan.uuid]
-        for assembly in assemblies:
-            assem = self.client.assemblies.find(name_or_id=assembly.uuid)
-            cli_assem.AssemblyManager(self.client).delete(
-                assembly_id=str(assem.uuid))
-
         cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
 
