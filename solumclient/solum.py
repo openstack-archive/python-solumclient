@@ -47,6 +47,7 @@ import sys
 
 from solumclient.common import cli_utils
 from solumclient.common import exc
+from solumclient.common import github
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common import cliutils
@@ -515,6 +516,7 @@ Available commands:
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
                      [--name <NAME>] [--desc <DESCRIPTION>]
+                     [--setup-triggers]
         Register a new application with Solum.
 
     solum app deploy <APP>
@@ -618,6 +620,10 @@ Available commands:
                                  help="A yaml file containing custom"
                                       " parameters to be used in the"
                                       " application")
+        self.parser.add_argument('--setup-triggers',
+                                 action='store_true',
+                                 dest='setup_triggers',
+                                 help="Set up app triggers on git repo")
 
         args = self.parser.parse_args()
 
@@ -671,6 +677,7 @@ Available commands:
 
         git_url = None
         if args.git_url is not None:
+            git_url = args.git_url
             plan_definition['artifacts'][0]['content']['href'] = args.git_url
         if plan_definition['artifacts'][0]['content'].get('href') is None:
             git_url = raw_input("Please specify a git repository URL for "
@@ -726,6 +733,16 @@ Available commands:
         del data['artifacts']
         cliutils.print_dict(data, wrap=72)
         self._show_public_keys(artifacts)
+
+        if artifacts and args.setup_triggers:
+            gha = github.GitHubAuth(git_url)
+            content = artifacts[0].content
+            public_key = content.get('public_key', '')
+            private_repo = content.get('private', False)
+            gha.add_ssh_key(public_key=public_key, is_private=private_repo)
+            trigger_url = vars(plan).get('trigger_url', '')
+            if trigger_url:
+                gha.create_webhook(trigger_url)
 
     def deploy(self):
         """Deploy an application, building any applicable artifacts first."""
