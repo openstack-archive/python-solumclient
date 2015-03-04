@@ -424,7 +424,7 @@ Available commands:
         self.parser.add_argument('--lp_metadata',
                                  help="Language pack metadata file.")
         self.parser._names['git_url'] = 'repo URL'
-        args, _ = self.parser.parse_known_args()
+        args = self.parser.parse_args()
         lp_metadata = None
 
         if args.lp_metadata:
