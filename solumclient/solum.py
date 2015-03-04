@@ -701,6 +701,8 @@ Available commands:
 
         if args.desc is not None:
             plan_definition['description'] = args.desc
+        elif plan_definition.get('description') is None:
+            plan_definition['description'] = ''
 
         if args.param_file is not None:
             try:
