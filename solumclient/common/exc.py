@@ -15,7 +15,7 @@
 from solumclient.openstack.common.apiclient import exceptions
 
 
-class BaseException(Exception):
+class CommandException(Exception):
     """An error occurred."""
     def __init__(self, message=None):
         self.message = message
@@ -24,11 +24,11 @@ class BaseException(Exception):
         return self.message or self.__class__.__doc__
 
 
-class CommandError(BaseException):
+class CommandError(CommandException):
     """Invalid usage of CLI."""
 
 
-class NotUnique(BaseException):
+class NotUnique(CommandException):
     """Name refers to more than one of a given resource."""
     def __init__(self, resource='resource'):
         message = "More than one %s by that name. Retry with the UUID."
