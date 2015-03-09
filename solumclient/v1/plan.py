@@ -101,8 +101,11 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
         kwargs['data'] = plan
         kwargs.setdefault("headers", kwargs.get("headers", {}))
         kwargs['headers']['Content-Type'] = 'x-application/yaml'
-        resp = self.client.post(
-            self.build_url(base_url="/v1", **kwargs), **kwargs)
+        try:
+            resp = self.client.post(
+                self.build_url(base_url="/v1", **kwargs), **kwargs)
+        except Exception as e:
+            raise exceptions.BadRequest(message=e.details)
         try:
             resp_plan = yamlutils.load(resp.content)
         except ValueError as e:

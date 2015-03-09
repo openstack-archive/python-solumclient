@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import mock
+
 from solumclient.openstack.common.apiclient import fake_client
 from solumclient.tests import base
 from solumclient.v1 import client as sclient
@@ -157,6 +159,31 @@ class PlanManagerTest(base.TestCase):
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.create('version: 1\nname: ex_plan1\ndescription: dsc1.')
         self.assert_plan_obj(plan_obj)
+
+    def test_plan_create_post_failure(self):
+        api_client = mock.MagicMock()
+        api_client.post.side_effect = Exception("Bad data")
+        try:
+            mgr = plan.PlanManager(api_client)
+            mgr.create('version: 1\nname: ex_plan1\ndescription: dsc1.')
+        except Exception:
+            self.assertTrue(True)
+
+    def test_plan_create_post_success(self):
+        api_client = mock.MagicMock()
+        dummy_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
+        response = lambda: None
+        setattr(response, 'content', dummy_data)
+        api_client.post.return_value = response
+        try:
+            mgr = plan.PlanManager(api_client)
+            plan_obj = mgr.create(dummy_data)
+            assert plan_obj is not None
+            assert plan_obj.name == 'ex_plan1'
+            assert plan_obj.description == 'dsc1.'
+            assert plan_obj.version == 1
+        except Exception:
+            self.assertFalse(True)
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
