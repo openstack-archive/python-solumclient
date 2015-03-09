@@ -269,7 +269,7 @@ Available commands:
         args = self.parser.parse_args()
         assemblies = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
-                  'trigger_uri', 'created_at', 'updated_at']
+                  'trigger_uri', 'created_at', 'updated_at', 'workflow']
         self._print_dict(assemblies, fields, wrap=72)
 
 
