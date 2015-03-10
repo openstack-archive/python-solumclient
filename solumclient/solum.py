@@ -427,7 +427,7 @@ Available commands:
             message = ("%s" % conflict.message)
             raise exc.CommandError(message=message)
 
-        fields = ['uuid', 'name', 'description', 'state']
+        fields = ['uuid', 'name', 'description', 'status']
         self._print_dict(languagepack, fields, wrap=72)
 
     def delete(self):
@@ -440,7 +440,7 @@ Available commands:
 
     def list(self):
         """List all language packs."""
-        fields = ['uuid', 'name', 'description', 'state', 'source_uri']
+        fields = ['uuid', 'name', 'description', 'status', 'source_uri']
         languagepacks = self.client.languagepacks.list()
         self._print_list(languagepacks, fields)
 
@@ -451,7 +451,7 @@ Available commands:
         self.parser._names['lp_id'] = 'languagepack'
         args = self.parser.parse_args()
         languagepack = self.client.languagepacks.find(name_or_id=args.lp_id)
-        fields = ['uuid', 'name', 'description', 'state', 'source_uri']
+        fields = ['uuid', 'name', 'description', 'status', 'source_uri']
         self._print_dict(languagepack, fields, wrap=72)
 
     def logs(self):
