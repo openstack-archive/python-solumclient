@@ -50,7 +50,6 @@ from solumclient.common import exc
 from solumclient.common import github
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import exceptions
-from solumclient.openstack.common import cliutils
 from solumclient.v1 import assembly as cli_assem
 from solumclient.v1 import languagepack as cli_lp
 from solumclient.v1 import pipeline as cli_pipe
@@ -115,11 +114,8 @@ Available commands:
                 raise exc.CommandError(message=message)
         plan = self.client.plans.create(yamlutils.dump(definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
-        data = dict([(f, getattr(plan, f, ''))
-                     for f in fields])
-        artifacts = copy.deepcopy(data['artifacts'])
-        del data['artifacts']
-        cliutils.print_dict(data, wrap=72)
+        artifacts = copy.deepcopy(vars(plan).get('artifacts'))
+        self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
     def delete(self):
@@ -138,20 +134,17 @@ Available commands:
                                  help="Plan uuid or name")
         self.parser._names['plan_uuid'] = 'plan'
         args = self.parser.parse_args()
-        response = self.client.plans.find(name_or_id=args.plan_uuid)
+        plan = self.client.plans.find(name_or_id=args.plan_uuid)
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        artifacts = copy.deepcopy(data['artifacts'])
-        del data['artifacts']
-        cliutils.print_dict(data, wrap=72)
+        artifacts = copy.deepcopy(vars(plan).get('artifacts'))
+        self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
     def list(self):
         """List all plans."""
         fields = ['uuid', 'name', 'description']
-        response = self.client.plans.list()
-        cliutils.print_list(response, fields)
+        plans = self.client.plans.list()
+        self._print_list(plans, fields)
 
     def _show_public_keys(self, artifacts):
         public_keys = {}
@@ -220,9 +213,7 @@ Available commands:
                                                  plan_uri=plan_uri)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri']
-        data = dict([(f, getattr(assembly, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(assembly, fields, wrap=72)
 
     def delete(self):
         """Delete an assembly."""
@@ -238,8 +229,8 @@ Available commands:
         """List all assemblies."""
         fields = ['uuid', 'name', 'description', 'status', 'created_at',
                   'updated_at']
-        response = self.client.assemblies.list()
-        cliutils.print_list(response, fields, sortby_index=5)
+        assemblies = self.client.assemblies.list()
+        self._print_list(assemblies, fields, sortby_index=5)
 
     def logs(self):
         """Get Logs."""
@@ -247,11 +238,11 @@ Available commands:
                                  help="Assembly uuid or name")
         args = self.parser.parse_args()
         assem = self.client.assemblies.find(name_or_id=args.assembly)
-        response = cli_assem.AssemblyManager(self.client).logs(
+        loglist = cli_assem.AssemblyManager(self.client).logs(
             assembly_id=str(assem.uuid))
 
         fields = ["resource_uuid"]
-        for log in response:
+        for log in loglist:
             strategy_info = json.loads(log.strategy_info)
             if log.strategy == 'local':
                 if 'local_storage' not in fields:
@@ -268,7 +259,7 @@ Available commands:
                 if 'location' not in fields:
                     fields.append('location')
 
-        cliutils.print_list(response, fields)
+        self._print_list(loglist, fields)
 
     def show(self):
         """Show an assembly's resource."""
@@ -276,12 +267,10 @@ Available commands:
                                  help="Assembly uuid or name")
         self.parser._names['assembly_uuid'] = 'assembly'
         args = self.parser.parse_args()
-        response = self.client.assemblies.find(name_or_id=args.assembly_uuid)
+        assemblies = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri', 'created_at', 'updated_at']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(assemblies, fields, wrap=72)
 
 
 class ComponentCommands(cli_utils.CommandsBase):
@@ -303,17 +292,15 @@ Available commands:
                                  help="Component uuid or name")
         self.parser._names['component_uuid'] = 'component'
         args = self.parser.parse_args()
-        response = self.client.components.find(name_or_id=args.component_uuid)
+        component = self.client.components.find(name_or_id=args.component_uuid)
         fields = ['uuid', 'name', 'description', 'uri', 'assembly_uuid']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(component, fields, wrap=72)
 
     def list(self):
         """List all components."""
         fields = ['uuid', 'name', 'description', 'assembly_uuid']
-        response = self.client.components.list()
-        cliutils.print_list(response, fields)
+        components = self.client.components.list()
+        self._print_list(components, fields)
 
 
 class PipelineCommands(cli_utils.CommandsBase):
@@ -360,9 +347,7 @@ Available commands:
             workbook_name=args.workbook_name)
         fields = ['uuid', 'name', 'description',
                   'trigger_uri']
-        data = dict([(f, getattr(pipeline, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(pipeline, fields, wrap=72)
 
     def delete(self):
         """Delete an pipeline."""
@@ -377,8 +362,8 @@ Available commands:
     def list(self):
         """List all pipelines."""
         fields = ['uuid', 'name', 'description']
-        response = self.client.pipelines.list()
-        cliutils.print_list(response, fields)
+        pipelines = self.client.pipelines.list()
+        self._print_list(pipelines, fields)
 
     def show(self):
         """Show a pipeline's resource."""
@@ -386,12 +371,10 @@ Available commands:
                                  help="Pipeline uuid or name")
         self.parser._names['pipeline_uuid'] = 'pipeline'
         args = self.parser.parse_args()
-        response = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
+        pipelines = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
         fields = ['uuid', 'name', 'description',
                   'trigger_uri', 'workbook_name', 'last_execution']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(pipelines, fields, wrap=72)
 
 
 class LanguagePackCommands(cli_utils.CommandsBase):
@@ -435,8 +418,9 @@ Available commands:
                 except ValueError as excp:
                     message = ("Malformed metadata file: %s" % str(excp))
                     raise exc.CommandError(message=message)
+        languagepack = {}
         try:
-            response = self.client.languagepacks.create(
+            languagepack = self.client.languagepacks.create(
                 name=args.name, source_uri=args.git_url,
                 lp_metadata=lp_metadata)
         except exceptions.Conflict as conflict:
@@ -444,9 +428,7 @@ Available commands:
             raise exc.CommandError(message=message)
 
         fields = ['uuid', 'name', 'description', 'state']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(languagepack, fields, wrap=72)
 
     def delete(self):
         """Delete a language pack."""
@@ -459,8 +441,8 @@ Available commands:
     def list(self):
         """List all language packs."""
         fields = ['uuid', 'name', 'description', 'state', 'source_uri']
-        response = self.client.languagepacks.list()
-        cliutils.print_list(response, fields)
+        languagepacks = self.client.languagepacks.list()
+        self._print_list(languagepacks, fields)
 
     def show(self):
         """Get a language pack."""
@@ -468,22 +450,20 @@ Available commands:
                                  help="Language pack id")
         self.parser._names['lp_id'] = 'languagepack'
         args = self.parser.parse_args()
-        response = self.client.languagepacks.find(name_or_id=args.lp_id)
+        languagepack = self.client.languagepacks.find(name_or_id=args.lp_id)
         fields = ['uuid', 'name', 'description', 'state', 'source_uri']
-        data = dict([(f, getattr(response, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(languagepack, fields, wrap=72)
 
     def logs(self):
         """Get Logs."""
         self.parser.add_argument('lp_id',
                                  help="languagepack uuid or name")
         args = self.parser.parse_args()
-        response = cli_lp.LanguagePackManager(self.client).logs(
+        loglist = cli_lp.LanguagePackManager(self.client).logs(
             lp_id=str(args.lp_id))
 
         fields = ["resource_uuid"]
-        for log in response:
+        for log in loglist:
             strategy_info = json.loads(log.strategy_info)
             if log.strategy == 'local':
                 if 'local_storage' not in fields:
@@ -500,7 +480,7 @@ Available commands:
                 if 'location' not in fields:
                     fields.append('location')
 
-        cliutils.print_list(response, fields)
+        self._print_dict(loglist, fields, wrap=72)
 
 
 class AppCommands(cli_utils.CommandsBase):
@@ -553,12 +533,12 @@ Available commands:
 
     def list(self):
         """Print a list of all deployed applications."""
-        # This is just "app list".
+        # This is just "plan list".
         # TODO(datsun180b): List each plan and its associated
         # assemblies.
         fields = ['uuid', 'name', 'description']
-        response = self.client.plans.list()
-        cliutils.print_list(response, fields)
+        plans = self.client.plans.list()
+        self._print_list(plans, fields, sortby_index=5)
 
     def show(self):
         """Print detailed information about one application."""
@@ -586,14 +566,11 @@ Available commands:
                 updated = a.updated_at
                 app_uri = a.application_uri
 
+        plan.application_uri = app_uri
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
-                  'trigger_uri']
-        data = dict([(f, getattr(plan, f, ''))
-                     for f in fields])
-        data['application_uri'] = app_uri
-        artifacts = copy.deepcopy(data['artifacts'])
-        del data['artifacts']
-        cliutils.print_dict(data, wrap=72)
+                  'trigger_uri', 'application_uri']
+        self._print_dict(plan, fields, wrap=72)
+        artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._show_public_keys(artifacts)
 
     def create(self):
@@ -663,7 +640,7 @@ Available commands:
             langpacks = self.client.languagepacks.list()
             lpnames = [lp.name for lp in langpacks]
             fields = ['uuid', 'name', 'description', 'state', 'source_uri']
-            cliutils.print_list(langpacks, fields)
+            self._print_list(langpacks, fields)
             langpack = raw_input("Please choose a languagepack from the "
                                  "above list.\n> ")
             while langpack not in lpnames:
@@ -727,11 +704,8 @@ Available commands:
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
                   'trigger_uri']
-        data = dict([(f, getattr(plan, f, ''))
-                     for f in fields])
-        artifacts = copy.deepcopy(data['artifacts'])
-        del data['artifacts']
-        cliutils.print_dict(data, wrap=72)
+        artifacts = copy.deepcopy(plan['artifacts'])
+        self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
         if artifacts and args.setup_triggers:
@@ -760,9 +734,7 @@ Available commands:
                                                  plan_uri=plan.uri)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
                   'trigger_uri']
-        data = dict([(f, getattr(assembly, f, ''))
-                     for f in fields])
-        cliutils.print_dict(data, wrap=72)
+        self._print_dict(assembly, fields, wrap=72)
 
     def delete(self):
         """Delete an application and all related artifacts."""

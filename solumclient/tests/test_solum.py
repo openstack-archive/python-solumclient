@@ -25,7 +25,6 @@ from testtools import matchers
 
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import auth
-from solumclient.openstack.common import cliutils
 from solumclient import solum
 from solumclient.tests import base
 from solumclient.v1 import assembly
@@ -256,15 +255,13 @@ class TestSolum(base.TestCase):
         mock_pipeline_find.assert_called_once_with(name_or_id='app2')
 
     # Plan Tests #
-    @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(plan.PlanManager, "create")
-    def test_plan_create(self, mock_plan_create, mock_print_dict):
+    def test_plan_create(self, mock_plan_create):
         FakeResource = collections.namedtuple("FakeResource",
                                               "uuid name description uri")
 
         mock_plan_create.return_value = FakeResource('foo', 'foo', 'foo',
                                                      'foo')
-        expected_printed_dict_args = mock_plan_create.return_value._asdict()
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         plan_data = yamlutils.dump(yamlutils.load(raw_data))
         mopen = mock.mock_open(read_data=raw_data)
@@ -272,22 +269,17 @@ class TestSolum(base.TestCase):
             self.make_env()
             self.shell("plan create /dev/null")
             mock_plan_create.assert_called_once_with(plan_data)
-            mock_print_dict.assert_called_once_with(
-                expected_printed_dict_args,
-                wrap=72)
 
-    @mock.patch.object(cliutils, "print_dict")
     @mock.patch.object(solum.PlanCommands, "_show_public_keys")
     @mock.patch.object(plan.PlanManager, "create")
     def test_plan_create_with_private_github_repo(self, mock_plan_create,
-                                                  mock_show_pub_keys,
-                                                  mock_print_dict):
+                                                  mock_show_pub_keys):
         FakeResource = collections.namedtuple(
             "FakeResource", "uuid name description uri artifacts")
 
         mock_plan_create.return_value = FakeResource('foo', 'foo', 'foo',
                                                      'foo', 'artifacts')
-        expected_printed_dict_args = mock_plan_create.return_value._asdict()
+        expected_printed_dict_args = vars(mock_plan_create.return_value)
         expected_printed_dict_args.pop('artifacts')
         expected_show_pub_keys_args = 'artifacts'
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
@@ -297,9 +289,6 @@ class TestSolum(base.TestCase):
             self.make_env()
             self.shell("plan create /dev/null")
             mock_plan_create.assert_called_once_with(plan_data)
-            mock_print_dict.assert_called_once_with(
-                expected_printed_dict_args,
-                wrap=72)
             mock_show_pub_keys.assert_called_once_with(
                 expected_show_pub_keys_args)
 
@@ -359,6 +348,7 @@ class TestSolum(base.TestCase):
         mopen = mock.mock_open(read_data=lp_metadata)
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
+
             self.shell("languagepack create lp_name github.com/test "
                        "--lp_metadata=/dev/null")
             mock_lp_create.assert_called_once_with(
