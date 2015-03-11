@@ -538,7 +538,7 @@ Available commands:
         # assemblies.
         fields = ['uuid', 'name', 'description']
         plans = self.client.plans.list()
-        self._print_list(plans, fields, sortby_index=5)
+        self._print_list(plans, fields)
 
     def show(self):
         """Print detailed information about one application."""
