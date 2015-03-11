@@ -704,7 +704,7 @@ Available commands:
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
                   'trigger_uri']
-        artifacts = copy.deepcopy(plan['artifacts'])
+        artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
