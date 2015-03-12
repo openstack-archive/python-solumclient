@@ -633,6 +633,18 @@ Available commands:
         # Check for the language pack. Check args first, then planfile.
         # If it's neither of those places, prompt for it and update the
         # plan definition.
+
+        if 'artifacts' not in plan_definition:
+            raise exc.CommandException(message="Missing artifacts section")
+        elif plan_definition['artifacts'] is None:
+            raise exc.CommandException(message="Artifacts cannot be empty")
+        elif 'name' not in plan_definition['artifacts'][0]:
+            raise exc.CommandException(message="Artifact name missing")
+        elif 'content' not in plan_definition['artifacts'][0]:
+            raise exc.CommandException(message="Artifact content missing")
+        elif 'language_pack' not in plan_definition['artifacts'][0]:
+            raise exc.CommandException(message="Language pack missing")
+
         langpack = None
         if args.langpack is not None:
             plan_definition['artifacts'][0]['language_pack'] = args.langpack
@@ -704,6 +716,7 @@ Available commands:
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
                   'trigger_uri']
+
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)

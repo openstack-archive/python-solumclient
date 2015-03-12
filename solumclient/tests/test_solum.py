@@ -254,6 +254,56 @@ class TestSolum(base.TestCase):
         self.shell("pipeline show app2")
         mock_pipeline_find.assert_called_once_with(name_or_id='app2')
 
+    # App Tests #
+    def test_app_create_with_missing_artifacts(self):
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --plan-file /dev/null")
+            self.assertEqual("ERROR: Missing artifacts section\n", out)
+
+    def test_app_create_with_artifacts_empty(self):
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.\nartifacts:'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --plan-file /dev/null")
+            self.assertEqual("ERROR: Artifacts cannot be empty\n", out)
+
+    def test_app_create_with_artifacts_no_name(self):
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
+        raw_data += '- contents:asdfds'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --plan-file /dev/null")
+            self.assertEqual("ERROR: Artifact name missing\n", out)
+
+    def test_app_create_with_artifacts_no_content(self):
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
+        raw_data += '- name:asdfds'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --plan-file /dev/null")
+            self.assertEqual("ERROR: Artifact content missing\n", out)
+
+    def test_app_create_with_artifacts_no_lp(self):
+        raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
+        raw_data += '- name:asdfds'
+        raw_data += '  content:asdfds'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --plan-file /dev/null")
+            self.assertEqual("ERROR: Language pack missing\n", out)
+
     # Plan Tests #
     @mock.patch.object(plan.PlanManager, "create")
     def test_plan_create(self, mock_plan_create):
