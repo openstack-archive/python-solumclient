@@ -84,6 +84,7 @@ class TestSolum(base.TestCase):
             argv.extend(argstr.split())
             self.useFixture(
                 fixtures.MonkeyPatch('sys.argv', argv))
+
             solum.main()
         except SystemExit:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -275,7 +276,11 @@ class TestSolum(base.TestCase):
 
     def test_app_create_with_artifacts_no_name(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
-        raw_data += '- contents:asdfds'
+        raw_data += '- content:\n'
+        raw_data += '    href: asdfds\n'
+        raw_data += '  artifact_type: heroku\n'
+        raw_data += '  language_pack: lp'
+
         mopen = mock.mock_open(read_data=raw_data)
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
@@ -285,7 +290,10 @@ class TestSolum(base.TestCase):
 
     def test_app_create_with_artifacts_no_content(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
-        raw_data += '- name:asdfds'
+        raw_data += '- name: asdfds\n'
+        raw_data += '  artifact_type: heroku\n'
+        raw_data += '  language_pack: lp'
+
         mopen = mock.mock_open(read_data=raw_data)
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
