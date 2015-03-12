@@ -427,7 +427,7 @@ Available commands:
             message = ("%s" % conflict.message)
             raise exc.CommandError(message=message)
 
-        fields = ['uuid', 'name', 'description', 'status']
+        fields = ['uuid', 'name', 'description', 'status', 'source_uri']
         self._print_dict(languagepack, fields, wrap=72)
 
     def delete(self):
