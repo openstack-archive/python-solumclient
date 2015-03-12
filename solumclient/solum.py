@@ -480,7 +480,7 @@ Available commands:
                 if 'location' not in fields:
                     fields.append('location')
 
-        self._print_dict(loglist, fields, wrap=72)
+        self._print_list(loglist, fields)
 
 
 class AppCommands(cli_utils.CommandsBase):
