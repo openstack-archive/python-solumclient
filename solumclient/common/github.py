@@ -21,8 +21,25 @@ import json
 import random
 import re
 import string
+import urllib
 
 import httplib2
+
+
+def quote(string):
+    try:
+        return urllib.quote(string)
+    except AttributeError:
+        # Python 3
+        return urllib.parse.quote(string)
+
+
+def encode(string):
+    try:
+        return base64.encodestring(string)
+    except TypeError:
+        # Python 3
+        return base64.encodestring(bytes(string, 'utf-8'))
 
 
 class GitHubAuth(object):
@@ -34,7 +51,7 @@ class GitHubAuth(object):
 
     _auth_url = 'https://api.github.com/authorizations'
 
-    def __init__(self, git_url):
+    def __init__(self, git_url, username=None, password=None):
         self.git_url = git_url
 
         user_org_name, repo = '', ''
@@ -47,17 +64,29 @@ class GitHubAuth(object):
         else:
             raise ValueError("Failed to parse %s." % git_url)
         self.full_repo_name = '/'.join([user_org_name, repo])
+
+        if username is None:
+            username = self._fetch_username(user_org_name)
+
+        if password is None:
+            password = self._fetch_password()
+
+        self.username = username
+        self.password = password
+
+    def _fetch_username(self, user_org_name):
         prompt = ("Username for repo '%s' [%s]:" %
                   (self.full_repo_name, user_org_name))
         username = raw_input(prompt) or user_org_name
-        password = getpass.getpass("Password: ")
-        self.username = username
-        self.password = password
+        return username
+
+    def _fetch_password(self):
+        return getpass.getpass("Password: ")
 
     @property
     def _auth_header(self):
         authstring = '%s:%s' % (self.username, self.password)
-        auth = base64.encodestring(authstring)
+        auth = encode(authstring)
         return {
             'Authorization': 'Basic %s' % auth,
             'Content-Type': 'application/json',
@@ -84,9 +113,12 @@ class GitHubAuth(object):
             response_body = json.loads(content)
             self._token = response_body.get('token')
 
-    def create_webhook(self, trigger_uri):
+    def create_webhook(self, trigger_uri, workflow=None):
         hook_url = ('https://api.github.com/repos/%s/hooks' %
                     self.full_repo_name)
+        if workflow is not None:
+            wf_query = quote("?workflow=%s" % ' '.join(workflow))
+            trigger_uri += wf_query
         hook_info = {
             'name': 'web',
             'events': ['pull_request', 'commit_comment'],

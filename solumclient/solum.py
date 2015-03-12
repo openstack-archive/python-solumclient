@@ -496,7 +496,7 @@ Available commands:
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
                      [--name <NAME>] [--desc <DESCRIPTION>]
-                     [--setup-triggers]
+                     [--setup-trigger] [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
     solum app deploy <NAME|UUID>
@@ -614,10 +614,15 @@ Available commands:
                                  help="A yaml file containing custom"
                                       " parameters to be used in the"
                                       " application")
-        self.parser.add_argument('--setup-triggers',
+        self.parser.add_argument('--setup-trigger',
                                  action='store_true',
-                                 dest='setup_triggers',
-                                 help="Set up app triggers on git repo")
+                                 dest='setup_trigger',
+                                 help="Set up app trigger on git repo")
+        self.parser.add_argument('--trigger-workflow',
+                                 default='',
+                                 dest='workflow',
+                                 help="Which of stages build, unittest, "
+                                      "deploy to trigger from git")
 
         args = self.parser.parse_args()
 
@@ -695,12 +700,12 @@ Available commands:
 
         git_url = None
         if args.git_url is not None:
-            git_url = args.git_url
             plan_definition['artifacts'][0]['content']['href'] = args.git_url
         if plan_definition['artifacts'][0]['content'].get('href') is None:
             git_url = raw_input("Please specify a git repository URL for "
                                 "your application.\n> ")
             plan_definition['artifacts'][0]['content']['href'] = git_url
+        git_url = plan_definition['artifacts'][0]['content']['href']
 
         # Check for the entry point. Check args first, then the planfile.
         # If it's neither of those places, prompt for it and update the
@@ -751,15 +756,18 @@ Available commands:
         self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
-        if artifacts and args.setup_triggers:
+        if artifacts and args.setup_trigger:
             gha = github.GitHubAuth(git_url)
             content = artifacts[0].content
             public_key = content.get('public_key', '')
             private_repo = content.get('private', False)
             gha.add_ssh_key(public_key=public_key, is_private=private_repo)
-            trigger_url = vars(plan).get('trigger_url', '')
-            if trigger_url:
-                gha.create_webhook(trigger_url)
+            trigger_uri = vars(plan).get('trigger_uri', '')
+            if trigger_uri:
+                workflow = None
+                if args.workflow:
+                    workflow = args.workflow.replace('+', ' ').split(' ')
+                gha.create_webhook(trigger_uri, workflow=workflow)
 
     def deploy(self):
         """Deploy an application, building any applicable artifacts first."""
@@ -879,6 +887,7 @@ Available commands:
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
                      [--name <NAME>] [--desc <DESCRIPTION>]
+                     [--setup-trigger] [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
     solum app deploy <NAME|UUID>
