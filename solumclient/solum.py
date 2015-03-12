@@ -556,19 +556,20 @@ Available commands:
         assemblies = self.client.assemblies.list()
         app_uri = ''
         updated = ''
+        app_status = ''
         for a in assemblies:
             plan_uuid = a.plan_uri.split('/')[-1]
             if plan_uuid != plan.uuid:
                 continue
-            if a.status != 'READY':
-                continue
             if a.updated_at >= updated:
                 updated = a.updated_at
                 app_uri = a.application_uri
+                app_status = a.status
 
         plan.application_uri = app_uri
+        plan.status = app_status
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
-                  'trigger_uri', 'application_uri']
+                  'trigger_uri', 'application_uri', 'status']
         self._print_dict(plan, fields, wrap=72)
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._show_public_keys(artifacts)
