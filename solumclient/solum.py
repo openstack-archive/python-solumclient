@@ -531,6 +531,18 @@ Available commands:
             for href, pub_key in public_keys.items():
                 print('%s :\n  %s' % (href, pub_key))
 
+    def _validate_plan_file(self, plan_definition):
+        if 'artifacts' not in plan_definition:
+            raise exc.CommandException(message="Missing artifacts section")
+        elif plan_definition['artifacts'] is None:
+            raise exc.CommandException(message="Artifacts cannot be empty")
+        elif 'name' not in plan_definition['artifacts'][0]:
+            raise exc.CommandException(message="Artifact name missing")
+        elif 'content' not in plan_definition['artifacts'][0]:
+            raise exc.CommandException(message="Artifact content missing")
+        elif 'language_pack' not in plan_definition['artifacts'][0]:
+            raise exc.CommandException(message="Language pack missing")
+
     def list(self):
         """Print a list of all deployed applications."""
         # This is just "plan list".
@@ -614,6 +626,7 @@ Available commands:
                 with open(planfile) as definition_file:
                     definition = definition_file.read()
                     plan_definition = yamlutils.load(definition)
+                    self._validate_plan_file(plan_definition)
             except IOError:
                 message = "Could not open plan file %s." % planfile
                 raise exc.CommandError(message=message)
@@ -626,6 +639,7 @@ Available commands:
                 'version': 1,
                 'artifacts': [{
                     'artifact_type': 'heroku',
+                    'name': '',
                     'content': {},
                     }]}
 
@@ -634,17 +648,6 @@ Available commands:
         # Check for the language pack. Check args first, then planfile.
         # If it's neither of those places, prompt for it and update the
         # plan definition.
-
-        if 'artifacts' not in plan_definition:
-            raise exc.CommandException(message="Missing artifacts section")
-        elif plan_definition['artifacts'] is None:
-            raise exc.CommandException(message="Artifacts cannot be empty")
-        elif 'name' not in plan_definition['artifacts'][0]:
-            raise exc.CommandException(message="Artifact name missing")
-        elif 'content' not in plan_definition['artifacts'][0]:
-            raise exc.CommandException(message="Artifact content missing")
-        elif 'language_pack' not in plan_definition['artifacts'][0]:
-            raise exc.CommandException(message="Language pack missing")
 
         langpack = None
         if args.langpack is not None:
@@ -695,6 +698,7 @@ Available commands:
             while not name:
                 name = raw_input("Please name the application.\n> ")
             plan_definition['name'] = name
+            plan_definition['artifacts'][0]['name'] = name
 
         if args.desc is not None:
             plan_definition['description'] = args.desc
