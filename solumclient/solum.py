@@ -650,15 +650,20 @@ Available commands:
             plan_definition['artifacts'][0]['language_pack'] = args.langpack
         elif plan_definition['artifacts'][0].get('language_pack') is None:
             langpacks = self.client.languagepacks.list()
-            lpnames = [lp.name for lp in langpacks]
-            fields = ['uuid', 'name', 'description', 'state', 'source_uri']
-            self._print_list(langpacks, fields)
-            langpack = raw_input("Please choose a languagepack from the "
-                                 "above list.\n> ")
-            while langpack not in lpnames:
-                langpack = raw_input("You must choose one of the named "
-                                     "language packs.\n> ")
-            plan_definition['artifacts'][0]['language_pack'] = langpack
+            if len(langpacks) > 0:
+                lpnames = [lp.name for lp in langpacks]
+                fields = ['uuid', 'name', 'description',
+                          'status', 'source_uri']
+                self._print_list(langpacks, fields)
+                langpack = raw_input("Please choose a languagepack from the "
+                                     "above list.\n> ")
+                while langpack not in lpnames:
+                    langpack = raw_input("You must choose one of the named "
+                                         "language packs.\n> ")
+                plan_definition['artifacts'][0]['language_pack'] = langpack
+            else:
+                raise exc.CommandError("No languagepack available. "
+                                       "Create a languagepack first.")
 
         # Check for the git repo URL. Check args first, then the planfile.
         # If it's neither of those places, prompt for it and update the
