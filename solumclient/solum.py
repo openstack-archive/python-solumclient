@@ -680,15 +680,13 @@ Available commands:
         # Check for the entry point. Check args first, then the planfile.
         # If it's neither of those places, prompt for it and update the
         # plan definition.
-        '''
         run_cmd = None
         if args.run_cmd is not None:
             plan_definition['artifacts'][0]['run_cmd'] = args.run_cmd
         if plan_definition['artifacts'][0].get('run_cmd') is None:
-            run_cmd = raw_input("Please specify an entry point for your "
+            run_cmd = raw_input("Please specify start/run command for your "
                                 "application.\n> ")
             plan_definition['artifacts'][0]['run_cmd'] = run_cmd
-        '''
 
         # Update name and description if specified.
         if args.name is not None:
