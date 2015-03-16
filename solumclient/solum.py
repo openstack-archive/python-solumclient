@@ -830,6 +830,22 @@ Available commands:
         Show this help message.
 
 
+    solum languagepack create <NAME> <GIT_REPO> [--lp_metadata <METADATA>]
+        Create a new language pack from a git repo.
+
+    solum languagepack list
+        Print and index of all available language packs.
+
+    solum languagepack show <LP>
+        Print the details of a language pack.
+
+    solum languagepack delete <LP>
+        Destroy a language pack.
+
+    solum languagepack logs <UUID>
+        Show logs for a language pack.
+
+
     solum app list
         Print an index of all deployed applications.
 
