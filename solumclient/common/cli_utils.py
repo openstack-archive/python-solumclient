@@ -57,7 +57,6 @@ class CommandsBase(object):
             try:
                 return self._actions[action]()
             except exc.CommandError as ce:
-                print(self.__doc__)
                 print("ERROR: %s" % ce.message)
         else:
             print(self.__doc__)
