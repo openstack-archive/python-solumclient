@@ -274,20 +274,6 @@ class TestSolum(base.TestCase):
             out = self.shell("app create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifacts cannot be empty\n", out)
 
-    def test_app_create_with_artifacts_no_name(self):
-        raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
-        raw_data += '- content:\n'
-        raw_data += '    href: asdfds\n'
-        raw_data += '  artifact_type: heroku\n'
-        raw_data += '  language_pack: lp'
-
-        mopen = mock.mock_open(read_data=raw_data)
-
-        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
-            self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
-            self.assertEqual("ERROR: Artifact name missing\n", out)
-
     def test_app_create_with_artifacts_no_content(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
         raw_data += '- name: asdfds\n'
@@ -300,17 +286,6 @@ class TestSolum(base.TestCase):
             self.make_env()
             out = self.shell("app create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifact content missing\n", out)
-
-    def test_app_create_with_artifacts_no_lp(self):
-        raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
-        raw_data += '- name:asdfds'
-        raw_data += '  content:asdfds'
-        mopen = mock.mock_open(read_data=raw_data)
-
-        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
-            self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
-            self.assertEqual("ERROR: Language pack missing\n", out)
 
     # Plan Tests #
     @mock.patch.object(plan.PlanManager, "create")

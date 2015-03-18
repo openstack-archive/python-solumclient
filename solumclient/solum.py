@@ -536,12 +536,8 @@ Available commands:
             raise exc.CommandException(message="Missing artifacts section")
         elif plan_definition['artifacts'] is None:
             raise exc.CommandException(message="Artifacts cannot be empty")
-        elif 'name' not in plan_definition['artifacts'][0]:
-            raise exc.CommandException(message="Artifact name missing")
         elif 'content' not in plan_definition['artifacts'][0]:
             raise exc.CommandException(message="Artifact content missing")
-        elif 'language_pack' not in plan_definition['artifacts'][0]:
-            raise exc.CommandException(message="Language pack missing")
 
     def list(self):
         """Print a list of all deployed applications."""
@@ -696,7 +692,9 @@ Available commands:
             while not name:
                 name = raw_input("Please name the application.\n> ")
             plan_definition['name'] = name
-            plan_definition['artifacts'][0]['name'] = name
+
+        if 'name' not in plan_definition['artifacts'][0]:
+            plan_definition['artifacts'][0]['name'] = plan_definition['name']
 
         if args.desc is not None:
             plan_definition['description'] = args.desc
