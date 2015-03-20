@@ -23,7 +23,7 @@ Initial M1 Solum CLI commands implemented (but not REST communications):
 * assembly delete assembly_name
 * assembly list
 * assembly show assembly_id
-* languagepack create <NAME> <GIT_REPO> [--lp_metadata <METADATA>]
+* languagepack create <NAME> <GIT_REPO>
 * languagepack list
 * languagepack show <LP_ID>
 * languagepack delete <LP_ID>
@@ -826,7 +826,7 @@ Available commands:
         Show this help message.
 
 
-    solum languagepack create <NAME> <GIT_REPO> [--lp_metadata <METADATA>]
+    solum languagepack create <NAME> <GIT_REPO>
         Create a new language pack from a git repo.
 
     solum languagepack list
