@@ -651,6 +651,10 @@ Available commands:
                         if len(filtered_list) <= 0:
                             raise exc.CommandError("Languagepack %s "
                                                    "not READY" % lp)
+                    if plan_definition['artifacts'][0].get('ports') is None:
+                        print("No application port specified in plan file.")
+                        print("Defaulting to port 80.")
+                        plan_definition['artifacts'][0]['ports'] = 80
             except IOError:
                 message = "Could not open plan file %s." % planfile
                 raise exc.CommandError(message=message)
@@ -718,6 +722,19 @@ Available commands:
             run_cmd = raw_input("Please specify start/run command for your "
                                 "application.\n> ")
             plan_definition['artifacts'][0]['run_cmd'] = run_cmd
+
+        # Check for the port.
+        if plan_definition['artifacts'][0].get('ports') is None:
+            port_val = 80
+            input_val = raw_input("Please specify a port for your application."
+                                  " (Default is 80)> ")
+            if input_val is not '':
+                try:
+                    port_val = int(input_val)
+                except ValueError:
+                    print("Non-integer entered. Defaulting to 80.")
+
+            plan_definition['artifacts'][0]['ports'] = int(port_val)
 
         # Update name and description if specified.
         if args.name is not None:
