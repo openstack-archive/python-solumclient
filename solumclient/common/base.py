@@ -18,7 +18,7 @@ from solumclient.openstack.common.apiclient import base
 from solumclient.openstack.common.apiclient import exceptions
 
 
-class FindMixin():
+class FindMixin(object):
     """Just `findone()`/`findall()` methods.
 
     Note: this is largely a copy of apiclient.base.ManagerWithFind
