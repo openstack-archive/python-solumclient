@@ -383,19 +383,19 @@ class LanguagePackCommands(cli_utils.CommandsBase):
 
 Available commands:
 
-    solum languagepack create <NAME> <GIT_REPO_URL> [--lp_metadata <METADATA>]
+    solum lp create <NAME> <GIT_REPO_URL> [--lp_metadata <METADATA>]
         Create a new language pack from a git repo.
 
-    solum languagepack list
+    solum lp list
         Print and index of all available language packs.
 
-    solum languagepack show <NAME|UUID>
+    solum lp show <NAME|UUID>
         Print the details of a language pack.
 
-    solum languagepack delete <NAME|UUID>
+    solum lp delete <NAME|UUID>
         Destroy a language pack.
 
-    solum languagepack logs <NAME|UUID>
+    solum lp logs <NAME|UUID>
         Show logs for a language pack.
     """
 
@@ -495,9 +495,10 @@ Available commands:
         Print detailed information about one application.
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
-                     [--name <NAME>] [--desc <DESCRIPTION>]
-                     [--setup-trigger] [--trigger-workflow <WORKFLOW>]
+                     [--langpack <LANGPACK>] [--lp <LANGPACK>]
+                     [--run-cmd <RUN_CMD>] [--name <NAME>]
+                     [--desc <DESCRIPTION>] [--setup-trigger]
+                     [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
     solum app deploy <NAME|UUID>
@@ -602,6 +603,9 @@ Available commands:
         self.parser.add_argument('--git-url',
                                  help='Source repo')
         self.parser.add_argument('--langpack',
+                                 help='Language pack')
+        self.parser.add_argument('--lp',
+                                 dest='langpack',
                                  help='Language pack')
 
         self.parser.add_argument('--run-cmd',
@@ -880,22 +884,22 @@ Available commands:
     solum help
         Show this help message.
 
-    solum languagepack help
+    solum lp help
         Show a help message specific to languagepack commands.
 
-    solum languagepack create <NAME> <GIT_REPO_URL>
+    solum lp create <NAME> <GIT_REPO_URL>
         Create a new language pack from a git repo.
 
-    solum languagepack list
+    solum lp list
         Print and index of all available language packs.
 
-    solum languagepack show <NAME|UUID>
+    solum lp show <NAME|UUID>
         Print the details of a language pack.
 
-    solum languagepack delete <NAME|UUID>
+    solum lp delete <NAME|UUID>
         Destroy a language pack.
 
-    solum languagepack logs <UUID>
+    solum lp logs <UUID>
         Show logs for a language pack.
 
 
@@ -940,6 +944,7 @@ Available commands:
         'plan': PlanCommands,
         'assembly': AssemblyCommands,
         'pipeline': PipelineCommands,
+        'lp': LanguagePackCommands,
         'languagepack': LanguagePackCommands,
         'component': ComponentCommands,
     }
