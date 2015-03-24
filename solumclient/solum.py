@@ -388,10 +388,10 @@ Available commands:
     solum languagepack list
         Print and index of all available language packs.
 
-    solum languagepack show <LP>
+    solum languagepack show <NAME|UUID>
         Print the details of a language pack.
 
-    solum languagepack delete <LP>
+    solum languagepack delete <NAME|UUID>
         Destroy a language pack.
 
     solum languagepack logs <UUID>
@@ -490,7 +490,7 @@ Available commands:
     solum app list
         Print an index of all deployed applications.
 
-    solum app show <APP>
+    solum app show <NAME|UUID>
         Print detailed information about one application.
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
@@ -499,10 +499,10 @@ Available commands:
                      [--setup-triggers]
         Register a new application with Solum.
 
-    solum app deploy <APP>
+    solum app deploy <NAME|UUID>
         Deploy an application, building any applicable artifacts first.
 
-    solum app delete <APP>
+    solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 """
 
@@ -837,10 +837,10 @@ Available commands:
     solum languagepack list
         Print and index of all available language packs.
 
-    solum languagepack show <LP>
+    solum languagepack show <NAME|UUID>
         Print the details of a language pack.
 
-    solum languagepack delete <LP>
+    solum languagepack delete <NAME|UUID>
         Destroy a language pack.
 
     solum languagepack logs <UUID>
@@ -850,7 +850,7 @@ Available commands:
     solum app list
         Print an index of all deployed applications.
 
-    solum app show <APP>
+    solum app show <NAME|UUID>
         Print detailed information about one application.
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
@@ -858,10 +858,10 @@ Available commands:
                      [--name <NAME>] [--desc <DESCRIPTION>]
         Register a new application with Solum.
 
-    solum app deploy <APP>
+    solum app deploy <NAME|UUID>
         Deploy an application, building any applicable artifacts first.
 
-    solum app delete <APP>
+    solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 
 
@@ -873,7 +873,7 @@ Available commands:
     solum assembly create <NAME> <PLAN_URI> [--description <DESCRIPTION>]
         Create an assembly from a registered plan.
 
-    solum assembly delete <PLAN>
+    solum assembly delete <NAME|UUID>
         Destroy an assembly.
     """
 
