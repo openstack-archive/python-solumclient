@@ -865,18 +865,7 @@ Available commands:
         Delete an application and all related artifacts.
 
 
-    solum plan list
-        Print an index of all available plans.
-
-    solum plan show <PLAN>
-        Print details about a plan.
-
-    solum plan create <PLANFILE> [--param-file <PARAMFILE>]
-        Register a plan with Solum.
-
-    solum plan delete <PLAN>
-        Destroy a plan. Plans with dependent assemblies cannot be deleted.
-
+    SOON TO BE DEPRECATED:
 
     solum assembly list
         Print an index of all available assemblies.
@@ -886,26 +875,6 @@ Available commands:
 
     solum assembly delete <PLAN>
         Destroy an assembly.
-
-
-    solum component list
-        Print an index of all available components.
-
-    solum component show <UUID>
-        Print details about a component.
-
-
-    solum pipeline list
-        Print an index of all available pipelines.
-
-    solum pipeline show <PIPELINE>
-        Print details about a pipeline.
-
-    solum pipeline create <PLAN_URI> <WORKBOOK_NAME> <NAME>
-        Create a pipeline from a given workbook and registered plan.
-
-    solum pipeline delete <PIPELINE>
-        Destroy a pipeline.
     """
 
     parser = PermissiveParser()
