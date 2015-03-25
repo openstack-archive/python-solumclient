@@ -539,6 +539,14 @@ Available commands:
         elif 'content' not in plan_definition['artifacts'][0]:
             raise exc.CommandException(message="Artifact content missing")
 
+    def _filter_ready_lps(self, lp_list):
+        filtered_list = []
+        for lp in lp_list:
+            if lp.status == 'READY':
+                filtered_list.add(lp)
+
+        return filtered_list
+
     def list(self):
         """Print a list of all deployed applications."""
         # This is just "plan list".
@@ -623,6 +631,20 @@ Available commands:
                     definition = definition_file.read()
                     plan_definition = yamlutils.load(definition)
                     self._validate_plan_file(plan_definition)
+                    lp = plan_definition['artifacts'][0]['language_pack']
+                    if lp != 'auto':
+                        try:
+                            lp1 = (
+                                self.client.languagepacks.find(name_or_id=lp)
+                                )
+                        except Exception as e:
+                            if type(e).__name__ == 'NotFound':
+                                raise exc.CommandError("Languagepack %s "
+                                                       "not registered" % lp)
+                        filtered_list = self._filter_ready_lps([lp1])
+                        if len(filtered_list) <= 0:
+                            raise exc.CommandError("Languagepack %s "
+                                                   "not READY" % lp)
             except IOError:
                 message = "Could not open plan file %s." % planfile
                 raise exc.CommandError(message=message)
@@ -650,8 +672,10 @@ Available commands:
             plan_definition['artifacts'][0]['language_pack'] = args.langpack
         elif plan_definition['artifacts'][0].get('language_pack') is None:
             langpacks = self.client.languagepacks.list()
-            if len(langpacks) > 0:
-                lpnames = [lp.name for lp in langpacks]
+            filtered_list = self._filter_ready_lps(langpacks)
+
+            if len(filtered_list) > 0:
+                lpnames = [lang_pack.name for lang_pack in langpacks]
                 fields = ['uuid', 'name', 'description',
                           'status', 'source_uri']
                 self._print_list(langpacks, fields)
@@ -662,7 +686,7 @@ Available commands:
                                          "language packs.\n> ")
                 plan_definition['artifacts'][0]['language_pack'] = langpack
             else:
-                raise exc.CommandError("No languagepack available. "
+                raise exc.CommandError("No languagepack in READY state. "
                                        "Create a languagepack first.")
 
         # Check for the git repo URL. Check args first, then the planfile.
