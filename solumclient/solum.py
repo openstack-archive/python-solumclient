@@ -45,6 +45,7 @@ import copy
 import json
 import sys
 
+import solumclient
 from solumclient.common import cli_utils
 from solumclient.common import exc
 from solumclient.common import github
@@ -917,7 +918,16 @@ Available commands:
                         default='help',
                         help="Target noun to act upon")
 
+    parser.add_argument('-V', '--version', action='store_true',
+                        dest='show_version',
+                        help="Report solum version.")
+
     parsed, _ = parser.parse_known_args()
+
+    if parsed.show_version:
+        print("python-solumclient version %s" % solumclient.__version__)
+        return
+
     resource = vars(parsed).get('resource')
 
     if resource in resources:
