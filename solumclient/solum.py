@@ -394,7 +394,7 @@ Available commands:
     solum languagepack delete <NAME|UUID>
         Destroy a language pack.
 
-    solum languagepack logs <UUID>
+    solum languagepack logs <NAME|UUID>
         Show logs for a language pack.
     """
 
