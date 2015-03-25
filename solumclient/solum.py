@@ -543,7 +543,7 @@ Available commands:
         filtered_list = []
         for lp in lp_list:
             if lp.status == 'READY':
-                filtered_list.add(lp)
+                filtered_list.append(lp)
 
         return filtered_list
 
