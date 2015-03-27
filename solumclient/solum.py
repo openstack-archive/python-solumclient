@@ -745,7 +745,7 @@ Available commands:
                 name = raw_input("Please name the application.\n> ")
             plan_definition['name'] = name
 
-        if 'name' not in plan_definition['artifacts'][0]:
+        if not plan_definition['artifacts'][0]['name']:
             plan_definition['artifacts'][0]['name'] = plan_definition['name']
 
         if args.desc is not None:
