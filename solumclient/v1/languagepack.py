@@ -53,6 +53,8 @@ class LanguagePackManager(solum_base.CrudManager):
 
     def logs(self, **kwargs):
         self.resource_class = UserLog
+        languagepack = self.find(name_or_id=kwargs['lp_id'])
+        kwargs['lp_id'] = languagepack.uuid
         url = self.build_url(base_url="/v1", **kwargs)
         url += '/logs/'
         return self._list(url)
