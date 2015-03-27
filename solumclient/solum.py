@@ -854,6 +854,9 @@ Available commands:
     solum help
         Show this help message.
 
+    solum languagepack help
+        Show a help message specific to languagepack commands.
+
     solum languagepack create <NAME> <GIT_REPO_URL>
         Create a new language pack from a git repo.
 
@@ -869,6 +872,9 @@ Available commands:
     solum languagepack logs <UUID>
         Show logs for a language pack.
 
+
+    solum app help
+        Show a help message specific to app commands.
 
     solum app list
         Print an index of all deployed applications.
