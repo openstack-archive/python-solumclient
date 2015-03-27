@@ -43,6 +43,7 @@ from __future__ import print_function
 import argparse
 import copy
 import json
+import re
 import sys
 
 import solumclient
@@ -55,6 +56,36 @@ from solumclient.v1 import assembly as cli_assem
 from solumclient.v1 import languagepack as cli_lp
 from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
+
+
+def name_is_valid(string):
+    try:
+        re.match(r'^([a-zA-Z0-9-_]{1,100})$', string).group(0)
+    except AttributeError:
+        return False
+    return True
+
+
+def ValidName(string):
+    if not name_is_valid(string):
+        raise AttributeError("Names must be 1-100 characters long and must "
+                             "only contain a-z,A-Z,0-9,-,_")
+    return string
+
+
+def lpname_is_valid(string):
+    try:
+        re.match(r'^([a-z0-9-_]{1,100})$', string).group(0)
+    except AttributeError:
+        return False
+    return True
+
+
+def ValidLPName(string):
+    if not lpname_is_valid(string):
+        raise AttributeError("LP names must be 1-100 characters long and "
+                             "must only contain a-z,0-9,-,_")
+    return string
 
 
 class PlanCommands(cli_utils.CommandsBase):
@@ -192,6 +223,7 @@ Available commands:
     def create(self):
         """Create an assembly."""
         self.parser.add_argument('name',
+                                 type=ValidName,
                                  help="Assembly name")
         self.parser.add_argument('plan_uri',
                                  help="Tenant/project-wide unique "
@@ -330,6 +362,7 @@ Available commands:
         self.parser.add_argument('workbook_name',
                                  help="Workbook name")
         self.parser.add_argument('name',
+                                 type=ValidName,
                                  help="Pipeline name")
         self.parser._names['plan_uri'] = 'plan URI'
         self.parser._names['workbook_name'] = 'workbook'
@@ -402,6 +435,7 @@ Available commands:
     def create(self):
         """Create a language pack."""
         self.parser.add_argument('name',
+                                 type=ValidLPName,
                                  help="Language pack name.")
         self.parser.add_argument('git_url',
                                  help=("Github url of custom "
@@ -774,16 +808,35 @@ Available commands:
             plan_definition['artifacts'][0]['ports'] = int(port_val)
 
         # Update name and description if specified.
-        if args.name is not None:
-            plan_definition['name'] = args.name
-        if not plan_definition.get('name'):
-            name = ''
-            while not name:
-                name = raw_input("Please name the application.\n> ")
-            plan_definition['name'] = name
 
-        if not plan_definition['artifacts'][0]['name']:
-            plan_definition['artifacts'][0]['name'] = plan_definition['name']
+        # Check the planfile-supplied name first.
+        error_message = ("Application name must be 1-100 characters and must "
+                         "only contain a-z,A-Z,0-9,-,_")
+        app_name = ''
+        if plan_definition.get('name') is not None:
+            if not name_is_valid(plan_definition.get('name')):
+                raise exc.CommandError(message=error_message)
+            app_name = plan_definition.get('name')
+        # Check the arguments next.
+        elif args.name:
+            if name_is_valid(args.name):
+                app_name = args.name
+        # Just ask.
+        else:
+            while True:
+                app_name = raw_input("Please name the application.\n> ")
+                if name_is_valid(app_name):
+                    break
+                print(error_message)
+
+        plan_definition['name'] = app_name
+
+        artifact_name = plan_definition['artifacts'][0]['name']
+        if not lpname_is_valid(artifact_name):
+            # https://github.com/docker/compose/issues/941
+            # Docker build only allows lowercase names for now.
+            artifact_name = app_name.lower()
+        plan_definition['artifacts'][0]['name'] = artifact_name
 
         if args.desc is not None:
             plan_definition['description'] = args.desc
@@ -1007,7 +1060,10 @@ Available commands:
         try:
             resources[resource](parser)
         except Exception as e:
-            print("ERROR: %s" % e.message)
+            if hasattr(e, 'message'):
+                print("ERROR: %s" % e.message)
+            else:
+                print("ERROR: %s" % e)
 
     else:
         print(main.__doc__)
