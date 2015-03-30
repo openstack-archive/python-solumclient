@@ -497,6 +497,7 @@ Available commands:
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--langpack <LANGPACK>] [--lp <LANGPACK>]
                      [--run-cmd <RUN_CMD>] [--name <NAME>]
+                     [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
                      [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
@@ -944,10 +945,13 @@ Available commands:
     solum app show <NAME|UUID>
         Print detailed information about one application.
 
+
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--langpack <LANGPACK>] [--run-cmd <RUN_CMD>]
-                     [--name <NAME>] [--desc <DESCRIPTION>]
-                     [--setup-trigger] [--trigger-workflow <WORKFLOW>]
+                     [--langpack <LANGPACK>] [--lp <LANGPACK>]
+                     [--run-cmd <RUN_CMD>] [--name <NAME>]
+                     [--param-file <PARAMFILE>]
+                     [--desc <DESCRIPTION>] [--setup-trigger]
+                     [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
     solum app deploy <NAME|UUID>
