@@ -31,31 +31,6 @@ class TestGitHubAuth(base.TestCase):
                           github.GitHubAuth,
                           "http://example.com")
 
-    @mock.patch('solumclient.common.github.GitHubAuth._fetch_username')
-    def test_username_prompted_ignored(self, fake_fetch_username):
-        fake_fetch_username.return_value = self.fake_username
-        gha = github.GitHubAuth(self.fake_repo, password='')
-        fake_fetch_username.assert_called_once()
-        self.assertEqual(gha.username, self.fake_username)
-
-    @mock.patch('solumclient.common.github.GitHubAuth._fetch_username')
-    def test_username_prompted_changed(self, fake_fetch_username):
-        new_username = 'newuser'
-        fake_fetch_username.return_value = new_username
-        gha = github.GitHubAuth(self.fake_repo, password='')
-        fake_fetch_username.assert_called_once()
-        self.assertEqual(gha.username, new_username)
-
-    @mock.patch('solumclient.common.github.GitHubAuth._fetch_password')
-    def test_password_prompted(self, fake_fetch_password):
-        new_password = 'newpassword'
-        fake_fetch_password.return_value = new_password
-        gha = github.GitHubAuth(self.fake_repo,
-                                username=self.fake_username)
-        fake_fetch_password.assert_called_once()
-        self.assertEqual(gha.username, self.fake_username)
-        self.assertEqual(gha.password, new_password)
-
     def test_token_fetched_on_request(self):
         gha = github.GitHubAuth(self.fake_repo,
                                 username=self.fake_username,
