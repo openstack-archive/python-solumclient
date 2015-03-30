@@ -503,6 +503,9 @@ Available commands:
     solum app deploy <NAME|UUID>
         Deploy an application, building any applicable artifacts first.
 
+    solum app logs <NAME|UUID>
+        Show the logs of an application for all the deployments.
+
     solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 """
@@ -556,6 +559,35 @@ Available commands:
         fields = ['uuid', 'name', 'description']
         plans = self.client.plans.list()
         self._print_list(plans, fields)
+
+    def logs(self):
+        assemblies = self.client.assemblies.list()
+
+        all_logs_list = []
+        fields = ["resource_uuid", "created_at"]
+        for a in assemblies:
+            loglist = cli_assem.AssemblyManager(self.client).logs(
+                assembly_id=str(a.uuid))
+
+            for log in loglist:
+                all_logs_list.append(log)
+                strategy_info = json.loads(log.strategy_info)
+                if log.strategy == 'local':
+                    if 'local_storage' not in fields:
+                        fields.append('local_storage')
+                    log.local_storage = log.location
+                elif log.strategy == 'swift':
+                    if 'swift_container' not in fields:
+                        fields.append('swift_container')
+                    if 'swift_path' not in fields:
+                        fields.append('swift_path')
+                    log.swift_container = strategy_info['container']
+                    log.swift_path = log.location
+                else:
+                    if 'location' not in fields:
+                        fields.append('location')
+
+        self._print_list(all_logs_list, fields)
 
     def show(self):
         """Print detailed information about one application."""
