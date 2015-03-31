@@ -673,20 +673,24 @@ Available commands:
                     definition = definition_file.read()
                     plan_definition = yamlutils.load(definition)
                     self._validate_plan_file(plan_definition)
-                    lp = plan_definition['artifacts'][0]['language_pack']
-                    if lp != 'auto':
-                        try:
-                            lp1 = (
-                                self.client.languagepacks.find(name_or_id=lp)
-                                )
-                        except Exception as e:
-                            if type(e).__name__ == 'NotFound':
+                    if (plan_definition['artifacts'][0].get('language_pack')
+                            is not None):
+                        lp = plan_definition['artifacts'][0]['language_pack']
+                        if lp != 'auto':
+                            try:
+                                lp1 = (
+                                    self.client.languagepacks.find
+                                    (name_or_id=lp)
+                                    )
+                            except Exception as e:
+                                if type(e).__name__ == 'NotFound':
+                                    raise exc.CommandError("Languagepack %s "
+                                                           "not registered"
+                                                           % lp)
+                            filtered_list = self._filter_ready_lps([lp1])
+                            if len(filtered_list) <= 0:
                                 raise exc.CommandError("Languagepack %s "
-                                                       "not registered" % lp)
-                        filtered_list = self._filter_ready_lps([lp1])
-                        if len(filtered_list) <= 0:
-                            raise exc.CommandError("Languagepack %s "
-                                                   "not READY" % lp)
+                                                       "not READY" % lp)
                     if plan_definition['artifacts'][0].get('ports') is None:
                         print("No application port specified in plan file.")
                         print("Defaulting to port 80.")
