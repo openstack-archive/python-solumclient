@@ -265,6 +265,30 @@ class TestSolum(base.TestCase):
             out = self.shell("app create --plan-file /dev/null")
             self.assertEqual("ERROR: Missing artifacts section\n", out)
 
+    def test_app_create_with_bad_name(self):
+        raw_data = '\n'.join([
+            'version: 1',
+            'name: ex=plan1',
+            'description: python web app',
+            'artifacts:',
+            '- name: web',
+            '  content:',
+            '    href: https://example.com',
+            '  language_pack: auto',
+            '  unittest_cmd: ./unit_tests.sh',
+            '  run_cmd: python app.py',
+            '  ports: 5000'])
+
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --plan-file /dev/null")
+
+            self.assertEqual("ERROR: Application name must be 1-100 "
+                             "characters and must only contain "
+                             "a-z,A-Z,0-9,-,_\n", out)
+
     def test_app_create_with_artifacts_empty(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.\nartifacts:'
         mopen = mock.mock_open(read_data=raw_data)
