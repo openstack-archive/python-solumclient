@@ -172,6 +172,39 @@ class CommandsBase(object):
                                 mixed_case_fields, field_labels)
 
 
+class NoSubCommands(CommandsBase):
+    """Command parsing class that lacks an 'action'."""
+    parser = None
+    solum = None
+    json_output = False
+
+    def __init__(self, parser):
+        self.parser = parser
+
+        self._get_global_flags()
+
+        try:
+            self._get_auth_flags()
+        except exc.CommandError as ce:
+            print(self.__doc__)
+            print("ERROR: %s" % ce.message)
+            return
+
+        parsed, _ = self.parser.parse_known_args()
+
+        client_args = vars(parsed)
+        if 'os_auth_token' in client_args:
+            del client_args['os_auth_token']
+
+        self.client = solum_client.get_client(parsed.solum_api_version,
+                                              **client_args)
+
+        return self.info()
+
+    def info(self):
+        pass
+
+
 def env(*vars, **kwargs):
     """Search for the first defined of possibly many env vars
 

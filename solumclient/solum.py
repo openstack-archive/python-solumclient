@@ -46,6 +46,9 @@ import json
 import re
 import sys
 
+import httplib2
+from keystoneclient.v2_0 import client as keystoneclient
+
 import solumclient
 from solumclient.common import cli_utils
 from solumclient.common import exc
@@ -910,6 +913,46 @@ Available commands:
         cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
 
+class InfoCommands(cli_utils.NoSubCommands):
+    """Show Solum server connection information.
+
+Available commands:
+
+    solum info
+        Show Solum endpoint and API release version.
+
+    """
+
+    def info(self):
+        parsed, _ = self.parser.parse_known_args()
+
+        # Use the api_endpoint to get the catalog
+
+        ks_kwargs = {
+            'username': parsed.os_username,
+            'password': parsed.os_password,
+            'tenant_name': parsed.os_tenant_name,
+            'auth_url': parsed.os_auth_url,
+        }
+
+        ksclient = keystoneclient.Client(**ks_kwargs)
+        services = ksclient.auth_ref.service_catalog.catalog['serviceCatalog']
+        solum_service = [s for s in services if s['name'] == 'solum'][0]
+        solum_api_endpoint = solum_service['endpoints'][0]['publicURL']
+
+        resp, content = httplib2.Http().request(
+            solum_api_endpoint, 'GET')
+
+        solum_api_version = resp.get('x-solum-release', '')
+
+        print("python-solumclient version %s" % solumclient.__version__)
+        print("solum API endpoint: %s" % solum_api_endpoint)
+        print("solum API version: %s" % solum_api_version)
+        print("solum auth endpoint: %s" % parsed.os_auth_url)
+        print("solum auth username: %s" % parsed.os_username)
+        print("solum auth tenant/project: %s" % parsed.os_tenant_name)
+
+
 class PermissiveParser(argparse.ArgumentParser):
     """An ArgumentParser that handles errors without exiting.
 
@@ -1040,6 +1083,8 @@ Available commands:
         'lp': LanguagePackCommands,
         'languagepack': LanguagePackCommands,
         'component': ComponentCommands,
+
+        'info': InfoCommands,
     }
 
     choices = resources.keys()
