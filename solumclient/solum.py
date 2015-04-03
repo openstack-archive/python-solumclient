@@ -1060,6 +1060,9 @@ Available commands:
     solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 
+    solum app logs <NAME|UUID>
+        Show the logs of an application for all the deployments.
+
 
     SOON TO BE DEPRECATED:
 
