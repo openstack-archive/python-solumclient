@@ -91,7 +91,7 @@ class TestGitHubAuth(base.TestCase):
             body=mock.ANY)
         expected_body = {
             "config": {
-                "url": fake_trigger_url + "%3Fworkflow%3Dunittest",
+                "url": fake_trigger_url + "?workflow=unittest",
                 "content_type": "json"},
             "name": "web",
             "events": ["pull_request", "commit_comment"]}
@@ -114,7 +114,7 @@ class TestGitHubAuth(base.TestCase):
             body=mock.ANY)
         expected_body = {
             "config": {
-                "url": fake_trigger_url + "%3Fworkflow%3Dunittest%20build",
+                "url": fake_trigger_url + "?workflow=unittest+build",
                 "content_type": "json"},
             "name": "web",
             "events": ["pull_request", "commit_comment"]}
