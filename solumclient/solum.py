@@ -935,15 +935,28 @@ Available commands:
             'auth_url': parsed.os_auth_url,
         }
 
-        ksclient = keystoneclient.Client(**ks_kwargs)
-        services = ksclient.auth_ref.service_catalog.catalog['serviceCatalog']
-        solum_service = [s for s in services if s['name'] == 'solum'][0]
-        solum_api_endpoint = solum_service['endpoints'][0]['publicURL']
+        solum_api_endpoint = parsed.solum_url
+        if not solum_api_endpoint:
+            ksclient = keystoneclient.Client(**ks_kwargs)
+            services = ksclient.auth_ref.service_catalog
+            services = services.catalog['serviceCatalog']
+            solum_service = [s for s in services if s['name'] == 'solum']
+            try:
+                endpoint = solum_service[0]['endpoints']
+                solum_api_endpoint = endpoint[0]['publicURL']
+            except (IndexError, KeyError):
+                print("Error: SOLUM_URL not set, and no Solum endpoint "
+                      "could be found in service catalog.")
 
-        resp, content = httplib2.Http().request(
-            solum_api_endpoint, 'GET')
-
-        solum_api_version = resp.get('x-solum-release', '')
+        solum_api_version = ''
+        if solum_api_endpoint:
+            try:
+                resp, content = httplib2.Http().request(
+                    solum_api_endpoint, 'GET')
+                solum_api_version = resp.get('x-solum-release', '')
+            except Exception:
+                print("Error: Solum endpoint could not be contacted;"
+                      " API version could not be determined.")
 
         print("python-solumclient version %s" % solumclient.__version__)
         print("solum API endpoint: %s" % solum_api_endpoint)
