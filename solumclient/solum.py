@@ -707,11 +707,15 @@ Available commands:
                                  action='store_true',
                                  dest='setup_trigger',
                                  help="Set up app trigger on git repo")
+
+        trigger_help = ("Which of stages build, unittest, deploy to trigger "
+                        "from git. For example: "
+                        "--trigger-workflow=unittest+build+deploy. "
+                        "Implies --setup-trigger.")
         self.parser.add_argument('--trigger-workflow',
                                  default='',
                                  dest='workflow',
-                                 help="Which of stages build, unittest, "
-                                      "deploy to trigger from git")
+                                 help=trigger_help)
 
         args = self.parser.parse_args()
 
@@ -872,6 +876,24 @@ Available commands:
                            args.param_file)
                 raise exc.CommandError(message=message)
 
+        repo_token = plan_definition['artifacts'][0].get('repo_token')
+        gha = github.GitHubAuth(git_url, repo_token=repo_token)
+
+        # Set up a repo token for the user if it hasn't already been created.
+        repo_token = repo_token or gha.repo_token
+        plan_definition['artifacts'][0]['repo_token'] = repo_token
+
+        # If there's a public key defined in the plan, upload it.
+        content = plan_definition['artifacts'][0].get('content')
+        if content:
+            public_key = content.get('public_key', '')
+            private_repo = content.get('private', False)
+            if private_repo and public_key:
+                try:
+                    gha.add_ssh_key(public_key=public_key)
+                except github.GitHubException as ghe:
+                    raise exc.CommandError(message=str(ghe))
+
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
                   'trigger_uri']
@@ -880,18 +902,16 @@ Available commands:
         self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
-        if artifacts and args.setup_trigger:
-            gha = github.GitHubAuth(git_url)
-            content = artifacts[0].content
-            public_key = content.get('public_key', '')
-            private_repo = content.get('private', False)
-            gha.add_ssh_key(public_key=public_key, is_private=private_repo)
+        if args.setup_trigger or args.workflow:
             trigger_uri = vars(plan).get('trigger_uri', '')
             if trigger_uri:
                 workflow = None
                 if args.workflow:
                     workflow = args.workflow.replace('+', ' ').split(' ')
-                gha.create_webhook(trigger_uri, workflow=workflow)
+                try:
+                    gha.create_webhook(trigger_uri, workflow=workflow)
+                except github.GitHubException as ghe:
+                    raise exc.CommandError(message=str(ghe))
 
     def deploy(self):
         """Deploy an application, building any applicable artifacts first."""

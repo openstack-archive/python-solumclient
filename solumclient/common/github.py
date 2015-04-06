@@ -25,24 +25,27 @@ import string
 import httplib2
 
 
+class GitHubException(Exception):
+    def __init__(self, status_code, message):
+        self.status_code = status_code
+        self.message = message
+
+    def __str__(self):
+        return "GitHub Exception: %s: %s" % (self.status_code, self.message)
+
+
 class GitHubAuth(object):
-    _username = None
-    _password = None
-    _onetime_password = None
-    _token = None
-    user_org_name = None
-    full_repo_name = None
-    git_url = None
+    _github_auth_url = 'https://api.github.com/authorizations'
+    _github_repo_hook_url = 'https://api.github.com/repos/%s/hooks'
+    _github_user_key_url = 'https://api.github.com/user/keys'
+    _github_repo_regex = r'github\.com[:/](.+?)/(.+?)($|/$|\.git$|\.git/$)'
 
-    _auth_url = 'https://api.github.com/authorizations'
-
-    def __init__(self, git_url, username=None, password=None):
+    def __init__(self, git_url, username=None, password=None, repo_token=None):
         self.git_url = git_url
 
         user_org_name, repo = '', ''
 
-        github_regex = r'github\.com[:/](.+?)/(.+?)($|/$|\.git$|\.git/$)'
-        repo_pat = re.compile(github_regex)
+        repo_pat = re.compile(self._github_repo_regex)
         match = repo_pat.search(self.git_url)
         if match:
             user_org_name, repo = match.group(1), match.group(2)
@@ -53,11 +56,10 @@ class GitHubAuth(object):
 
         self.full_repo_name = '/'.join([user_org_name, repo])
 
+        self._repo_token = repo_token
         self._username = username
         self._password = password
-
-        # If either is None, ask for them now.
-        self.username, self.password
+        self._otp_required = False
 
     @property
     def username(self):
@@ -75,72 +77,94 @@ class GitHubAuth(object):
 
     @property
     def onetime_password(self):
-        if self._onetime_password is None:
-            self._onetime_password = getpass.getpass("2FA Token: ")
-        return self._onetime_password
+        # This is prompted for every time it's needed.
+        print("Two-Factor Authentication required.")
+        return getpass.getpass("2FA Token: ")
 
     @property
-    def token(self):
-        if self._token is None:
-            self._get_repo_token()
-        return self._token
+    def repo_token(self):
+        if self._repo_token is None:
+            self.create_repo_token()
+        return self._repo_token
 
-    def _auth_header(self, use_otp=False):
-        authstring = '%s:%s' % (self.username, self.password)
-        auth = ''
-        try:
-            auth = base64.encodestring(authstring)
-        except TypeError:
-            # Python 3
-            auth = base64.encodestring(bytes(authstring, 'utf-8'))
+    @property
+    def auth_header(self):
         header = {
-            'Authorization': 'Basic %s' % auth,
             'Content-Type': 'application/json',
             }
-        if use_otp:
+
+        # The token on its own should suffice
+        if self._repo_token:
+            header['Authorization'] = 'token %s' % self._repo_token
+            return header
+
+        # This will prompt the user if either name or pass is missing.
+        authstring = '%s:%s' % (self.username, self.password)
+        basic_auth = ''
+        try:
+            basic_auth = base64.encodestring(authstring)
+        except TypeError:
+            # Python 3
+            basic_auth = base64.encodestring(bytes(authstring, 'utf-8'))
+            basic_auth = basic_auth.decode('utf-8')
+        basic_auth = basic_auth.strip()
+        header['Authorization'] = 'Basic %s' % basic_auth
+
+        # This will prompt for the OTP.
+        if self._otp_required:
             header['x-github-otp'] = self.onetime_password
+
         return header
 
-    def _get_repo_token(self):
-        note = ''.join(random.sample(string.lowercase, 5))
-        auth_info = {
-            'scopes': 'repo',
-            'note': 'Solum-status-%s' % note,
-            }
-        resp, content = httplib2.Http().request(
-            self._auth_url,
-            'POST',
-            headers=self._auth_header(),
-            body=json.dumps(auth_info))
-        if resp.get('status') in ['200', '201']:
-            response_body = json.loads(content)
-            self._token = response_body.get('token')
-        else:
-            print("Error getting repo token.")
-
     def _send_authed_request(self, url, body_dict):
+        body_text = json.dumps(body_dict)
+
         resp, content = httplib2.Http().request(
-            url,
-            'POST',
-            headers=self._auth_header(),
-            body=json.dumps(body_dict))
+            url, 'POST',
+            headers=self.auth_header,
+            body=body_text)
+
         if resp.get('status') in ['401']:
             if resp.get('x-github-otp', '').startswith('required'):
-                print("Two-Factor Authentication required.")
+                self._otp_required = True
                 resp, content = httplib2.Http().request(
-                    url,
-                    'POST',
-                    headers=self._auth_header(use_otp=True),
-                    body=json.dumps(body_dict))
+                    url, 'POST',
+                    headers=self.auth_header,
+                    body=body_text)
 
         return resp, content
 
+    def create_repo_token(self):
+        print("Creating repo token")
+        note = ''.join(random.sample(string.lowercase, 5))
+        auth_info = {
+            'scopes': ['repo', 'write:public_key', 'write:repo_hook'],
+            'note': 'Solum-status-%s' % note,
+            }
+
+        resp, content = self._send_authed_request(
+            self._github_auth_url,
+            auth_info)
+
+        status_code = int(resp.get('status', '500'))
+        response_body = json.loads(content)
+        if status_code in [200, 201]:
+            self._repo_token = response_body.get('token')
+        elif status_code >= 400 and status_code < 600:
+            message = response_body.get('message',
+                                        'No error message provided.')
+            raise GitHubException(status_code, message)
+
     def create_webhook(self, trigger_uri, workflow=None):
-        hook_url = ('https://api.github.com/repos/%s/hooks' %
-                    self.full_repo_name)
+        hook_url = self._github_repo_hook_url % self.full_repo_name
         if workflow is not None:
+            # workflow is a list of strings, likely
+            # ['unittest', 'build', 'deploy'].
+            # They're joined with + and appended to the
+            # trigger_uri here.
             wf_query = "?workflow=%s" % '+'.join(workflow)
             trigger_uri += wf_query
+
         hook_info = {
             'name': 'web',
             'events': ['pull_request', 'commit_comment'],
@@ -153,18 +177,13 @@ class GitHubAuth(object):
         if resp.get('status') not in ['200', '201']:
             print("Error creating webhook.")
 
-    def add_ssh_key(self, public_key=None, is_private=False):
+    def add_ssh_key(self, public_key=None):
         if not public_key:
             print("No public key to upload.")
             return
-        if is_private:
-            print("Uploading public key to user account.")
-        else:
-            print("Uploading public key to repository.")
-        api_url = ('https://api.github.com/repos/%s/keys' %
-                   self.full_repo_name)
-        if is_private:
-            api_url = 'https://api.github.com/user/keys'
+        print("Uploading public key to user account.")
+        api_url = self._github_user_key_url
+
         key_info = {
             'title': 'devops@Solum',
             'key': public_key,
