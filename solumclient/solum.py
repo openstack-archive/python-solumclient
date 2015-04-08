@@ -779,12 +779,13 @@ Available commands:
 
             if len(filtered_list) > 0:
                 lpnames = [lang_pack.name for lang_pack in languagepacks]
+                lp_uuids = [lang_pack.uuid for lang_pack in languagepacks]
                 fields = ['uuid', 'name', 'description',
                           'status', 'source_uri']
                 self._print_list(languagepacks, fields)
                 languagepack = raw_input("Please choose a languagepack from "
                                          "the above list.\n> ")
-                while languagepack not in lpnames:
+                while languagepack not in lpnames + lp_uuids:
                     languagepack = raw_input("You must choose one of the named"
                                              " language packs.\n> ")
                 plan_definition['artifacts'][0]['language_pack'] = languagepack
