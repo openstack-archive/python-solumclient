@@ -532,7 +532,7 @@ Available commands:
         Print detailed information about one application.
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--langpack <LANGPACK>] [--lp <LANGPACK>]
+                     [--lp <LANGUAGEPACK>]
                      [--run-cmd <RUN_CMD>] [--name <NAME>]
                      [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
@@ -672,12 +672,11 @@ Available commands:
                                  help="Local planfile location")
         self.parser.add_argument('--git-url',
                                  help='Source repo')
-        self.parser.add_argument('--langpack',
+        self.parser.add_argument('--languagepack',
                                  help='Language pack')
         self.parser.add_argument('--lp',
-                                 dest='langpack',
+                                 dest='languagepack',
                                  help='Language pack')
-
         self.parser.add_argument('--run-cmd',
                                  help="Application entry point")
         self.parser.add_argument('--name',
@@ -755,24 +754,25 @@ Available commands:
         # If it's neither of those places, prompt for it and update the
         # plan definition.
 
-        langpack = None
-        if args.langpack is not None:
-            plan_definition['artifacts'][0]['language_pack'] = args.langpack
+        languagepack = None
+        if args.languagepack is not None:
+            languagepack = args.languagepack
+            plan_definition['artifacts'][0]['language_pack'] = languagepack
         elif plan_definition['artifacts'][0].get('language_pack') is None:
-            langpacks = self.client.languagepacks.list()
-            filtered_list = self._filter_ready_lps(langpacks)
+            languagepacks = self.client.languagepacks.list()
+            filtered_list = self._filter_ready_lps(languagepacks)
 
             if len(filtered_list) > 0:
-                lpnames = [lang_pack.name for lang_pack in langpacks]
+                lpnames = [lang_pack.name for lang_pack in languagepacks]
                 fields = ['uuid', 'name', 'description',
                           'status', 'source_uri']
-                self._print_list(langpacks, fields)
-                langpack = raw_input("Please choose a languagepack from the "
-                                     "above list.\n> ")
-                while langpack not in lpnames:
-                    langpack = raw_input("You must choose one of the named "
-                                         "language packs.\n> ")
-                plan_definition['artifacts'][0]['language_pack'] = langpack
+                self._print_list(languagepacks, fields)
+                languagepack = raw_input("Please choose a languagepack from "
+                                         "the above list.\n> ")
+                while languagepack not in lpnames:
+                    languagepack = raw_input("You must choose one of the named"
+                                             " language packs.\n> ")
+                plan_definition['artifacts'][0]['language_pack'] = languagepack
             else:
                 raise exc.CommandError("No languagepack in READY state. "
                                        "Create a languagepack first.")
@@ -1060,7 +1060,7 @@ Available commands:
 
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--langpack <LANGPACK>] [--lp <LANGPACK>]
+                     [--lp <LANGUAGEPACK>]
                      [--run-cmd <RUN_CMD>] [--name <NAME>]
                      [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
