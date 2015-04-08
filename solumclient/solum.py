@@ -91,6 +91,18 @@ def ValidLPName(string):
     return string
 
 
+def ValidPort(string):
+    try:
+        port_val = int(string)
+        if 1 <= port_val <= 65535:
+            return port_val
+        else:
+            raise ValueError
+    except ValueError:
+        raise AttributeError("The port should be an integer between 1 and "
+                             "65535")
+
+
 class PlanCommands(cli_utils.CommandsBase):
     """Commands for working with plans.
 
@@ -532,8 +544,8 @@ Available commands:
         Print detailed information about one application.
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--lp <LANGUAGEPACK>]
-                     [--run-cmd <RUN_CMD>] [--name <NAME>]
+                     [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
+                     [--name <NAME>] [--port <PORT>]
                      [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
                      [--trigger-workflow <WORKFLOW>]
@@ -679,6 +691,9 @@ Available commands:
                                  help='Language pack')
         self.parser.add_argument('--run-cmd',
                                  help="Application entry point")
+        self.parser.add_argument('--port',
+                                 type=ValidPort,
+                                 help="The port your application listens on")
         self.parser.add_argument('--name',
                                  help="Application name")
         self.parser.add_argument('--desc',
@@ -802,17 +817,10 @@ Available commands:
             plan_definition['artifacts'][0]['run_cmd'] = run_cmd
 
         # Check for the port.
+        if args.port is not None:
+            plan_definition['artifacts'][0]['ports'] = int(args.port)
         if plan_definition['artifacts'][0].get('ports') is None:
-            port_val = 80
-            input_val = raw_input("Please specify a port for your application."
-                                  " (Default is 80)> ")
-            if input_val is not '':
-                try:
-                    port_val = int(input_val)
-                except ValueError:
-                    print("Non-integer entered. Defaulting to 80.")
-
-            plan_definition['artifacts'][0]['ports'] = int(port_val)
+            plan_definition['artifacts'][0]['ports'] = 80
 
         # Update name and description if specified.
 
@@ -1060,8 +1068,8 @@ Available commands:
 
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--lp <LANGUAGEPACK>]
-                     [--run-cmd <RUN_CMD>] [--name <NAME>]
+                     [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
+                     [--name <NAME>] [--port <PORT>]
                      [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
                      [--trigger-workflow <WORKFLOW>]
