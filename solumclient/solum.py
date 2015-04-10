@@ -656,7 +656,7 @@ Available commands:
         assemblies = self.client.assemblies.list()
         app_uri = ''
         updated = ''
-        app_status = ''
+        app_status = 'REGISTERED'
         for a in assemblies:
             plan_uuid = a.plan_uri.split('/')[-1]
             if plan_uuid != plan.uuid:
@@ -873,8 +873,9 @@ Available commands:
                 raise exc.CommandError(message=message)
 
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
+        plan.status = 'REGISTERED'
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
-                  'trigger_uri']
+                  'trigger_uri', 'status']
 
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._print_dict(plan, fields, wrap=72)
