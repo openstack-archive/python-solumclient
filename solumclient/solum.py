@@ -1039,6 +1039,12 @@ Available commands:
     solum help
         Show this help message.
 
+    solum info
+        Show Solum endpoint and API release version.
+
+    solum --version
+        Show current Solum client version and exit.
+
     solum lp help
         Show a help message specific to languagepack commands.
 
