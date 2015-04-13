@@ -79,7 +79,7 @@ def ValidName(string):
 def lpname_is_valid(string):
     try:
         re.match(r'^([a-z0-9-_]{1,100})$', string).group(0)
-    except AttributeError:
+    except (TypeError, AttributeError):
         return False
     return True
 

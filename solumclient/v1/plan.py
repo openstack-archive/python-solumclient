@@ -105,7 +105,8 @@ class PlanManager(solum_base.CrudManager, solum_base.FindMixin):
             resp = self.client.post(
                 self.build_url(base_url="/v1", **kwargs), **kwargs)
         except Exception as e:
-            raise exceptions.BadRequest(message=e.details)
+            message = vars(e).get('details', str(e))
+            raise exceptions.BadRequest(message=message)
         try:
             resp_plan = yamlutils.load(resp.content)
         except ValueError as e:
