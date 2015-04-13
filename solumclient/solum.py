@@ -431,7 +431,7 @@ class LanguagePackCommands(cli_utils.CommandsBase):
 
 Available commands:
 
-    solum lp create <NAME> <GIT_REPO_URL> [--lp_metadata <METADATA>]
+    solum lp create <NAME> <GIT_REPO_URL>
         Create a new language pack from a git repo.
 
     solum lp list
