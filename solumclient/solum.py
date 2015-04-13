@@ -877,11 +877,7 @@ Available commands:
                 raise exc.CommandError(message=message)
 
         repo_token = plan_definition['artifacts'][0].get('repo_token')
-        gha = github.GitHubAuth(git_url, repo_token=repo_token)
-
-        # Set up a repo token for the user if it hasn't already been created.
-        repo_token = repo_token or gha.repo_token
-        plan_definition['artifacts'][0]['repo_token'] = repo_token
+        gha = None
 
         # If there's a public key defined in the plan, upload it.
         content = plan_definition['artifacts'][0].get('content')
@@ -890,9 +886,13 @@ Available commands:
             private_repo = content.get('private', False)
             if private_repo and public_key:
                 try:
+                    gha = github.GitHubAuth(git_url, repo_token=repo_token)
+                    repo_token = repo_token or gha.repo_token
                     gha.add_ssh_key(public_key=public_key)
                 except github.GitHubException as ghe:
                     raise exc.CommandError(message=str(ghe))
+
+        plan_definition['artifacts'][0]['repo_token'] = repo_token
 
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         plan.status = 'REGISTERED'
@@ -910,6 +910,8 @@ Available commands:
                 if args.workflow:
                     workflow = args.workflow.replace('+', ' ').split(' ')
                 try:
+                    gha = gha or github.GitHubAuth(git_url,
+                                                   repo_token=repo_token)
                     gha.create_webhook(trigger_uri, workflow=workflow)
                 except github.GitHubException as ghe:
                     raise exc.CommandError(message=str(ghe))
