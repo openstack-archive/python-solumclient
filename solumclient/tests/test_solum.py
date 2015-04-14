@@ -337,6 +337,11 @@ class TestSolum(base.TestCase):
             out = self.shell("app create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifact content missing\n", out)
 
+    def test_app_logs_need_an_identifier(self):
+        self.make_env()
+        out = self.shell("app logs")
+        self.assertEqual("ERROR: You must specify an application.\n", out)
+
     # Plan Tests #
     @mock.patch.object(plan.PlanManager, "create")
     def test_plan_create(self, mock_plan_create):

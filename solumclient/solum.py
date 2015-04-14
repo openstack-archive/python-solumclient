@@ -612,11 +612,19 @@ Available commands:
         self._print_list(plans, fields)
 
     def logs(self):
+        """Print a list of all logs belonging to a single app."""
+        self.parser.add_argument('app',
+                                 help="Application name")
+        self.parser._names['app'] = 'application'
+        args = self.parser.parse_args()
         assemblies = self.client.assemblies.list()
 
         all_logs_list = []
         fields = ["resource_uuid", "created_at"]
         for a in assemblies:
+            plan_uuid = a.plan_uri.split('/')[-1]
+            if args.app not in [plan_uuid, a.name]:
+                continue
             loglist = cli_assem.AssemblyManager(self.client).logs(
                 assembly_id=str(a.uuid))
 
