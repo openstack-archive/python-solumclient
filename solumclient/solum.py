@@ -545,6 +545,7 @@ Available commands:
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
+                     [--unittest-cmd <UNITTEST_CMD>]
                      [--name <NAME>] [--port <PORT>]
                      [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
@@ -699,6 +700,8 @@ Available commands:
                                  help='Language pack')
         self.parser.add_argument('--run-cmd',
                                  help="Application entry point")
+        self.parser.add_argument('--unittest-cmd',
+                                 help="Command to execute unit tests")
         self.parser.add_argument('--port',
                                  type=ValidPort,
                                  help="The port your application listens on")
@@ -828,6 +831,10 @@ Available commands:
             run_cmd = raw_input("Please specify start/run command for your "
                                 "application.\n> ")
             plan_definition['artifacts'][0]['run_cmd'] = run_cmd
+
+        # Check for unit test command
+        if args.unittest_cmd is not None:
+            plan_definition['artifacts'][0]['unittest_cmd'] = args.unittest_cmd
 
         # Check for the port.
         if args.port is not None:
@@ -1107,6 +1114,7 @@ Available commands:
 
     solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
+                     [--unittest-cmd <UNITTEST_CMD>]
                      [--name <NAME>] [--port <PORT>]
                      [--param-file <PARAMFILE>]
                      [--desc <DESCRIPTION>] [--setup-trigger]
