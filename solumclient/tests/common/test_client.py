@@ -67,3 +67,30 @@ class ClientTest(base.TestCase):
             self.assertRaises(
                 exceptions.HttpError, http_client.client_request,
                 TestClient(http_client), "GET", "/resource")
+
+    def test_client_with_invalid_endpoint(self):
+        http_client = client.HTTPClient(FakeAuthPlugin())
+        mock_request = mock.Mock()
+        mock_request.side_effect = requests.ConnectionError
+        with mock.patch("requests.Session.request", mock_request):
+            self.assertRaises(
+                requests.ConnectionError, http_client.client_request,
+                TestClient(http_client), "GET", "/resource")
+
+    def test_client_with_invalid_service_catalog(self):
+        http_client = client.HTTPClient(FakeAuthPlugin())
+        mock_request = mock.Mock()
+        mock_request.side_effect = exceptions.EndpointException
+        with mock.patch("requests.Session.request", mock_request):
+            self.assertRaises(
+                exceptions.EndpointException, http_client.client_request,
+                TestClient(http_client), "GET", "/resource")
+
+    def test_client_with_connection_refused(self):
+        http_client = client.HTTPClient(FakeAuthPlugin())
+        mock_request = mock.Mock()
+        mock_request.side_effect = exceptions.ConnectionRefused
+        with mock.patch("requests.Session.request", mock_request):
+            self.assertRaises(
+                exceptions.ConnectionRefused, http_client.client_request,
+                TestClient(http_client), "GET", "/resource")
