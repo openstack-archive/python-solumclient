@@ -150,12 +150,14 @@ class GitHubAuth(object):
         response_body = json.loads(content)
         if status_code in [200, 201]:
             self._repo_token = response_body.get('token')
+            print("Successfully created repo token %s." % auth_info['note'])
         elif status_code >= 400 and status_code < 600:
             message = response_body.get('message',
                                         'No error message provided.')
             raise GitHubException(status_code, message)
 
     def create_webhook(self, trigger_uri, workflow=None):
+        print("Creating webhook for repo.")
         hook_url = self._github_repo_hook_url % self.full_repo_name
         if workflow is not None:
             # workflow is a list of strings, likely
@@ -174,7 +176,9 @@ class GitHubAuth(object):
             }
         }
         resp, content = self._send_authed_request(hook_url, hook_info)
-        if resp.get('status') not in ['200', '201']:
+        if resp.get('status') in ['200', '201']:
+            print("Successfully created webhook.")
+        else:
             print("Error creating webhook.")
 
     def add_ssh_key(self, public_key=None):
@@ -190,5 +194,7 @@ class GitHubAuth(object):
             }
 
         resp, content = self._send_authed_request(api_url, key_info)
-        if resp.get('status') not in ['200', '201']:
+        if resp.get('status') in ['200', '201']:
+            print("Successfully uploaded public key.")
+        else:
             print("Error uploading public key.")

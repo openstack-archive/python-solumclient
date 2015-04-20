@@ -718,6 +718,10 @@ Available commands:
                                  action='store_true',
                                  dest='setup_trigger',
                                  help="Set up app trigger on git repo")
+        self.parser.add_argument('--private',
+                                 action='store_true',
+                                 dest='private_repo',
+                                 help="Source repo requires authentication.")
 
         trigger_help = ("Which of stages build, unittest, deploy to trigger "
                         "from git. For example: "
@@ -821,6 +825,23 @@ Available commands:
             plan_definition['artifacts'][0]['content']['href'] = git_url
         git_url = plan_definition['artifacts'][0]['content']['href']
 
+        # If a token is supplied, we won't need to generate one.
+        artifact = plan_definition['artifacts'][0]
+        repo_token = artifact.get('repo_token')
+
+        is_private = (args.private_repo or
+                      artifact['content'].get('private'))
+
+        # If we'll be adding a trigger, or the repo is private,
+        # we'll need to use a personal access token.
+        # The GitHubAuth object will create one if repo_token is null.
+        if is_private or args.setup_trigger or args.workflow:
+            gha = github.GitHubAuth(git_url, repo_token=repo_token)
+            repo_token = repo_token or gha.repo_token
+            # Created or provided, the repo token needs to be in the
+            # plan data before we call client.plans.create.
+            plan_definition['artifacts'][0]['repo_token'] = repo_token
+
         # Check for the entry point. Check args first, then the planfile.
         # If it's neither of those places, prompt for it and update the
         # plan definition.
@@ -891,24 +912,6 @@ Available commands:
                            args.param_file)
                 raise exc.CommandError(message=message)
 
-        repo_token = plan_definition['artifacts'][0].get('repo_token')
-        gha = None
-
-        # If there's a public key defined in the plan, upload it.
-        content = plan_definition['artifacts'][0].get('content')
-        if content:
-            public_key = content.get('public_key', '')
-            private_repo = content.get('private', False)
-            if private_repo and public_key:
-                try:
-                    gha = github.GitHubAuth(git_url, repo_token=repo_token)
-                    repo_token = repo_token or gha.repo_token
-                    gha.add_ssh_key(public_key=public_key)
-                except github.GitHubException as ghe:
-                    raise exc.CommandError(message=str(ghe))
-
-        plan_definition['artifacts'][0]['repo_token'] = repo_token
-
         plan = self.client.plans.create(yamlutils.dump(plan_definition))
         plan.status = 'REGISTERED'
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts',
@@ -918,6 +921,19 @@ Available commands:
         self._print_dict(plan, fields, wrap=72)
         self._show_public_keys(artifacts)
 
+        # Solum generated a keypair; only upload the public key if we already
+        # have a repo_token, since we'd only have one if we've authed against
+        # github already.
+        content = vars(artifacts[0]).get('content')
+        if content:
+            public_key = content.get('public_key', '')
+            if repo_token and is_private and public_key:
+                try:
+                    gha = github.GitHubAuth(git_url, repo_token=repo_token)
+                    gha.add_ssh_key(public_key=public_key)
+                except github.GitHubException as ghe:
+                    raise exc.CommandError(message=str(ghe))
+
         if args.setup_trigger or args.workflow:
             trigger_uri = vars(plan).get('trigger_uri', '')
             if trigger_uri:
@@ -925,8 +941,7 @@ Available commands:
                 if args.workflow:
                     workflow = args.workflow.replace('+', ' ').split(' ')
                 try:
-                    gha = gha or github.GitHubAuth(git_url,
-                                                   repo_token=repo_token)
+                    gha = github.GitHubAuth(git_url, repo_token=repo_token)
                     gha.create_webhook(trigger_uri, workflow=workflow)
                 except github.GitHubException as ghe:
                     raise exc.CommandError(message=str(ghe))
