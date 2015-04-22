@@ -103,6 +103,27 @@ def ValidPort(string):
                              "65535")
 
 
+def transform_git_url(git_url, private):
+    # try to use a correct git uri
+    pt = re.compile(r'github\.com[:/](.+?)/(.+?)($|/.*$|\.git$|\.git/.*$)')
+    match = pt.search(git_url)
+    if match:
+        user_org_name = match.group(1)
+        repo = match.group(2)
+        if private:
+            right_uri = 'git@github.com:%s/%s.git' % (user_org_name, repo)
+        else:
+            right_uri = 'https://github.com/%s/%s.git' % (user_org_name, repo)
+        return right_uri
+    else:
+        msg = "Provide the git uri in the following format: "
+        if not private:
+            msg = msg + "https://github.com/<USER>/<REPO>.git"
+        else:
+            msg = msg + "git@github.com:<USER>/<REPO>.git"
+        raise exc.CommandError(message=msg)
+
+
 class PlanCommands(cli_utils.CommandsBase):
     """Commands for working with plans.
 
@@ -831,6 +852,9 @@ Available commands:
 
         is_private = (args.private_repo or
                       artifact['content'].get('private'))
+
+        git_url = transform_git_url(git_url, is_private)
+        plan_definition['artifacts'][0]['content']['href'] = git_url
 
         # If we'll be adding a trigger, or the repo is private,
         # we'll need to use a personal access token.

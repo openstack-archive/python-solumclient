@@ -273,7 +273,7 @@ class TestSolum(base.TestCase):
             'artifacts:',
             '- name: web',
             '  content:',
-            '    href: https://example.com',
+            '    href: https://github.com/user/repo.git',
             '  language_pack: auto',
             '  unittest_cmd: ./unit_tests.sh',
             '  run_cmd: python app.py',
@@ -297,7 +297,7 @@ class TestSolum(base.TestCase):
             'artifacts:',
             '- name:',
             '  content:',
-            '    href: https://example.com',
+            '    href: https://github.com/user/repo.git',
             '  language_pack: auto',
             '  unittest_cmd: ./unit_tests.sh',
             '  run_cmd: python app.py',
@@ -475,3 +475,21 @@ class TestSolum(base.TestCase):
         self.make_env()
         self.shell("component show comp1")
         mock_component_find.assert_called_once_with(name_or_id='comp1')
+
+    def test_transform_git_url(self):
+        private_uri = 'git@github.com:solum/python.git'
+        public_uri = 'https://github.com/solum/python.git'
+        private = True
+        public = False
+
+        result = solum.transform_git_url(private_uri, private)
+        self.assertEqual(result, private_uri)
+
+        result = solum.transform_git_url(public_uri, private)
+        self.assertEqual(result, private_uri)
+
+        result = solum.transform_git_url(private_uri, public)
+        self.assertEqual(result, public_uri)
+
+        result = solum.transform_git_url(public_uri, public)
+        self.assertEqual(result, public_uri)
