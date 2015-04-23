@@ -852,6 +852,7 @@ Available commands:
 
         is_private = (args.private_repo or
                       artifact['content'].get('private'))
+        plan_definition['artifacts'][0]['content']['private'] = is_private
 
         git_url = transform_git_url(git_url, is_private)
         plan_definition['artifacts'][0]['content']['href'] = git_url
