@@ -124,6 +124,28 @@ def transform_git_url(git_url, private):
         raise exc.CommandError(message=msg)
 
 
+def show_public_keys(artifacts):
+    public_keys = {}
+    if artifacts:
+        for arti in artifacts:
+            if arti.content and ('public_key' in arti.content):
+                public_keys.update(
+                    {arti.content['href']: arti.content['public_key']})
+    if public_keys:
+        print('Important:')
+        print('  Solum has generated and uploaded SSH keypair for your ' +
+              'private github repository/ies.')
+        print('  You may need to add these public SSH keys as github ' +
+              'deploy keys, if they were not uploaded successfully.')
+        print('  This enables solum to securely ' +
+              'clone/pull your private repository/ies.')
+        print('  More details on github deploy keys: ' +
+              'https://developer.github.com/guides/' +
+              'managing-deploy-keys/#deploy-keys\n')
+        for href, pub_key in public_keys.items():
+            print('%s :\n  %s' % (href, pub_key))
+
+
 class PlanCommands(cli_utils.CommandsBase):
     """Commands for working with plans.
 
@@ -184,7 +206,7 @@ Available commands:
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._print_dict(plan, fields, wrap=72)
-        self._show_public_keys(artifacts)
+        show_public_keys(artifacts)
 
     def delete(self):
         """Delete a plan."""
@@ -206,33 +228,13 @@ Available commands:
         fields = ['uuid', 'name', 'description', 'uri', 'artifacts']
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._print_dict(plan, fields, wrap=72)
-        self._show_public_keys(artifacts)
+        show_public_keys(artifacts)
 
     def list(self):
         """List all plans."""
         fields = ['uuid', 'name', 'description']
         plans = self.client.plans.list()
         self._print_list(plans, fields)
-
-    def _show_public_keys(self, artifacts):
-        public_keys = {}
-        if artifacts:
-            for arti in artifacts:
-                if arti.content and ('public_key' in arti.content):
-                    public_keys.update(
-                        {arti.content['href']: arti.content['public_key']})
-        if public_keys:
-            print('Important:')
-            print('  Solum has generated SSH keypair for your ' +
-                  'private github repository/ies.')
-            print('  Please add these public SSH keys as github deploy keys.')
-            print('  This enables solum assembly create to securely ' +
-                  'clone/pull your private repository/ies.')
-            print('  More details on github deploy keys: ' +
-                  'https://developer.github.com/guides/' +
-                  'managing-deploy-keys/#deploy-keys\n')
-            for href, pub_key in public_keys.items():
-                print('%s :\n  %s' % (href, pub_key))
 
 
 class AssemblyCommands(cli_utils.CommandsBase):
@@ -587,27 +589,6 @@ Available commands:
         # TODO(datsun180b): Write this.
         return []
 
-    def _show_public_keys(self, artifacts):
-        # Shamelessly plucked from PlanCommands.
-        public_keys = {}
-        if artifacts:
-            for arti in artifacts:
-                if arti.content and ('public_key' in arti.content):
-                    public_keys.update(
-                        {arti.content['href']: arti.content['public_key']})
-        if public_keys:
-            print('Important:')
-            print('  Solum has generated SSH keypair for your ' +
-                  'private github repository/ies.')
-            print('  Please add these public SSH keys as github deploy keys.')
-            print('  This enables solum assembly create to securely ' +
-                  'clone/pull your private repository/ies.')
-            print('  More details on github deploy keys: ' +
-                  'https://developer.github.com/guides/' +
-                  'managing-deploy-keys/#deploy-keys\n')
-            for href, pub_key in public_keys.items():
-                print('%s :\n  %s' % (href, pub_key))
-
     def _validate_plan_file(self, plan_definition):
         if 'artifacts' not in plan_definition:
             raise exc.CommandException(message="Missing artifacts section")
@@ -702,7 +683,7 @@ Available commands:
                   'trigger_uri', 'application_uri', 'status']
         self._print_dict(plan, fields, wrap=72)
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
-        self._show_public_keys(artifacts)
+        show_public_keys(artifacts)
 
     def create(self):
         """Register a new application with Solum."""
@@ -944,7 +925,6 @@ Available commands:
 
         artifacts = copy.deepcopy(vars(plan).get('artifacts'))
         self._print_dict(plan, fields, wrap=72)
-        self._show_public_keys(artifacts)
 
         # Solum generated a keypair; only upload the public key if we already
         # have a repo_token, since we'd only have one if we've authed against

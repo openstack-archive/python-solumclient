@@ -358,7 +358,7 @@ class TestSolum(base.TestCase):
             self.shell("plan create /dev/null")
             mock_plan_create.assert_called_once_with(plan_data)
 
-    @mock.patch.object(solum.PlanCommands, "_show_public_keys")
+    @mock.patch.object(solum, "show_public_keys")
     @mock.patch.object(plan.PlanManager, "create")
     def test_plan_create_with_private_github_repo(self, mock_plan_create,
                                                   mock_show_pub_keys):
@@ -402,7 +402,7 @@ class TestSolum(base.TestCase):
         self.shell("plan show %s" % the_id)
         mock_plan_find.assert_called_once_with(name_or_id=the_id)
 
-    @mock.patch.object(solum.PlanCommands, "_show_public_keys")
+    @mock.patch.object(solum, "show_public_keys")
     @mock.patch.object(plan.PlanManager, "find")
     def test_plan_get_private_github_repo(self, mock_plan_find,
                                           mock_show_pub_keys):
