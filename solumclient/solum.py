@@ -571,7 +571,9 @@ Available commands:
                      [--unittest-cmd <UNITTEST_CMD>]
                      [--name <NAME>] [--port <PORT>]
                      [--param-file <PARAMFILE>]
-                     [--desc <DESCRIPTION>] [--setup-trigger]
+                     [--desc <DESCRIPTION>]
+                     [--setup-trigger]
+                     [--private-repo]
                      [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
@@ -720,7 +722,7 @@ Available commands:
                                  action='store_true',
                                  dest='setup_trigger',
                                  help="Set up app trigger on git repo")
-        self.parser.add_argument('--private',
+        self.parser.add_argument('--private-repo',
                                  action='store_true',
                                  dest='private_repo',
                                  help="Source repo requires authentication.")
@@ -1091,7 +1093,6 @@ class PermissiveParser(argparse.ArgumentParser):
 def main():
     """Solum command-line client.
 
-For a complete description, please see README-CLI.rst.
 Available commands:
 
     solum help
@@ -1137,7 +1138,9 @@ Available commands:
                      [--unittest-cmd <UNITTEST_CMD>]
                      [--name <NAME>] [--port <PORT>]
                      [--param-file <PARAMFILE>]
-                     [--desc <DESCRIPTION>] [--setup-trigger]
+                     [--desc <DESCRIPTION>]
+                     [--setup-trigger]
+                     [--private-repo]
                      [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
