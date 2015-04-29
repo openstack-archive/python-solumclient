@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 import os
-import pprint
 
 from solumclient import client as solum_client
 from solumclient.common import exc
@@ -180,7 +180,7 @@ class CommandsBase(object):
         fields = self._sanitized_fields(fields)
         subset = dict([(f, getattr(obj, f, '')) for f in fields])
         if self.json_output:
-            pprint.pprint(subset, width=wrap)
+            print(json.dumps(subset, indent=2, sort_keys=True))
         else:
             cliutils.print_dict(subset, dict_property, wrap)
 
@@ -190,7 +190,7 @@ class CommandsBase(object):
         if self.json_output:
             subsets = [dict([(f, getattr(obj, f, '')) for f in fields])
                        for obj in objs]
-            pprint.pprint(subsets)
+            print(json.dumps(subsets, indent=2, sort_keys=True))
         else:
             cliutils.print_list(objs, fields, formatters, sortby_index,
                                 mixed_case_fields, field_labels)
