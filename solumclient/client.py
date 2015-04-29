@@ -32,7 +32,9 @@ def Client(version, **kwargs):
         token=kwargs.get('token'),
         auth_url=kwargs.get('auth_url'),
         endpoint=kwargs.get('endpoint'))
-    http_client = client.HTTPClient(keystone_auth)
+    other_kwargs = dict((k, v) for k, v in kwargs.items()
+                        if k not in keystone_auth.opt_names)
+    http_client = client.HTTPClient(keystone_auth, **other_kwargs)
     return client_class(http_client)
 
 
@@ -57,7 +59,9 @@ def get_client(api_version, **kwargs):
         'tenant_name': kwargs.get('os_tenant_name'),
         'token': kwargs.get('os_auth_token'),
         'auth_url': kwargs.get('os_auth_url'),
-        'endpoint': kwargs.get('solum_url')
+        'endpoint': kwargs.get('solum_url'),
+        'debug': kwargs.get('debug', False),
+        'verify': kwargs.get('verify', True)
     }
 
     return Client(api_version, **cli_kwargs)

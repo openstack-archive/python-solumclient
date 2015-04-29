@@ -38,6 +38,8 @@ class TestCli_Utils(base.TestCase):
                     'os_password': 'password',
                     'action': 'create',
                     'json': False,
+                    'verify': True,
+                    'debug': False
                     })),
         ('token', dict(
             fake_env={'OS_AUTH_TOKEN': '123456',
@@ -50,6 +52,8 @@ class TestCli_Utils(base.TestCase):
                     'os_password': '',
                     'action': 'create',
                     'json': False,
+                    'verify': True,
+                    'debug': False
                     })),
         ('solum_url_with_no_token', dict(
             fake_env={'OS_USERNAME': 'username',
@@ -65,6 +69,8 @@ class TestCli_Utils(base.TestCase):
                     'os_password': 'password',
                     'action': 'create',
                     'json': False,
+                    'verify': True,
+                    'debug': False
                     })),
     ]
 

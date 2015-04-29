@@ -23,6 +23,7 @@ import six
 from stevedore import extension
 from testtools import matchers
 
+from solumclient import client
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import auth
 from solumclient import solum
@@ -95,6 +96,20 @@ class TestSolum(base.TestCase):
             sys.stdout = orig
 
         return out
+
+    def test_get_client_debug(self):
+        self.make_env()
+        test_client = client.get_client('1')
+        self.assertFalse(test_client.http_client.debug)
+        test_client = client.get_client('1', debug=True)
+        self.assertTrue(test_client.http_client.debug)
+
+    def test_get_client_insecure(self):
+        self.make_env()
+        test_client = client.get_client('1')
+        self.assertTrue(test_client.http_client.verify)
+        test_client = client.get_client('1', verify=False)
+        self.assertFalse(test_client.http_client.verify)
 
     def test_help(self):
         required = [

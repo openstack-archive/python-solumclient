@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 import pprint
 
@@ -26,6 +27,7 @@ class CommandsBase(object):
     parser = None
     solum = None
     json_output = False
+    verify = True
 
     def __init__(self, parser):
         self.parser = parser
@@ -47,6 +49,8 @@ class CommandsBase(object):
         action = vars(parsed).get('action')
 
         client_args = vars(parsed)
+        client_args.pop('insecure', None)
+        client_args['verify'] = self.verify
         if 'os_auth_token' in client_args:
             del client_args['os_auth_token']
 
@@ -135,10 +139,30 @@ class CommandsBase(object):
         self.parser.add_argument('--json',
                                  action='store_true',
                                  help='JSON formatted output')
-
+        self.parser.add_argument('-k', '--insecure',
+                                 action='store_true',
+                                 help='Explicitly allow the client to perform'
+                                      ' \"insecure SSL\" (https) requests.'
+                                      ' The server\'s certificate will not be'
+                                      ' verified against any certificate'
+                                      ' authorities. This option should be'
+                                      ' used with caution.')
+        self.parser.add_argument('-d', '--debug',
+                                 action='store_true',
+                                 help='Print out request and response '
+                                      'details.')
         args, _ = self.parser.parse_known_args()
         if args.json:
             self.json_output = True
+        if args.insecure:
+            self.verify = False
+        if args.debug:
+            logging.basicConfig(
+                format="%(levelname)s (%(module)s) %(message)s",
+                level=logging.DEBUG)
+            logging.getLogger('iso8601').setLevel(logging.WARNING)
+            urllibpool = 'urllib3.connectionpool'
+            logging.getLogger(urllibpool).setLevel(logging.WARNING)
 
     def _sanitized_fields(self, fields):
         def allowed(field):
@@ -177,6 +201,7 @@ class NoSubCommands(CommandsBase):
     parser = None
     solum = None
     json_output = False
+    verify = True
 
     def __init__(self, parser):
         self.parser = parser
@@ -193,6 +218,8 @@ class NoSubCommands(CommandsBase):
         parsed, _ = self.parser.parse_known_args()
 
         client_args = vars(parsed)
+        client_args.pop('insecure', None)
+        client_args['verify'] = self.verify
         if 'os_auth_token' in client_args:
             del client_args['os_auth_token']
 

@@ -1019,8 +1019,9 @@ Available commands:
 
         solum_api_version = ''
         if solum_api_endpoint:
+            kwargs = {"disable_ssl_certificate_validation": not self.verify}
             try:
-                resp, content = httplib2.Http().request(
+                resp, content = httplib2.Http(**kwargs).request(
                     solum_api_endpoint, 'GET')
                 solum_api_version = resp.get('x-solum-release', '')
             except Exception:
