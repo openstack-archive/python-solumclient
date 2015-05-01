@@ -663,7 +663,11 @@ Available commands:
                                  help="Application name")
         self.parser._names['app'] = 'application'
         args = self.parser.parse_args()
-        plan = self.client.plans.find(name_or_id=args.app)
+        try:
+            plan = self.client.plans.find(name_or_id=args.app)
+        except exceptions.NotFound:
+            message = "No app named '%s'." % args.app
+            raise exceptions.NotFound(message=message)
 
         # Fetch the most recent app_uri.
         assemblies = self.client.assemblies.list()
