@@ -801,11 +801,11 @@ Available commands:
             filtered_list = self._filter_ready_lps(languagepacks)
 
             if len(filtered_list) > 0:
-                lpnames = [lang_pack.name for lang_pack in languagepacks]
-                lp_uuids = [lang_pack.uuid for lang_pack in languagepacks]
+                lpnames = [lang_pack.name for lang_pack in filtered_list]
+                lp_uuids = [lang_pack.uuid for lang_pack in filtered_list]
                 fields = ['uuid', 'name', 'description',
                           'status', 'source_uri']
-                self._print_list(languagepacks, fields)
+                self._print_list(filtered_list, fields)
                 languagepack = raw_input("Please choose a languagepack from "
                                          "the above list.\n> ")
                 while languagepack not in lpnames + lp_uuids:
