@@ -599,6 +599,13 @@ Available commands:
         elif 'content' not in plan_definition['artifacts'][0]:
             raise exc.CommandException(message="Artifact content missing")
 
+        error_message = ("Application name must be 1-100 characters and must "
+                         "only contain a-z,A-Z,0-9,-,_")
+
+        if plan_definition.get('name') is not None:
+            if not name_is_valid(plan_definition.get('name')):
+                raise exc.CommandError(message=error_message)
+
     def _filter_ready_lps(self, lp_list):
         filtered_list = []
         for lp in lp_list:
@@ -710,6 +717,7 @@ Available commands:
                                  type=ValidPort,
                                  help="The port your application listens on")
         self.parser.add_argument('--name',
+                                 type=ValidName,
                                  help="Application name")
         self.parser.add_argument('--desc',
                                  help="Application description")
@@ -787,6 +795,28 @@ Available commands:
                     }]}
 
         # NOTE: This assumes the plan contains exactly one artifact.
+
+        # Check the planfile-supplied name first.
+        error_message = ("Application name must be 1-100 characters and must "
+                         "only contain a-z,A-Z,0-9,-,_")
+        app_name = ''
+        if plan_definition.get('name') is not None:
+            if not name_is_valid(plan_definition.get('name')):
+                raise exc.CommandError(message=error_message)
+            app_name = plan_definition.get('name')
+        # Check the arguments next.
+        elif args.name:
+            if name_is_valid(args.name):
+                app_name = args.name
+        # Just ask.
+        else:
+            while True:
+                app_name = raw_input("Please name the application.\n> ")
+                if name_is_valid(app_name):
+                    break
+                print(error_message)
+
+        plan_definition['name'] = app_name
 
         # Check for the language pack. Check args first, then planfile.
         # If it's neither of those places, prompt for it and update the
@@ -873,30 +903,8 @@ Available commands:
 
         # Update name and description if specified.
 
-        # Check the planfile-supplied name first.
-        error_message = ("Application name must be 1-100 characters and must "
-                         "only contain a-z,A-Z,0-9,-,_")
-        app_name = ''
-        if plan_definition.get('name') is not None:
-            if not name_is_valid(plan_definition.get('name')):
-                raise exc.CommandError(message=error_message)
-            app_name = plan_definition.get('name')
-        # Check the arguments next.
-        elif args.name:
-            if name_is_valid(args.name):
-                app_name = args.name
-        # Just ask.
-        else:
-            while True:
-                app_name = raw_input("Please name the application.\n> ")
-                if name_is_valid(app_name):
-                    break
-                print(error_message)
-
-        plan_definition['name'] = app_name
-
         artifact_name = plan_definition['artifacts'][0]['name']
-        if not lpname_is_valid(artifact_name):
+        if lpname_is_valid(artifact_name):
             # https://github.com/docker/compose/issues/941
             # Docker build only allows lowercase names for now.
             artifact_name = app_name.lower()
