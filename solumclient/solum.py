@@ -974,7 +974,11 @@ Available commands:
                                  help="Application name")
         self.parser._names['app'] = 'application'
         args = self.parser.parse_args()
-        plan = self.client.plans.find(name_or_id=args.app)
+        try:
+            plan = self.client.plans.find(name_or_id=args.app)
+        except exceptions.NotFound:
+            message = "No app named '%s'." % args.app
+            raise exceptions.NotFound(message=message)
 
         assembly = self.client.assemblies.create(name=plan.name,
                                                  description=plan.description,
@@ -990,7 +994,11 @@ Available commands:
                                  help="Application name")
         self.parser._names['app'] = 'application'
         args = self.parser.parse_args()
-        plan = self.client.plans.find(name_or_id=args.app)
+        try:
+            plan = self.client.plans.find(name_or_id=args.app)
+        except exceptions.NotFound:
+            message = "No app named '%s'." % args.app
+            raise exceptions.NotFound(message=message)
         cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
 
 
