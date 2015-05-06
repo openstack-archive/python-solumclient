@@ -902,13 +902,20 @@ Available commands:
             plan_definition['artifacts'][0]['ports'] = 80
 
         # Update name and description if specified.
-
-        artifact_name = plan_definition['artifacts'][0]['name']
-        if lpname_is_valid(artifact_name):
+        a_name = ''
+        if (plan_definition['artifacts'][0].get('name') is not None
+                and plan_definition['artifacts'][0]['name'] is not ''):
+            a_name = plan_definition['artifacts'][0]['name']
+            a_name = a_name.lower()
+        else:
+            a_name = app_name.lower()
+        if not lpname_is_valid(a_name):
             # https://github.com/docker/compose/issues/941
             # Docker build only allows lowercase names for now.
-            artifact_name = app_name.lower()
-        plan_definition['artifacts'][0]['name'] = artifact_name
+            msg = ("Artifact names must be 1-100 characters long and "
+                   "must only contain a-z,0-9,-,_")
+            raise exc.CommandError(msg)
+        plan_definition['artifacts'][0]['name'] = a_name
 
         if args.desc is not None:
             plan_definition['description'] = args.desc
