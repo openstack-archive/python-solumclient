@@ -277,7 +277,7 @@ class TestSolum(base.TestCase):
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
+            out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Missing artifacts section\n", out)
 
     def test_app_create_with_bad_name(self):
@@ -298,7 +298,7 @@ class TestSolum(base.TestCase):
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
+            out = self.shell("oldapp create --plan-file /dev/null")
 
             self.assertEqual("ERROR: Application name must be 1-100 "
                              "characters and must only contain "
@@ -322,7 +322,7 @@ class TestSolum(base.TestCase):
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
+            out = self.shell("oldapp create --plan-file /dev/null")
 
             # No part of the plan is in error; the next step in the test
             # is authorization, which is deliberately mocked.
@@ -336,7 +336,7 @@ class TestSolum(base.TestCase):
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
+            out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifacts cannot be empty\n", out)
 
     def test_app_create_with_artifacts_no_content(self):
@@ -349,12 +349,12 @@ class TestSolum(base.TestCase):
 
         with mock.patch('%s.open' % solum.__name__, mopen, create=True):
             self.make_env()
-            out = self.shell("app create --plan-file /dev/null")
+            out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifact content missing\n", out)
 
     def test_app_logs_need_an_identifier(self):
         self.make_env()
-        out = self.shell("app logs")
+        out = self.shell("oldapp logs")
         self.assertEqual("ERROR: You must specify an application.\n", out)
 
     # Plan Tests #
