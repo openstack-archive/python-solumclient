@@ -194,7 +194,7 @@ class TestSolum(base.TestCase):
         self.shell("assembly delete %s" % the_id)
         mock_assembly_find.assert_called_once_with(
             name_or_id=the_id)
-        mock_assembly_delete.assert_called_once()
+        self.assertEqual(1, mock_assembly_delete.call_count)
 
     @mock.patch.object(assembly.AssemblyManager, "find")
     def test_assembly_get(self, mock_assembly_find):
@@ -255,7 +255,7 @@ class TestSolum(base.TestCase):
         self.shell("pipeline delete %s" % the_id)
         mock_pipeline_find.assert_called_once_with(
             name_or_id=the_id)
-        mock_pipeline_delete.assert_called_once()
+        self.assertEqual(1, mock_pipeline_delete.call_count)
 
     @mock.patch.object(pipeline.PipelineManager, "find")
     def test_pipeline_get(self, mock_pipeline_find):
@@ -408,7 +408,7 @@ class TestSolum(base.TestCase):
         the_id = str(uuid.uuid4())
         self.shell("plan delete %s" % the_id)
         mock_plan_find.assert_called_once_with(name_or_id=the_id)
-        mock_plan_delete.assert_called_once()
+        self.assertEqual(1, mock_plan_delete.call_count)
 
     @mock.patch.object(plan.PlanManager, "find")
     def test_plan_get(self, mock_plan_find):
@@ -438,7 +438,7 @@ class TestSolum(base.TestCase):
     def test_languagepack_list(self, mock_lp_list):
         self.make_env()
         self.shell("languagepack list")
-        mock_lp_list.assert_called_once()
+        self.assertEqual(1, mock_lp_list.call_count)
 
     @mock.patch.object(languagepack.LanguagePackManager, "create")
     def test_languagepack_create(self, mock_lp_create):
