@@ -692,6 +692,19 @@ class AppCommands(cli_utils.CommandsBase):
                   app_data['workflow_config'].get('test_cmd') is None):
                 app_data['workflow_config']['test_cmd'] = unittest_cmd
 
+    def _get_port(self, app_data, args):
+        port_list = []
+
+        if (app_data.get('ports') is None or
+                app_data['ports'] is '' or app_data['ports'] == [None]):
+            if args.port:
+                port_list.append(int(args.port))
+            else:
+                print("Using 80 as the app's default listening port")
+                port_list.append(int(80))
+
+            app_data['ports'] = port_list
+
     def create(self):
         self.register()
 
@@ -717,6 +730,10 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--unittest-cmd',
                                  dest='unittest_cmd',
                                  help="Command to execute unit tests")
+        self.parser.add_argument('--port',
+                                 dest="port",
+                                 type=ValidPort,
+                                 help="The port your application listens on")
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -747,6 +764,8 @@ class AppCommands(cli_utils.CommandsBase):
         self._get_run_command(app_data, args)
 
         self._get_unittest_command(app_data, args)
+
+        self._get_port(app_data, args)
 
         app = self.client.apps.create(**app_data)
 
