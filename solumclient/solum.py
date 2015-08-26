@@ -705,6 +705,20 @@ class AppCommands(cli_utils.CommandsBase):
 
             app_data['ports'] = port_list
 
+    def _get_parameters(self, app_data, args):
+        if args.param_file is not None:
+            try:
+                with open(args.param_file) as param_f:
+                    param_def = param_f.read()
+                app_data['parameters'] = yamlutils.load(param_def)
+            except IOError:
+                message = "Could not open param file %s." % args.param_file
+                raise exc.CommandError(message=message)
+            except ValueError:
+                message = ("Param file %s was not YAML." %
+                           args.param_file)
+                raise exc.CommandError(message=message)
+
     def create(self):
         self.register()
 
@@ -734,6 +748,11 @@ class AppCommands(cli_utils.CommandsBase):
                                  dest="port",
                                  type=ValidPort,
                                  help="The port your application listens on")
+        self.parser.add_argument('--param-file',
+                                 dest='param_file',
+                                 help="A yaml file containing custom"
+                                      " parameters to be used in the"
+                                      " application")
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -766,6 +785,8 @@ class AppCommands(cli_utils.CommandsBase):
         self._get_unittest_command(app_data, args)
 
         self._get_port(app_data, args)
+
+        self._get_parameters(app_data, args)
 
         app = self.client.apps.create(**app_data)
 
