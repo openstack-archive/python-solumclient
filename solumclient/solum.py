@@ -660,6 +660,25 @@ class AppCommands(cli_utils.CommandsBase):
         git_src['revision'] = git_rev
         app_data['source'] = git_src
 
+    def _get_run_command(self, app_data, args):
+        run_cmd = None
+
+        if args.run_cmd is not None:
+            run_cmd = args.run_cmd
+        elif (app_data.get('workflow_config') is None or
+                app_data['workflow_config'].get('run_cmd') is '' or
+                app_data['workflow_config'].get('run_cmd') is None):
+            run_cmd = raw_input("Please specify start/run command for your "
+                                "application.\n> ")
+
+        if app_data.get('workflow_config') is None:
+            run_cmd_dict = dict()
+            run_cmd_dict['run_cmd'] = run_cmd
+            app_data['workflow_config'] = run_cmd_dict
+        elif (app_data['workflow_config'].get('run_cmd') is '' or
+              app_data['workflow_config'].get('run_cmd') is None):
+            app_data['workflow_config']['run_cmd'] = run_cmd
+
     def create(self):
         self.register()
 
@@ -679,6 +698,9 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--git-url',
                                  dest='git_url',
                                  help='Source repo')
+        self.parser.add_argument('--run-cmd',
+                                 dest='run_cmd',
+                                 help="Application entry point")
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -693,6 +715,10 @@ class AppCommands(cli_utils.CommandsBase):
                     'repository': '',
                     'revision': 'master'
                 },
+                'workflow_config': {
+                    'test_cmd': '',
+                    'run_cmd': ''
+                },
             }
 
         app_name = self._get_and_validate_app_name(app_data, args)
@@ -701,6 +727,8 @@ class AppCommands(cli_utils.CommandsBase):
         self._get_and_validate_languagepack(app_data, args)
 
         self._get_app_repo_details(app_data, args)
+
+        self._get_run_command(app_data, args)
 
         app = self.client.apps.create(**app_data)
 
