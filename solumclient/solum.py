@@ -340,7 +340,7 @@ Available commands:
         args = self.parser.parse_args()
         assemblies = self.client.assemblies.find(name_or_id=args.assembly_uuid)
         fields = ['uuid', 'name', 'description', 'status', 'application_uri',
-                  'trigger_uri', 'created_at', 'updated_at', 'workflow']
+                  'created_at', 'updated_at', 'workflow']
         self._print_dict(assemblies, fields, wrap=72)
 
 
@@ -990,8 +990,7 @@ Available commands:
         assembly = self.client.assemblies.create(name=plan.name,
                                                  description=plan.description,
                                                  plan_uri=plan.uri)
-        fields = ['uuid', 'name', 'description', 'status', 'application_uri',
-                  'trigger_uri']
+        fields = ['uuid', 'name', 'status', 'application_uri']
         self._print_dict(assembly, fields, wrap=72)
 
     def delete(self):
