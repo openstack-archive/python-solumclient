@@ -679,6 +679,19 @@ class AppCommands(cli_utils.CommandsBase):
               app_data['workflow_config'].get('run_cmd') is None):
             app_data['workflow_config']['run_cmd'] = run_cmd
 
+    def _get_unittest_command(self, app_data, args):
+        unittest_cmd = None
+
+        if args.unittest_cmd is not None:
+            unittest_cmd = args.unittest_cmd
+            if app_data.get('workflow_config') is None:
+                unittest_cmd_dict = dict()
+                unittest_cmd_dict['test_cmd'] = unittest_cmd
+                app_data['workflow_config'] = unittest_cmd_dict
+            elif (app_data['workflow_config'].get('test_cmd') is '' or
+                  app_data['workflow_config'].get('test_cmd') is None):
+                app_data['workflow_config']['test_cmd'] = unittest_cmd
+
     def create(self):
         self.register()
 
@@ -701,6 +714,9 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--run-cmd',
                                  dest='run_cmd',
                                  help="Application entry point")
+        self.parser.add_argument('--unittest-cmd',
+                                 dest='unittest_cmd',
+                                 help="Command to execute unit tests")
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -729,6 +745,8 @@ class AppCommands(cli_utils.CommandsBase):
         self._get_app_repo_details(app_data, args)
 
         self._get_run_command(app_data, args)
+
+        self._get_unittest_command(app_data, args)
 
         app = self.client.apps.create(**app_data)
 
