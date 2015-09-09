@@ -579,6 +579,28 @@ class AppCommands(cli_utils.CommandsBase):
             if not name_is_valid(app_data.get('name')):
                 raise exc.CommandError(message=error_message)
 
+    def _get_and_validate_app_name(self, app_data, args):
+        # Check the appfile-supplied name first.
+        error_message = ("Application name must be 1-100 characters and must "
+                         "only contain a-z,A-Z,0-9,-,_")
+        app_name = ''
+        if app_data.get('name') is not None:
+            if not name_is_valid(app_data.get('name')):
+                raise exc.CommandError(message=error_message)
+            app_name = app_data.get('name')
+        # Check the arguments next.
+        elif args.name:
+            app_name = args.name
+        # Just ask.
+        else:
+            while True:
+                app_name = raw_input("Please name the application.\n> ")
+                if name_is_valid(app_name):
+                    break
+                print(error_message)
+
+        return app_name
+
     def create(self):
         self.register()
 
@@ -587,12 +609,22 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--app-file',
                                  dest='appfile',
                                  help="Local appfile location")
+        self.parser.add_argument('--name',
+                                 type=ValidName,
+                                 help="Application name")
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
             with open(args.appfile, 'r') as inf:
                 app_data = yamlutils.load(inf.read())
                 self._validate_app_file(app_data)
+        else:
+            app_data = {
+                'version': 1,
+            }
+
+        app_name = self._get_and_validate_app_name(app_data, args)
+        app_data['name'] = app_name
 
         app = self.client.apps.create(**app_data)
 
