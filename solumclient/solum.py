@@ -55,10 +55,12 @@ from solumclient.common import exc
 from solumclient.common import github
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import exceptions
+from solumclient.v1 import app as cli_app
 from solumclient.v1 import assembly as cli_assem
 from solumclient.v1 import languagepack as cli_lp
 from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
+from solumclient.v1 import workflow as cli_wf
 
 
 def name_is_valid(string):
@@ -557,6 +559,179 @@ Available commands:
 
 
 class AppCommands(cli_utils.CommandsBase):
+    """Commands for working with actual applications.
+
+    """
+
+    def create(self):
+        self.register()
+
+    def register(self):
+        """Register a new app."""
+        self.parser.add_argument('file')
+        args = self.parser.parse_args()
+        with open(args.file, 'r') as inf:
+            appdata = yamlutils.load(inf.read())
+
+        appdata['workflow_config'] = appdata.get('workflow', {})
+        del appdata['workflow']
+        appdata['trigger_actions'] = appdata.get('trigger', [])
+        del appdata['trigger']
+        app = self.client.apps.create(**appdata)
+
+        app.trigger = app.trigger_actions
+        app.workflow = app.workflow_config
+
+        fields = ['name', 'id', 'description', 'languagepack', 'ports',
+                  'source', 'workflow', 'trigger_uuid', 'trigger']
+        self._print_dict(app, fields, wrap=72)
+
+    def update(self):
+        """Update the registration of an existing app."""
+        self.parser.add_argument('app')
+
+        self.parser.add_argument('--name', type=str)
+        self.parser.add_argument('--desc', type=str)
+        self.parser.add_argument('--lp', type=str)
+        self.parser.add_argument('--ports', type=str)
+        self.parser.add_argument('--source.repo', dest='source_repo', type=str)
+        self.parser.add_argument('--source.rev', dest='source_rev', type=str)
+        self.parser.add_argument('--test_cmd', type=str)
+        self.parser.add_argument('--run_cmd', type=str)
+        self.parser.add_argument('--trigger', type=str)
+
+        args = self.parser.parse_args()
+
+        app = self.client.apps.find(name_or_id=args.app)
+
+        to_update = {}
+        if args.name:
+            to_update['name'] = args.name
+        if args.desc:
+            to_update['description'] = args.desc
+        if args.lp:
+            to_update['languagepack'] = args.lp
+        if args.ports:
+            ports = args.ports.strip('[]').replace(',', ' ')
+            ports = [int(p, 10) for p in ports.split(' ') if p]
+            to_update['ports'] = ports
+        if args.source_repo:
+            to_update['source'] = to_update.get('source', {})
+            to_update['source']['repository'] = args.source_repo
+        if args.source_rev:
+            to_update['source'] = to_update.get('source', {})
+            to_update['source']['revision'] = args.source_rev
+        if args.test_cmd:
+            to_update['workflow_config'] = to_update.get('trigger', {})
+            to_update['workflow_config']['test_cmd'] = args.test_cmd
+        if args.run_cmd:
+            to_update['workflow_config'] = to_update.get('trigger', {})
+            to_update['workflow_config']['run_cmd'] = args.run_cmd
+        if args.trigger:
+            trigger = args.trigger.strip('[]').replace(',', ' ').split(' ')
+            to_update['trigger_actions'] = trigger
+
+        if not to_update:
+            raise exc.CommandException(message="Nothing to update")
+
+        updated_app = self.client.apps.patch(app_id=app.id, **to_update)
+
+        updated_app.trigger = updated_app.trigger_actions
+        updated_app.workflow = updated_app.workflow_config
+
+        fields = ['name', 'id', 'description', 'languagepack',
+                  'entry_points', 'ports', 'source', 'workflow',
+                  'trigger_uuid', 'trigger']
+        self._print_dict(updated_app, fields, wrap=72)
+
+    def list(self):
+        """List all apps."""
+        apps = self.client.apps.list()
+        fields = ['name', 'id', 'description', 'languagepack']
+        self._print_list(apps, fields)
+
+    def show(self):
+        """Show details of one app."""
+        self.parser.add_argument('name')
+        args = self.parser.parse_args()
+        app = self.client.apps.find(name_or_id=args.name)
+
+        app.trigger = app.trigger_actions
+        app.workflow = app.workflow_config
+
+        fields = ['name', 'id', 'description', 'languagepack',
+                  'entry_points', 'ports', 'source', 'workflow',
+                  'trigger_uuid', 'trigger', 'status', 'app_url']
+        self._print_dict(app, fields, wrap=72)
+
+    def delete(self):
+        """Delete an app."""
+        self.parser.add_argument('name')
+        args = self.parser.parse_args()
+        app = self.client.apps.find(name_or_id=args.name)
+        cli_app.AppManager(self.client).delete(
+            app_id=str(app.id))
+
+    def _create_workflow(self, actions):
+        self.parser.add_argument('name')
+        args = self.parser.parse_args()
+        app = self.client.apps.find(name_or_id=args.name)
+        wf = (cli_wf.WorkflowManager(self.client,
+                                     app_id=app.id).create(actions=actions))
+        fields = ['wf_id', 'app_id', 'actions', 'config',
+                  'source', 'id', 'created_at', 'updated_at']
+        self._print_dict(wf, fields, wrap=72)
+
+    def unittest(self):
+        """Create a new workflow for an app."""
+        actions = ['unittest']
+        self._create_workflow(actions)
+
+    def build(self):
+        """Create a new workflow for an app."""
+        actions = ['unittest', 'build']
+        self._create_workflow(actions)
+
+    def deploy(self):
+        """Create a new workflow for an app."""
+        actions = ['unittest', 'build', 'deploy']
+        self._create_workflow(actions)
+
+
+class WorkflowCommands(cli_utils.CommandsBase):
+
+    def list(self):
+        """Show all of an app's live workflows."""
+        self.parser.add_argument('app')
+        args = self.parser.parse_args()
+        app = self.client.apps.find(name_or_id=args.app)
+        wfs = cli_wf.WorkflowManager(self.client, app_id=app.id).list()
+        fields = ['wf_id', 'app_id', 'actions', 'config',
+                  'source', 'id', 'created_at', 'updated_at']
+        self._print_list(wfs, fields)
+
+    def show(self):
+        """Show one of an app's live workflows."""
+        # Either "solum workflow show <app_id_or_name> <workflow_uuid>
+        # Or "solum workflow show <app_id_or_name> <workflow_revision>
+        self.parser.add_argument('app')
+        self.parser.add_argument('workflow')
+        args = self.parser.parse_args()
+        revision = args.workflow
+        try:
+            revision = int(revision, 10)
+        except ValueError:
+            revision = args.workflow
+        app = self.client.apps.find(name_or_id=args.app)
+
+        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
+        wf = wfman.find(revision_or_id=revision)
+        fields = ['wf_id', 'app_id', 'actions', 'config',
+                  'source', 'id', 'created_at', 'updated_at', 'status']
+        self._print_dict(wf, fields, wrap=72)
+
+
+class OldAppCommands(cli_utils.CommandsBase):
     """Commands for working with applications.
 
 Available commands:
@@ -1196,6 +1371,7 @@ Available commands:
     parser = PermissiveParser()
 
     resources = {
+        'oldapp': OldAppCommands,
         'app': AppCommands,
         'plan': PlanCommands,
         'assembly': AssemblyCommands,
@@ -1203,8 +1379,9 @@ Available commands:
         'lp': LanguagePackCommands,
         'languagepack': LanguagePackCommands,
         'component': ComponentCommands,
-
         'info': InfoCommands,
+        'wf': WorkflowCommands,
+        'workflow': WorkflowCommands,
     }
 
     choices = resources.keys()
@@ -1217,6 +1394,10 @@ Available commands:
                         dest='show_version',
                         help="Report solum version.")
 
+    parser.add_argument('-E', '--show-errors', dest='show_errors',
+                        action='store_true',
+                        help='Debug. Show traceback on error.')
+
     parsed, _ = parser.parse_known_args()
 
     if parsed.show_version:
@@ -1226,13 +1407,16 @@ Available commands:
     resource = vars(parsed).get('resource')
 
     if resource in resources:
-        try:
+        if parsed.show_errors:
             resources[resource](parser)
-        except Exception as e:
-            if hasattr(e, 'message'):
-                print("ERROR: %s" % e.message)
-            else:
-                print("ERROR: %s" % e)
+        else:
+            try:
+                resources[resource](parser)
+            except Exception as e:
+                if hasattr(e, 'message'):
+                    print("ERROR: %s" % e.message)
+                else:
+                    print("ERROR: %s" % e)
 
     else:
         print(main.__doc__)

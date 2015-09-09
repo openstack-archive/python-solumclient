@@ -178,6 +178,15 @@ class CommandsBase(object):
 
     def _print_dict(self, obj, fields, dict_property="Property", wrap=0):
         fields = self._sanitized_fields(fields)
+        try:
+            # datsun180b: I have no idea why, but following a PATCH
+            # app resources need to have this evaluated once or else
+            # the subset assignment below fails.
+            obj.attrs
+        except TypeError:
+            pass
+        except AttributeError:
+            pass
         subset = dict([(f, getattr(obj, f, '')) for f in fields])
         if self.json_output:
             print(json.dumps(subset, indent=2, sort_keys=True))

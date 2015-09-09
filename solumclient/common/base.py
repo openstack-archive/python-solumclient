@@ -93,3 +93,12 @@ class CrudManager(base.CrudManager):
 
         return self._put(
             self.build_url(**kwargs), params)
+
+    def patch(self, **kwargs):
+        kwargs = self._filter_kwargs(kwargs)
+        params = kwargs.copy()
+        params.pop('%s_id' % self.key)
+        params.pop('base_url')
+
+        return self._patch(
+            self.build_url(**kwargs), params)
