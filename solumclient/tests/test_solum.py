@@ -271,7 +271,45 @@ class TestSolum(base.TestCase):
         mock_pipeline_find.assert_called_once_with(name_or_id='app2')
 
     # App Tests #
-    def test_app_create_with_missing_artifacts(self):
+    def test_app_create_with_missing_workflow_config(self):
+        raw_data = 'version: 1\nname: ex_app\nworkflow_config:\n'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --app-file /dev/null")
+            self.assertEqual("ERROR: Workflow config cannot be empty\n", out)
+
+    def test_app_create_with_missing_trigger_actions(self):
+        raw_data = 'version: 1\nname: ex_app\ntrigger_actions:\n'
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --app-file /dev/null")
+            self.assertEqual("ERROR: Trigger actions cannot be empty\n", out)
+
+    def test_app_create_with_bad_name(self):
+        raw_data = '\n'.join([
+            'version: 1',
+            'name: ex=app1',
+            'description: python web app',
+            'workflow_config:',
+            '  run_cmd: python app.py',
+            'ports: [5000]'])
+
+        mopen = mock.mock_open(read_data=raw_data)
+
+        with mock.patch('%s.open' % solum.__name__, mopen, create=True):
+            self.make_env()
+            out = self.shell("app create --app-file /dev/null")
+
+            self.assertEqual("ERROR: Application name must be 1-100 "
+                             "characters and must only contain "
+                             "a-z,A-Z,0-9,-,_\n", out)
+
+    # OldApp Tests #
+    def test_oldapp_create_with_missing_artifacts(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         mopen = mock.mock_open(read_data=raw_data)
 
@@ -280,7 +318,7 @@ class TestSolum(base.TestCase):
             out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Missing artifacts section\n", out)
 
-    def test_app_create_with_bad_name(self):
+    def test_oldapp_create_with_bad_name(self):
         raw_data = '\n'.join([
             'version: 1',
             'name: ex=plan1',
@@ -304,7 +342,7 @@ class TestSolum(base.TestCase):
                              "characters and must only contain "
                              "a-z,A-Z,0-9,-,_\n", out)
 
-    def test_app_create_with_bad_artifact_name(self):
+    def test_oldapp_create_with_bad_artifact_name(self):
         raw_data = '\n'.join([
             'version: 1',
             'name: explan1',
@@ -330,7 +368,7 @@ class TestSolum(base.TestCase):
                              "Authorization Failed: Unable to establish "
                              "connection to http://no.where/tokens\n", out)
 
-    def test_app_create_with_artifacts_empty(self):
+    def test_oldapp_create_with_artifacts_empty(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.\nartifacts:'
         mopen = mock.mock_open(read_data=raw_data)
 
@@ -339,7 +377,7 @@ class TestSolum(base.TestCase):
             out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifacts cannot be empty\n", out)
 
-    def test_app_create_with_artifacts_no_content(self):
+    def test_oldapp_create_with_artifacts_no_content(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: d1.\nartifacts:\n'
         raw_data += '- name: asdfds\n'
         raw_data += '  artifact_type: heroku\n'
@@ -352,7 +390,7 @@ class TestSolum(base.TestCase):
             out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifact content missing\n", out)
 
-    def test_app_logs_need_an_identifier(self):
+    def test_oldapp_logs_need_an_identifier(self):
         self.make_env()
         out = self.shell("oldapp logs")
         self.assertEqual("ERROR: You must specify an application.\n", out)

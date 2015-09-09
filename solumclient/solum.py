@@ -562,22 +562,39 @@ class AppCommands(cli_utils.CommandsBase):
     """Commands for working with actual applications.
 
     """
+    def _validate_app_file(self, app_data):
+        if ('workflow_config' in app_data and
+                app_data.get('workflow_config') is None):
+                msg = "Workflow config cannot be empty"
+                raise exc.CommandException(message=msg)
+        if ('trigger_actions' in app_data and
+                app_data.get('trigger_actions') is None):
+                msg = "Trigger actions cannot be empty"
+                raise exc.CommandException(message=msg)
+
+        error_message = ("Application name must be 1-100 characters and must "
+                         "only contain a-z,A-Z,0-9,-,_")
+
+        if app_data.get('name') is not None:
+            if not name_is_valid(app_data.get('name')):
+                raise exc.CommandError(message=error_message)
 
     def create(self):
         self.register()
 
     def register(self):
         """Register a new app."""
-        self.parser.add_argument('file')
+        self.parser.add_argument('--app-file',
+                                 dest='appfile',
+                                 help="Local appfile location")
         args = self.parser.parse_args()
-        with open(args.file, 'r') as inf:
-            appdata = yamlutils.load(inf.read())
+        app_data = None
+        if args.appfile is not None:
+            with open(args.appfile, 'r') as inf:
+                app_data = yamlutils.load(inf.read())
+                self._validate_app_file(app_data)
 
-        appdata['workflow_config'] = appdata.get('workflow', {})
-        del appdata['workflow']
-        appdata['trigger_actions'] = appdata.get('trigger', [])
-        del appdata['trigger']
-        app = self.client.apps.create(**appdata)
+        app = self.client.apps.create(**app_data)
 
         app.trigger = app.trigger_actions
         app.workflow = app.workflow_config
