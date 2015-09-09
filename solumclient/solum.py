@@ -630,6 +630,36 @@ class AppCommands(cli_utils.CommandsBase):
                 raise exc.CommandError("No languagepack in READY state. "
                                        "Create a languagepack first.")
 
+    def _get_app_repo_details(self, app_data, args):
+        git_rev = 'master'
+        git_url = None
+        if (app_data.get('source') is not None and
+                app_data.get('source').get('repository') is not None):
+                    git_url = app_data['source']['repository']
+        # Commandline flag overrides stuff in the app-file
+        if args.git_url is not None:
+            git_url = args.git_url
+        # Take input from user
+        elif (app_data.get('source') is None or
+                app_data['source'].get('repository') is None or
+                app_data['source']['repository'] is ''):
+            git_url = raw_input("Please specify a git repository URL for "
+                                "your application.\n> ")
+            git_rev_i = raw_input("Please specify revision"
+                                  " (default is master).\n> ")
+            if git_rev_i is '':
+                git_rev = 'master'
+            else:
+                git_rev = git_rev_i
+
+        assert(git_url is not None)
+        assert(git_rev is not None)
+
+        git_src = dict()
+        git_src['repository'] = transform_git_url(git_url, False)
+        git_src['revision'] = git_rev
+        app_data['source'] = git_src
+
     def create(self):
         self.register()
 
@@ -646,6 +676,9 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--lp',
                                  dest='languagepack',
                                  help='Language pack')
+        self.parser.add_argument('--git-url',
+                                 dest='git_url',
+                                 help='Source repo')
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -656,12 +689,18 @@ class AppCommands(cli_utils.CommandsBase):
             app_data = {
                 'version': 1,
                 'description': 'default app description.',
+                'source': {
+                    'repository': '',
+                    'revision': 'master'
+                },
             }
 
         app_name = self._get_and_validate_app_name(app_data, args)
         app_data['name'] = app_name
 
         self._get_and_validate_languagepack(app_data, args)
+
+        self._get_app_repo_details(app_data, args)
 
         app = self.client.apps.create(**app_data)
 
