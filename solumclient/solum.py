@@ -601,6 +601,35 @@ class AppCommands(cli_utils.CommandsBase):
 
         return app_name
 
+    def _get_and_validate_languagepack(self, app_data, args):
+        # Check for the language pack. Check args first, then planfile.
+        # If it's neither of those places, prompt for it and update the
+        # plan definition.
+
+        languagepack = None
+        if args.languagepack is not None:
+            languagepack = args.languagepack
+            app_data['languagepack'] = languagepack
+        elif app_data.get('languagepack') is None:
+            languagepacks = self.client.languagepacks.list()
+            filtered_list = cli_utils.filter_ready_lps(languagepacks)
+
+            if len(filtered_list) > 0:
+                lpnames = [lang_pack.name for lang_pack in filtered_list]
+                lp_uuids = [lang_pack.uuid for lang_pack in filtered_list]
+                fields = ['uuid', 'name', 'description',
+                          'status', 'source_uri']
+                self._print_list(filtered_list, fields)
+                languagepack = raw_input("Please choose a languagepack from "
+                                         "the above list.\n> ")
+                while languagepack not in lpnames + lp_uuids:
+                    languagepack = raw_input("You must choose one of the named"
+                                             " language packs.\n> ")
+                app_data['languagepack'] = languagepack
+            else:
+                raise exc.CommandError("No languagepack in READY state. "
+                                       "Create a languagepack first.")
+
     def create(self):
         self.register()
 
@@ -612,6 +641,11 @@ class AppCommands(cli_utils.CommandsBase):
         self.parser.add_argument('--name',
                                  type=ValidName,
                                  help="Application name")
+        self.parser.add_argument('--languagepack',
+                                 help='Language pack')
+        self.parser.add_argument('--lp',
+                                 dest='languagepack',
+                                 help='Language pack')
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -621,10 +655,13 @@ class AppCommands(cli_utils.CommandsBase):
         else:
             app_data = {
                 'version': 1,
+                'description': 'default app description.',
             }
 
         app_name = self._get_and_validate_app_name(app_data, args)
         app_data['name'] = app_name
+
+        self._get_and_validate_languagepack(app_data, args)
 
         app = self.client.apps.create(**app_data)
 
@@ -830,14 +867,6 @@ Available commands:
             if not name_is_valid(plan_definition.get('name')):
                 raise exc.CommandError(message=error_message)
 
-    def _filter_ready_lps(self, lp_list):
-        filtered_list = []
-        for lp in lp_list:
-            if lp.status == 'READY':
-                filtered_list.append(lp)
-
-        return filtered_list
-
     def list(self):
         """Print a list of all deployed applications."""
         # This is just "plan list".
@@ -998,7 +1027,7 @@ Available commands:
                                     raise exc.CommandError("Languagepack %s "
                                                            "not registered"
                                                            % lp)
-                            filtered_list = self._filter_ready_lps([lp1])
+                            filtered_list = cli_utils.filter_ready_lps([lp1])
                             if len(filtered_list) <= 0:
                                 raise exc.CommandError("Languagepack %s "
                                                        "not READY" % lp)
@@ -1056,7 +1085,7 @@ Available commands:
             plan_definition['artifacts'][0]['language_pack'] = languagepack
         elif plan_definition['artifacts'][0].get('language_pack') is None:
             languagepacks = self.client.languagepacks.list()
-            filtered_list = self._filter_ready_lps(languagepacks)
+            filtered_list = cli_utils.filter_ready_lps(languagepacks)
 
             if len(filtered_list) > 0:
                 lpnames = [lang_pack.name for lang_pack in filtered_list]

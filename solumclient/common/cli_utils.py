@@ -252,3 +252,12 @@ def env(*vars, **kwargs):
         if value:
             return value
     return kwargs.get('default', '')
+
+
+def filter_ready_lps(lp_list):
+    filtered_list = []
+    for lp in lp_list:
+        if lp.status == 'READY':
+            filtered_list.append(lp)
+
+    return filtered_list
