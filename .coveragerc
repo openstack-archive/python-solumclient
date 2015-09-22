@@ -4,4 +4,4 @@ source = solumclient
 omit = solumclient/tests/*,solumclient/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
