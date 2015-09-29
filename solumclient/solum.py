@@ -561,6 +561,30 @@ Available commands:
 class AppCommands(cli_utils.CommandsBase):
     """Commands for working with actual applications.
 
+Available commands:
+    solum app list
+        Print an index of all deployed applications.
+
+    solum app show <NAME|ID>
+        Print detailed information about one application.
+
+    solum app create [--app-file <AppFile>] [--git-url <GIT_URL>]
+                     [--lp <LANGUAGEPACK>]
+                     [--param-file <PARAMFILE>]
+                     [--setup-trigger]
+                     [--trigger-workflow <CUSTOM-WORKFLOW>]
+                      <CUSTOM-WORKFLOW>=(unittest | build | unittest+build)
+                      Without the --trigger-workflow flag,
+                      the workflow unittest+build+deploy is triggered
+                      (this is the default workflow)
+
+        Register a new application with Solum.
+
+    solum app deploy <NAME|ID>
+        Deploy an application, building any applicable artifacts first.
+
+    solum app delete <NAME|ID>
+        Delete an application and all related artifacts.
     """
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
@@ -719,6 +743,25 @@ class AppCommands(cli_utils.CommandsBase):
                            args.param_file)
                 raise exc.CommandError(message=message)
 
+    def _setup_github_trigger(self, app_data, app, args):
+        # If a token is supplied, we won't need to generate one.
+        repo_token = ''
+        if hasattr(app_data, 'repo_token'):
+            repo_token = app_data['repo_token']
+
+        if args.setup_trigger or args.workflow:
+            trigger_uri = vars(app).get('trigger_uri', '')
+            if trigger_uri:
+                workflow = None
+                if args.workflow:
+                    workflow = args.workflow.replace('+', ' ').split(' ')
+                try:
+                    git_url = app_data['source']['repository']
+                    gha = github.GitHubAuth(git_url, repo_token=repo_token)
+                    gha.create_webhook(trigger_uri, workflow=workflow)
+                except github.GitHubException as ghe:
+                    raise exc.CommandError(message=str(ghe))
+
     def create(self):
         self.register()
 
@@ -753,6 +796,20 @@ class AppCommands(cli_utils.CommandsBase):
                                  help="A yaml file containing custom"
                                       " parameters to be used in the"
                                       " application")
+        self.parser.add_argument('--setup-trigger',
+                                 action='store_true',
+                                 dest='setup_trigger',
+                                 help="Set up app trigger on git repo")
+
+        trigger_help = ("Which of stages build, unittest, deploy to trigger "
+                        "from git. For example: "
+                        "--trigger-workflow=unittest+build+deploy. "
+                        "Implies --setup-trigger.")
+        self.parser.add_argument('--trigger-workflow',
+                                 default='',
+                                 dest='workflow',
+                                 help=trigger_help)
+
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
@@ -771,6 +828,7 @@ class AppCommands(cli_utils.CommandsBase):
                     'test_cmd': '',
                     'run_cmd': ''
                 },
+                'repo_token': ''
             }
 
         app_name = self._get_and_validate_app_name(app_data, args)
@@ -790,11 +848,14 @@ class AppCommands(cli_utils.CommandsBase):
 
         app = self.client.apps.create(**app_data)
 
+        self._setup_github_trigger(app_data, app, args)
+
         app.trigger = app.trigger_actions
         app.workflow = app.workflow_config
 
         fields = ['name', 'id', 'description', 'languagepack', 'ports',
-                  'source', 'workflow', 'trigger_uuid', 'trigger']
+                  'source', 'workflow',
+                  'trigger_uuid', 'trigger', 'trigger_uri']
         self._print_dict(app, fields, wrap=72)
 
     def update(self):
@@ -1538,7 +1599,7 @@ Available commands:
         Print detailed information about one application.
 
 
-    solum app create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
+    solum oldapp create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
                      [--unittest-cmd <UNITTEST_CMD>]
                      [--name <NAME>] [--port <PORT>]
