@@ -537,7 +537,7 @@ Available commands:
         loglist = cli_lp.LanguagePackManager(self.client).logs(
             lp_id=str(args.lp_id))
 
-        fields = ["resource_uuid"]
+        fields = ["resource_uuid", "created_at"]
         for log in loglist:
             strategy_info = json.loads(log.strategy_info)
             if log.strategy == 'local':
