@@ -364,9 +364,8 @@ class TestSolum(base.TestCase):
 
             # No part of the plan is in error; the next step in the test
             # is authorization, which is deliberately mocked.
-            self.assertEqual("ERROR: "
-                             "Authorization Failed: Unable to establish "
-                             "connection to http://no.where/tokens\n", out)
+            self.assertIn("ERROR: Authorization Failed:", out)
+            self.assertIn("http://no.where/tokens", out)
 
     def test_oldapp_create_with_artifacts_empty(self):
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.\nartifacts:'
