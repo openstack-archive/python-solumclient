@@ -45,7 +45,7 @@ class ExceptionTest(base.TestCase):
             method,
             url
             )
-        self.assertTrue(isinstance(ex, exceptions.HttpError))
+        self.assertIsInstance(ex, exceptions.HttpError)
         self.assertEqual(json_data["faultstring"], ex.message)
         self.assertEqual(json_data["debuginfo"], ex.details)
         self.assertEqual(method, ex.method)
