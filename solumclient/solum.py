@@ -980,6 +980,9 @@ Available commands:
 
     solum workflow show <APP_NAME> <WORKFLOW_ID>
         Print the details of a workflow.
+
+    solum workflow logs <APP_NAME> <WORKFLOW_ID>
+        List all the logs of a given workflow.
     """
 
     def list(self):
@@ -1011,6 +1014,42 @@ Available commands:
         fields = ['wf_id', 'app_id', 'actions', 'config',
                   'source', 'id', 'created_at', 'updated_at', 'status']
         self._print_dict(wf, fields, wrap=72)
+
+    def logs(self):
+        """Get Logs."""
+        self.parser.add_argument('app',
+                                 help="App uuid or name")
+        self.parser.add_argument('workflow',
+                                 help="Workflow id or uuid")
+        args = self.parser.parse_args()
+        revision = args.workflow
+        try:
+            revision = int(revision, 10)
+        except ValueError:
+            revision = args.workflow
+        app = self.client.apps.find(name_or_id=args.app)
+
+        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
+        loglist = wfman.logs(revision_or_id=revision)
+        fields = ["resource_uuid"]
+        for log in loglist:
+            strategy_info = json.loads(log.strategy_info)
+            if log.strategy == 'local':
+                if 'local_storage' not in fields:
+                    fields.append('local_storage')
+                log.local_storage = log.location
+            elif log.strategy == 'swift':
+                if 'swift_container' not in fields:
+                    fields.append('swift_container')
+                if 'swift_path' not in fields:
+                    fields.append('swift_path')
+                log.swift_container = strategy_info['container']
+                log.swift_path = log.location
+            else:
+                if 'location' not in fields:
+                    fields.append('location')
+
+        self._print_list(loglist, fields)
 
 
 class OldAppCommands(cli_utils.CommandsBase):

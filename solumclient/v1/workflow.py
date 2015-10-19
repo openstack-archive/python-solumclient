@@ -24,6 +24,11 @@ class Workflow(apiclient_base.Resource):
         return "<Workflow %s>" % self._info
 
 
+class UserLog(apiclient_base.Resource):
+    def __repr__(self):
+        return "<Log %s>" % self._info
+
+
 class WorkflowManager(solum_base.CrudManager, solum_base.FindMixin):
     resource_class = Workflow
     collection_key = 'workflows'
@@ -49,6 +54,22 @@ class WorkflowManager(solum_base.CrudManager, solum_base.FindMixin):
     def get(self, **kwargs):
         return (super(WorkflowManager, self).get(
                 base_url=self.base_url, **kwargs))
+
+    def logs(self, **kwargs):
+        self.resource_class = UserLog
+        url = self.build_url(self.base_url, **kwargs)
+        rev_or_uuid = kwargs['revision_or_id']
+        try:
+            if uuidutils.is_uuid_like(rev_or_uuid):
+                workflow_id = rev_or_uuid
+            else:
+                wf = self.find(**kwargs)
+                workflow_id = wf.id
+        except exceptions.NoUniqueMatch:
+            raise exc.NotUnique(resource='Workflow')
+
+        url += '/%s/logs/' % workflow_id
+        return self._list(url)
 
     def find(self, **kwargs):
         if 'workflow_id' in kwargs:
