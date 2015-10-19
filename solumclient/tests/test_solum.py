@@ -209,6 +209,12 @@ class TestSolum(base.TestCase):
         self.shell("assembly show app2")
         mock_assembly_find.assert_called_once_with(name_or_id='app2')
 
+    # Workflow Tests #
+    def test_workflow_error(self):
+        self.make_env()
+        out = self.shell("workflow unknown-command")
+        self.assertIn("Available commands", out)
+
     # Pipeline Tests #
     @mock.patch.object(pipeline.PipelineManager, "list")
     def test_pipeline_list(self, mock_pipeline_list):

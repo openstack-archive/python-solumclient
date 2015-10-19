@@ -971,6 +971,16 @@ Available commands:
 
 
 class WorkflowCommands(cli_utils.CommandsBase):
+    """Commands for working with workflows.
+
+Available commands:
+
+    solum workflow list <APP_NAME>
+        List all application workflows.
+
+    solum workflow show <APP_NAME> <WORKFLOW_ID>
+        Print the details of a workflow.
+    """
 
     def list(self):
         """Show all of an app's live workflows."""
