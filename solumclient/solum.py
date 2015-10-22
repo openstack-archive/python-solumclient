@@ -988,8 +988,8 @@ Available commands:
         args = self.parser.parse_args()
         app = self.client.apps.find(name_or_id=args.app)
         wfs = cli_wf.WorkflowManager(self.client, app_id=app.id).list()
-        fields = ['wf_id', 'app_id', 'actions', 'config',
-                  'source', 'id', 'created_at', 'updated_at']
+        fields = ['wf_id', 'id', 'actions', 'status',
+                  'created_at', 'updated_at']
         self._print_list(wfs, fields)
 
     def show(self):
