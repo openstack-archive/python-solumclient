@@ -247,16 +247,16 @@ Available commands:
     solum assembly list
         Print an index of all available assemblies.
 
-    solum assembly show <NAME>
+    solum assembly show <NAME|UUID>
         Print the details of an assembly.
 
-    solum assembly create <NAME> <PLAN_URI> [--description <DESCRIPTION>]
+    solum assembly create <NAME|UUID> <PLAN_URI> [--description <DESCRIPTION>]
         Create an assembly from a registered plan.
 
-    solum assembly logs <NAME>
+    solum assembly logs <NAME|UUID>
         Print an index of all operation logs for an assembly.
 
-    solum assembly delete <NAME>
+    solum assembly delete <NAME|UUID>
         Destroy an assembly.
     """
 
@@ -1595,7 +1595,7 @@ Available commands:
     solum lp delete <NAME|UUID>
         Destroy a language pack.
 
-    solum lp logs <UUID>
+    solum lp logs <NAME|UUID>
         Show logs for a language pack.
 
 
@@ -1635,7 +1635,7 @@ Available commands:
     solum assembly list
         Print an index of all available assemblies.
 
-    solum assembly create <NAME> <PLAN_URI> [--description <DESCRIPTION>]
+    solum assembly create <NAME|UUID> <PLAN_URI> [--description <DESCRIPTION>]
         Create an assembly from a registered plan.
 
     solum assembly delete <NAME|UUID>
