@@ -975,13 +975,13 @@ class WorkflowCommands(cli_utils.CommandsBase):
 
 Available commands:
 
-    solum workflow list <APP_NAME>
+    solum workflow list <APP_NAME|UUID>
         List all application workflows.
 
-    solum workflow show <APP_NAME> <WORKFLOW_ID>
+    solum workflow show <APP_NAME|UUID> <WORKFLOW_ID|UUID>
         Print the details of a workflow.
 
-    solum workflow logs <APP_NAME> <WORKFLOW_ID>
+    solum workflow logs <APP_NAME|UUID> <WORKFLOW_ID|UUID>
         List all the logs of a given workflow.
     """
 
@@ -1256,7 +1256,7 @@ Available commands:
                                 lp1 = (
                                     self.client.languagepacks.find
                                     (name_or_id=lp)
-                                    )
+                                )
                             except Exception as e:
                                 if type(e).__name__ == 'NotFound':
                                     raise exc.CommandError("Languagepack %s "
@@ -1284,7 +1284,7 @@ Available commands:
                     'artifact_type': 'heroku',
                     'name': '',
                     'content': {},
-                    }]}
+                }]}
 
         # NOTE: This assumes the plan contains exactly one artifact.
 
@@ -1644,9 +1644,20 @@ Available commands:
     solum app list
         Print an index of all deployed applications.
 
-    solum app show <NAME|UUID>
+    solum app show <APP_NAME|UUID>
         Print detailed information about one application.
 
+    solum app create [--app-file <AppFile>] [--git-url <GIT_URL>]
+                     [--lp <LANGUAGEPACK>]
+                     [--param-file <PARAMFILE>]
+                     [--setup-trigger]
+                     [--trigger-workflow <CUSTOM-WORKFLOW>]
+                      <CUSTOM-WORKFLOW>=(unittest | build | unittest+build)
+                      Without the --trigger-workflow flag,
+                      the workflow unittest+build+deploy is triggered
+                      (this is the default workflow)
+
+        Register a new application with Solum.
 
     solum oldapp create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
                      [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
@@ -1659,14 +1670,23 @@ Available commands:
                      [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
-    solum app deploy <NAME|UUID>
+    solum app deploy <APP_NAME|UUID>
         Deploy an application, building any applicable artifacts first.
 
-    solum app delete <NAME|UUID>
+    solum app delete <APP_NAME|UUID>
         Delete an application and all related artifacts.
 
-    solum app logs <NAME|UUID>
+    solum app logs <APP_NAME|UUID>
         Show the logs of an application for all the deployments.
+
+    solum workflow list <APP_NAME|UUID>
+        List all application workflows.
+
+    solum workflow show <APP_NAME|UUID> <WORKFLOW_ID|UUID>
+        Print the details of a workflow.
+
+    solum workflow logs <APP_NAME|UUID> <WORKFLOW_ID|UUID>
+        List all the logs of a given workflow.
 
 
     SOON TO BE DEPRECATED:
