@@ -641,6 +641,16 @@ Available commands:
         languagepack = None
         if args.languagepack is not None:
             languagepack = args.languagepack
+            # check if given languagepack exists or not
+            lp = None
+            try:
+                lp = self.client.languagepacks.find(name_or_id=languagepack)
+            except Exception:
+                raise exc.CommandError(
+                    "Languagepack '%s' not found." % languagepack)
+            if lp is None or lp.status != 'READY':
+                raise exc.CommandError("No languagepack in READY state. "
+                                       "Create a languagepack first.")
             app_data['languagepack'] = languagepack
         elif app_data.get('languagepack') is None:
             languagepacks = self.client.languagepacks.list()
