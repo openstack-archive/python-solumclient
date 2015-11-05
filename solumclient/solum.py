@@ -852,6 +852,41 @@ Available commands:
                 'repo_token': ''
             }
 
+        # app file schema
+        schema = {
+            "title": "app file schema",
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "languagepack": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "object"
+                },
+                "workflow_config": {
+                    "type": "object"
+                },
+                "trigger_actions": {
+                    "type": "array"
+                },
+                "ports": {
+                    "type": "array"
+                }
+            },
+            "required": ["version", "name", "description",
+                         "languagepack", "source", "workflow_config",
+                         "trigger_actions", "ports"]
+        }
+
         app_name = self._get_and_validate_app_name(app_data, args)
         app_data['name'] = app_name
 
@@ -866,6 +901,17 @@ Available commands:
         self._get_port(app_data, args)
 
         self._get_parameters(app_data, args)
+
+        #  TODO(vijendar): currently doing very basic validation.
+        # Need to implement more robust schema based validation
+        appdata_keys = app_data.keys()
+        appdata_keys.sort()
+        schema_keys = schema['properties'].keys()
+        schema_keys.sort()
+        if appdata_keys != schema_keys:
+            message = "Unknown key(s) in app data file: %s" % list(
+                set(appdata_keys) - set(schema_keys))
+            raise exc.CommandError(message=message)
 
         app = self.client.apps.create(**app_data)
 
