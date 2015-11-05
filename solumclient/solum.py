@@ -831,9 +831,12 @@ Available commands:
         args = self.parser.parse_args()
         app_data = None
         if args.appfile is not None:
-            with open(args.appfile, 'r') as inf:
-                app_data = yamlutils.load(inf.read())
-                self._validate_app_file(app_data)
+            try:
+                with open(args.appfile, 'r') as inf:
+                    app_data = yamlutils.load(inf.read())
+                    self._validate_app_file(app_data)
+            except Exception as exp:
+                raise exc.CommandException(str(exp))
         else:
             app_data = {
                 'version': 1,
