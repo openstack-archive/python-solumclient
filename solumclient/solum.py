@@ -950,9 +950,15 @@ Available commands:
         app.workflow = app.workflow_config
 
         fields = ['name', 'id', 'description', 'languagepack',
-                  'entry_points', 'ports', 'source', 'workflow',
-                  'trigger_uuid', 'trigger', 'status', 'app_url']
+                  'entry_points', 'ports', 'source',
+                  'trigger_uuid', 'trigger', 'app_url']
         self._print_dict(app, fields, wrap=72)
+
+        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
+        wfs = wfman.list()
+        fields = ['wf_id', 'id', 'status']
+        print("'%s' workflows and their status:" % args.name)
+        self._print_list(wfs, fields)
 
     def delete(self):
         """Delete an app."""
