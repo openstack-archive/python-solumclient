@@ -477,7 +477,15 @@ Available commands:
         self.parser.add_argument('name',
                                  type=ValidLPName,
                                  help="Language pack name.")
+        self.parser.add_argument('--name',
+                                 type=ValidLPName,
+                                 dest='name',
+                                 help="Language pack name.")
         self.parser.add_argument('git_url',
+                                 help=("Github url of custom "
+                                       "language pack repository."))
+        self.parser.add_argument('--git_url',
+                                 dest='git_url',
                                  help=("Github url of custom "
                                        "language pack repository."))
         self.parser.add_argument('--lp_metadata',
