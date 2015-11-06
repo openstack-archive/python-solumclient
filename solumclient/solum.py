@@ -307,32 +307,8 @@ Available commands:
 
     def logs(self):
         """Get Logs."""
-        self.parser.add_argument('assembly',
-                                 help="Assembly uuid or name")
-        args = self.parser.parse_args()
-        assem = self.client.assemblies.find(name_or_id=args.assembly)
-        loglist = cli_assem.AssemblyManager(self.client).logs(
-            assembly_id=str(assem.uuid))
-
-        fields = ["resource_uuid"]
-        for log in loglist:
-            strategy_info = json.loads(log.strategy_info)
-            if log.strategy == 'local':
-                if 'local_storage' not in fields:
-                    fields.append('local_storage')
-                log.local_storage = log.location
-            elif log.strategy == 'swift':
-                if 'swift_container' not in fields:
-                    fields.append('swift_container')
-                if 'swift_path' not in fields:
-                    fields.append('swift_path')
-                log.swift_container = strategy_info['container']
-                log.swift_path = log.location
-            else:
-                if 'location' not in fields:
-                    fields.append('location')
-
-        self._print_list(loglist, fields)
+        print("Not Supported: Logs moved to workflows. Use  following command."
+              "\nsolum workflow logs app_id wf_id")
 
     def show(self):
         """Show an assembly's resource."""
