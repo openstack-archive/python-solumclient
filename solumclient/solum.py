@@ -896,8 +896,8 @@ Available commands:
         app.trigger = app.trigger_actions
         app.workflow = app.workflow_config
 
-        fields = ['name', 'id', 'description', 'languagepack', 'ports',
-                  'source', 'workflow',
+        fields = ['name', 'id', 'created_at', 'description', 'languagepack',
+                  'ports', 'source', 'workflow',
                   'trigger_uuid', 'trigger', 'trigger_uri']
         self._print_dict(app, fields, wrap=72)
 
@@ -954,7 +954,7 @@ Available commands:
         updated_app.trigger = updated_app.trigger_actions
         updated_app.workflow = updated_app.workflow_config
 
-        fields = ['name', 'id', 'description', 'languagepack',
+        fields = ['name', 'id', 'created_at', 'description', 'languagepack',
                   'entry_points', 'ports', 'source', 'workflow',
                   'trigger_uuid', 'trigger']
         self._print_dict(updated_app, fields, wrap=72)
@@ -962,7 +962,7 @@ Available commands:
     def list(self):
         """List all apps."""
         apps = self.client.apps.list()
-        fields = ['name', 'id', 'description', 'languagepack']
+        fields = ['name', 'id', 'created_at', 'description', 'languagepack']
         self._print_list(apps, fields)
 
     def show(self):
@@ -974,7 +974,7 @@ Available commands:
         app.trigger = app.trigger_actions
         app.workflow = app.workflow_config
 
-        fields = ['name', 'id', 'description', 'languagepack',
+        fields = ['name', 'id', 'created_at', 'description', 'languagepack',
                   'entry_points', 'ports', 'source',
                   'trigger_uuid', 'trigger', 'app_url']
         self._print_dict(app, fields, wrap=72)
