@@ -1686,7 +1686,6 @@ Available commands:
     solum lp logs <NAME|UUID>
         Show logs for a language pack.
 
-
     solum app help
         Show a help message specific to app commands.
 
@@ -1706,17 +1705,6 @@ Available commands:
                       the workflow unittest+build+deploy is triggered
                       (this is the default workflow)
 
-        Register a new application with Solum.
-
-    solum oldapp create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
-                     [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
-                     [--unittest-cmd <UNITTEST_CMD>]
-                     [--name <NAME>] [--port <PORT>]
-                     [--param-file <PARAMFILE>]
-                     [--desc <DESCRIPTION>]
-                     [--setup-trigger]
-                     [--private-repo]
-                     [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
     solum app deploy <APP_NAME|UUID>
@@ -1739,6 +1727,17 @@ Available commands:
 
 
     SOON TO BE DEPRECATED:
+
+    solum oldapp create [--plan-file <PLANFILE>] [--git-url <GIT_URL>]
+                     [--lp <LANGUAGEPACK>] [--run-cmd <RUN_CMD>]
+                     [--unittest-cmd <UNITTEST_CMD>]
+                     [--name <NAME>] [--port <PORT>]
+                     [--param-file <PARAMFILE>]
+                     [--desc <DESCRIPTION>]
+                     [--setup-trigger]
+                     [--private-repo]
+                     [--trigger-workflow <WORKFLOW>]
+        Register a new application with Solum.
 
     solum assembly list
         Print an index of all available assemblies.
