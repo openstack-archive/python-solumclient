@@ -587,6 +587,9 @@ Available commands:
             if not name_is_valid(app_data.get('name')):
                 raise exc.CommandError(message=error_message)
 
+        if 'repo_token' not in app_data:
+            app_data['repo_token'] = ''
+
     def _get_and_validate_app_name(self, app_data, args):
         # Check the appfile-supplied name first.
         error_message = ("Application name must be 1-100 characters and must "
@@ -825,6 +828,7 @@ Available commands:
                     'test_cmd': '',
                     'run_cmd': ''
                 },
+                'trigger_actions': ['build', 'deploy'],
                 'repo_token': ''
             }
 
@@ -850,6 +854,9 @@ Available commands:
                 },
                 "workflow_config": {
                     "type": "object"
+                },
+                "repo_token": {
+                    "type": "string"
                 },
                 "trigger_actions": {
                     "type": "array"
