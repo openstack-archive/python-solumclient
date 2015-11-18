@@ -613,15 +613,17 @@ Available commands:
         return app_name
 
     def _get_and_validate_languagepack(self, app_data, args):
-        # Check for the language pack. Check args first, then planfile.
+        # Check for the language pack. Check args first, then appfile.
         # If it's neither of those places, prompt for it and update the
-        # plan definition.
+        # app data.
 
         languagepack = None
         if args.languagepack is not None:
             languagepack = args.languagepack
-            # check if given languagepack exists or not
-            lp = None
+        elif app_data.get('languagepack') is not None:
+            languagepack = app_data.get('languagepack')
+        # check if given languagepack exists or not
+        if languagepack:
             try:
                 lp = self.client.languagepacks.find(name_or_id=languagepack)
             except Exception:
@@ -631,7 +633,7 @@ Available commands:
                 raise exc.CommandError("No languagepack in READY state. "
                                        "Create a languagepack first.")
             app_data['languagepack'] = languagepack
-        elif app_data.get('languagepack') is None:
+        else:
             languagepacks = self.client.languagepacks.list()
             filtered_list = cli_utils.filter_ready_lps(languagepacks)
 
