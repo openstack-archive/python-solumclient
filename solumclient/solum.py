@@ -729,6 +729,7 @@ Available commands:
             app_data['ports'] = port_list
 
     def _get_parameters(self, app_data, args):
+        app_data['parameters'] = {}
         if args.param_file is not None:
             try:
                 with open(args.param_file) as param_f:
@@ -864,6 +865,9 @@ Available commands:
                     "type": "array"
                 },
                 "ports": {
+                    "type": "array"
+                },
+                "parameters": {
                     "type": "array"
                 }
             },
