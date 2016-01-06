@@ -127,7 +127,7 @@ class PipelineManagerTest(base.TestCase):
         api_client = sclient.Client(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipelines = mgr.list()
-        self.assertEqual(len(pipelines), 2)
+        self.assertEqual(2, len(pipelines))
         self.assertIn('Pipeline', repr(pipelines[0]))
         self.assertEqual(pipeline_list[0]['uri'], pipelines[0].uri)
         self.assertEqual(pipeline_list[1]['uri'], pipelines[1].uri)
@@ -137,7 +137,7 @@ class PipelineManagerTest(base.TestCase):
         api_client = sclient.Client(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipelines = mgr.findall(name='database')
-        self.assertEqual(len(pipelines), 1)
+        self.assertEqual(1, len(pipelines))
         self.assertIn('Pipeline', repr(pipelines[0]))
         self.assertEqual(pipeline_list[0]['uri'], pipelines[0].uri)
 

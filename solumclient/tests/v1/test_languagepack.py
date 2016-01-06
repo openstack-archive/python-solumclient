@@ -124,7 +124,7 @@ class LanguagePackManagerTest(base.TestCase):
         api_client = sclient.Client(fake_http_client)
         mgr = languagepack.LanguagePackManager(api_client)
         languagepacks = mgr.list()
-        self.assertEqual(len(languagepacks), 2)
+        self.assertEqual(2, len(languagepacks))
         self.assertIn('LanguagePack', repr(languagepacks[0]))
         self.assertEqual(languagepack_list[0]['uri'],
                          languagepacks[0].uri)
