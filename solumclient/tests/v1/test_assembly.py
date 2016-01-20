@@ -144,7 +144,7 @@ class AssemblyManagerTest(base.TestCase):
         api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assemblies = mgr.list()
-        self.assertEqual(len(assemblies), 2)
+        self.assertEqual(2, len(assemblies))
         self.assertIn('Assembly', repr(assemblies[0]))
         self.assertEqual(assembly_list[0]['uri'], assemblies[0].uri)
         self.assertEqual(assembly_list[1]['uri'], assemblies[1].uri)
@@ -154,7 +154,7 @@ class AssemblyManagerTest(base.TestCase):
         api_client = sclient.Client(fake_http_client)
         mgr = assembly.AssemblyManager(api_client)
         assemblies = mgr.findall(name='database')
-        self.assertEqual(len(assemblies), 1)
+        self.assertEqual(1, len(assemblies))
         self.assertIn('Assembly', repr(assemblies[0]))
         self.assertEqual(assembly_list[0]['uri'], assemblies[0].uri)
 

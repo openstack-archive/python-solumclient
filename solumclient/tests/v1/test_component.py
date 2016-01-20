@@ -119,12 +119,12 @@ class ComponentManagerTest(base.TestCase):
         api_client = sclient.Client(fake_http_client)
         self.mgr = component.ComponentManager(api_client)
         components = self.mgr.list()
-        self.assertEqual(len(components), 2)
+        self.assertEqual(2, len(components))
         self.assertIn('Component', repr(components[0]))
-        self.assertEqual(components[0].uri,
-                         'http://example.com/v1/components/c1')
-        self.assertEqual(components[1].uri,
-                         'http://example.com/v1/components/c2')
+        self.assertEqual('http://example.com/v1/components/c1',
+                         components[0].uri)
+        self.assertEqual('http://example.com/v1/components/c2',
+                         components[1].uri)
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
@@ -132,14 +132,14 @@ class ComponentManagerTest(base.TestCase):
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.create()
         self.assertIn('Component', repr(component_obj))
-        self.assertEqual(component_obj.uri,
-                         'http://example.com/v1/components/c1')
-        self.assertEqual(component_obj.type,
-                         'component')
-        self.assertEqual(component_obj.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(component_obj.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assertEqual('http://example.com/v1/components/c1',
+                         component_obj.uri)
+        self.assertEqual('component',
+                         component_obj.type)
+        self.assertEqual('1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                         component_obj.project_id)
+        self.assertEqual('55f41cf46df74320b9486a35f5d28a11',
+                         component_obj.user_id)
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
@@ -147,14 +147,14 @@ class ComponentManagerTest(base.TestCase):
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.get(component_id='c1')
         self.assertIn('Component', repr(component_obj))
-        self.assertEqual(component_obj.uri,
-                         'http://example.com/v1/components/c1')
-        self.assertEqual(component_obj.type,
-                         'component')
-        self.assertEqual(component_obj.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(component_obj.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assertEqual('http://example.com/v1/components/c1',
+                         component_obj.uri)
+        self.assertEqual('component',
+                         component_obj.type)
+        self.assertEqual('1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                         component_obj.project_id)
+        self.assertEqual('55f41cf46df74320b9486a35f5d28a11',
+                         component_obj.user_id)
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
@@ -162,21 +162,21 @@ class ComponentManagerTest(base.TestCase):
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.put(component_id='c1')
         self.assertIn('Component', repr(component_obj))
-        self.assertEqual(component_obj.uri,
-                         'http://example.com/v1/components/c1')
-        self.assertEqual(component_obj.type,
-                         'component')
-        self.assertEqual(component_obj.project_id,
-                         '1dae5a09ef2b4d8cbf3594b0eb4f6b94')
-        self.assertEqual(component_obj.user_id,
-                         '55f41cf46df74320b9486a35f5d28a11')
+        self.assertEqual('http://example.com/v1/components/c1',
+                         component_obj.uri)
+        self.assertEqual('component',
+                         component_obj.type)
+        self.assertEqual('1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                         component_obj.project_id)
+        self.assertEqual('55f41cf46df74320b9486a35f5d28a11',
+                         component_obj.user_id)
 
     def test_find_one(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
         api_client = sclient.Client(fake_http_client)
         mgr = component.ComponentManager(api_client)
         components = mgr.findall(name='php-web-app')
-        self.assertEqual(len(components), 1)
+        self.assertEqual(1, len(components))
         self.assertIn('Component', repr(components[0]))
         self.assertEqual(component_list[0]['uri'], components[0].uri)
 
