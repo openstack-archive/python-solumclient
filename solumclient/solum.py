@@ -570,8 +570,16 @@ Available commands:
     solum app delete <NAME|ID>
         Delete an application and all related artifacts.
 
+<<<<<<< HEAD
     solum app scale <NAME|ID> <scaling target>
 
+=======
+    solum app logs <NAME|UUID> [--wf-id <wf-id>]
+        Show the logs of an application for all the workflows.
+        wf-id is optional flag which can be used to pass in id of one of
+        the existing workflows. If provided, the logs only for that workflow
+        are displayed.
+>>>>>>> Added logs support for apps
     """
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
@@ -1052,6 +1060,79 @@ Available commands:
         actions = ['scale']
         self._create_scaling_workflow(actions, args.name, args.target)
 
+    def _display_logs_for_all_workflows(self, app):
+        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
+        wfs = wfman.list()
+
+        all_logs_list = []
+        fields = ["resource_uuid", "created_at"]
+        for wf in wfs:
+            revision = wf.wf_id
+            loglist = wfman.logs(revision_or_id=revision)
+            for log in loglist:
+                all_logs_list.append(log)
+                strategy_info = json.loads(log.strategy_info)
+                if log.strategy == 'local':
+                    if 'local_storage' not in fields:
+                        fields.append('local_storage')
+                    log.local_storage = log.location
+                elif log.strategy == 'swift':
+                    if 'swift_container' not in fields:
+                        fields.append('swift_container')
+                    if 'swift_path' not in fields:
+                        fields.append('swift_path')
+                    log.swift_container = strategy_info['container']
+                    log.swift_path = log.location
+                else:
+                    if 'location' not in fields:
+                        fields.append('location')
+        self._print_list(all_logs_list, fields)
+
+    def logs(self):
+        """Print a list of all logs belonging to a single app."""
+
+        self.parser.add_argument('name')
+
+        self.parser.add_argument('--wf-id',
+                                 dest='wf_id',
+                                 help="Workflow ID")
+
+        args = self.parser.parse_args()
+        app = self.client.apps.find(name_or_id=args.name)
+
+        if args.wf_id:
+            try:
+                revision = int(args.wf_id, 10)
+            except (ValueError, TypeError):
+                revision = args.wf_id
+            display_logs_for_single_workflow(self, app, revision)
+        else:
+            self._display_logs_for_all_workflows(app)
+
+
+def display_logs_for_single_workflow(ref, app, revision):
+    wfman = cli_wf.WorkflowManager(ref.client, app_id=app.id)
+    loglist = wfman.logs(revision_or_id=revision)
+    fields = ["resource_uuid"]
+    for log in loglist:
+        strategy_info = json.loads(log.strategy_info)
+        if log.strategy == 'local':
+            if 'local_storage' not in fields:
+                fields.append('local_storage')
+            log.local_storage = log.location
+        elif log.strategy == 'swift':
+            if 'swift_container' not in fields:
+                fields.append('swift_container')
+            if 'swift_path' not in fields:
+                fields.append('swift_path')
+            log.swift_container = strategy_info['container']
+            log.swift_path = log.location
+        else:
+            if 'location' not in fields:
+                fields.append('location')
+
+    ref._print_list(loglist, fields)
+
 
 class WorkflowCommands(cli_utils.CommandsBase):
     """Commands for working with workflows.
@@ -1111,28 +1192,7 @@ Available commands:
         except ValueError:
             revision = args.workflow
         app = self.client.apps.find(name_or_id=args.app)
-
-        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
-        loglist = wfman.logs(revision_or_id=revision)
-        fields = ["resource_uuid"]
-        for log in loglist:
-            strategy_info = json.loads(log.strategy_info)
-            if log.strategy == 'local':
-                if 'local_storage' not in fields:
-                    fields.append('local_storage')
-                log.local_storage = log.location
-            elif log.strategy == 'swift':
-                if 'swift_container' not in fields:
-                    fields.append('swift_container')
-                if 'swift_path' not in fields:
-                    fields.append('swift_path')
-                log.swift_container = strategy_info['container']
-                log.swift_path = log.location
-            else:
-                if 'location' not in fields:
-                    fields.append('location')
-
-        self._print_list(loglist, fields)
+        display_logs_for_single_workflow(self, app, revision)
 
 
 class OldAppCommands(cli_utils.CommandsBase):
@@ -1747,8 +1807,16 @@ Available commands:
     solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 
+<<<<<<< HEAD
     solum app logs <NAME|UUID>
         Show the logs of an application for all the deployments.
+=======
+    solum app logs <NAME|UUID> [--wf-id <wf-id>]
+        Show the logs of an application for all the workflows.
+        wf-id is optional flag which can be used to pass in id of one of
+        the existing workflows. If provided, the logs only for that workflow
+        are displayed.
+>>>>>>> Added logs support for apps
 
     solum app scale <APP_NAME|UUID> <target>
 
