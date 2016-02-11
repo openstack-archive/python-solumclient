@@ -868,7 +868,7 @@ Available commands:
                     "type": "array"
                 },
                 "parameters": {
-                    "type": "array"
+                    "type": "object"
                 }
             },
             "required": ["version", "name", "description",
