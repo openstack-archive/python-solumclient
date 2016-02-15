@@ -569,6 +569,9 @@ Available commands:
 
     solum app delete <NAME|ID>
         Delete an application and all related artifacts.
+
+    solum app scale <NAME|ID> <scaling target>
+
     """
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
@@ -1006,6 +1009,15 @@ Available commands:
         cli_app.AppManager(self.client).delete(
             app_id=str(app.id))
 
+    def _create_scaling_workflow(self, actions, app_name_id, tgt):
+        app = self.client.apps.find(name_or_id=app_name_id)
+        wf = (cli_wf.WorkflowManager(self.client,
+                                     app_id=app.id).create(actions=actions,
+                                                           scale_target=tgt))
+        fields = ['wf_id', 'app_id', 'actions', 'config',
+                  'source', 'id', 'created_at', 'updated_at']
+        self._print_dict(wf, fields, wrap=72)
+
     def _create_workflow(self, actions):
         self.parser.add_argument('name')
         args = self.parser.parse_args()
@@ -1030,6 +1042,15 @@ Available commands:
         """Create a new workflow for an app."""
         actions = ['unittest', 'build', 'deploy']
         self._create_workflow(actions)
+
+    def scale(self):
+        """Scale the app."""
+        self.parser.add_argument('name')
+        self.parser.add_argument('target')
+        args = self.parser.parse_args()
+
+        actions = ['scale']
+        self._create_scaling_workflow(actions, args.name, args.target)
 
 
 class WorkflowCommands(cli_utils.CommandsBase):
@@ -1728,6 +1749,8 @@ Available commands:
 
     solum app logs <APP_NAME|UUID>
         Show the logs of an application for all the deployments.
+
+    solum app scale <APP_NAME|UUID> <target>
 
     solum workflow list <APP_NAME|UUID>
         List all application workflows.
