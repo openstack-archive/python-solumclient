@@ -1726,7 +1726,7 @@ Available commands:
     solum app list
         Print an index of all deployed applications.
 
-    solum app show <APP_NAME|UUID>
+    solum app show <NAME|UUID>
         Print detailed information about one application.
 
     solum app create [--app-file <AppFile>] [--git-url <GIT_URL>]
@@ -1741,13 +1741,13 @@ Available commands:
 
         Register a new application with Solum.
 
-    solum app deploy <APP_NAME|UUID>
+    solum app deploy <NAME|UUID>
         Deploy an application, building any applicable artifacts first.
 
-    solum app delete <APP_NAME|UUID>
+    solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 
-    solum app logs <APP_NAME|UUID>
+    solum app logs <NAME|UUID>
         Show the logs of an application for all the deployments.
 
     solum app scale <APP_NAME|UUID> <target>
