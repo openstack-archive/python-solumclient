@@ -1049,8 +1049,19 @@ Available commands:
         self.parser.add_argument('target')
         args = self.parser.parse_args()
 
+        target = args.target
+        try:
+            target = int(target)
+        except ValueError:
+            msg = "Must provide integer value for scale target."
+            raise exc.CommandException(message=msg)
+
+        if target <= 0:
+            msg = "Scale target must be greater than zero."
+            raise exc.CommandException(message=msg)
+
         actions = ['scale']
-        self._create_scaling_workflow(actions, args.name, args.target)
+        self._create_scaling_workflow(actions, args.name, target)
 
 
 class WorkflowCommands(cli_utils.CommandsBase):
