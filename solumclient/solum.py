@@ -47,6 +47,7 @@ import re
 import sys
 
 import httplib2
+import jsonschema
 from keystoneclient.v2_0 import client as keystoneclient
 
 import solumclient
@@ -836,16 +837,47 @@ Available commands:
                 'description': 'default app description.',
                 'source': {
                     'repository': '',
-                    'revision': 'master'
+                    'revision': 'master',
+                    'private': False,
+                    'repo_token': ''
                 },
                 'workflow_config': {
                     'test_cmd': '',
                     'run_cmd': ''
                 },
                 'trigger_actions': ['build', 'deploy'],
-                'repo_token': ''
             }
 
+        app_name = self._get_and_validate_app_name(app_data, args)
+        app_data['name'] = app_name
+
+        self._get_and_validate_languagepack(app_data, args)
+
+        self._get_app_repo_details(app_data, args)
+
+        self._get_run_command(app_data, args)
+
+        self._get_unittest_command(app_data, args)
+
+        self._get_port(app_data, args)
+
+        self._get_parameters(app_data, args)
+
+        self._validate_app_data(app_data)
+
+        app = self.client.apps.create(**app_data)
+
+        self._setup_github_trigger(app_data, app, args)
+
+        app.trigger = app.trigger_actions
+        app.workflow = app.workflow_config
+
+        fields = ['name', 'id', 'created_at', 'description', 'languagepack',
+                  'ports', 'source', 'workflow',
+                  'trigger_uuid', 'trigger', 'trigger_uri']
+        self._print_dict(app, fields, wrap=72)
+
+    def _validate_app_data(self, app_data):
         # app file schema
         schema = {
             "title": "app file schema",
@@ -864,66 +896,65 @@ Available commands:
                     "type": "string"
                 },
                 "source": {
-                    "type": "object"
-                },
-                "workflow_config": {
-                    "type": "object"
-                },
-                "repo_token": {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        },
+                        "revision": {
+                            "type": "string"
+                        },
+                        "private": {
+                            "type": "boolean"
+                        },
+                        "repo_token": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "trigger_actions": {
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": ["unittest", "build", "deploy"]
+                    }
+                },
+                "workflow_config": {
+                    "type": "object",
+                    "properties": {
+                        "test_cmd": {
+                            "type": "string"
+                        },
+                        "run_cmd": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "ports": {
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "parameters": {
                     "type": "object"
                 }
             },
-            "required": ["version", "name", "description",
-                         "languagepack", "source", "workflow_config",
-                         "trigger_actions", "ports"]
+            "required": [
+                "version",
+                "name",
+                "description",
+                "languagepack",
+                "source",
+                "trigger_actions",
+                "workflow_config",
+                "ports"
+            ]
         }
-
-        app_name = self._get_and_validate_app_name(app_data, args)
-        app_data['name'] = app_name
-
-        self._get_and_validate_languagepack(app_data, args)
-
-        self._get_app_repo_details(app_data, args)
-
-        self._get_run_command(app_data, args)
-
-        self._get_unittest_command(app_data, args)
-
-        self._get_port(app_data, args)
-
-        self._get_parameters(app_data, args)
-
-        #  TODO(vijendar): currently doing very basic validation.
-        # Need to implement more robust schema based validation
-        appdata_keys = app_data.keys()
-        appdata_keys.sort()
-        schema_keys = schema['properties'].keys()
-        schema_keys.sort()
-        if appdata_keys != schema_keys:
-            message = "Unknown key(s) in app data file: %s" % list(
-                set(appdata_keys) - set(schema_keys))
-            raise exc.CommandError(message=message)
-
-        app = self.client.apps.create(**app_data)
-
-        self._setup_github_trigger(app_data, app, args)
-
-        app.trigger = app.trigger_actions
-        app.workflow = app.workflow_config
-
-        fields = ['name', 'id', 'created_at', 'description', 'languagepack',
-                  'ports', 'source', 'workflow',
-                  'trigger_uuid', 'trigger', 'trigger_uri']
-        self._print_dict(app, fields, wrap=72)
+        try:
+            jsonschema.validate(app_data, schema)
+        except jsonschema.exceptions.ValidationError as exp:
+            raise exc.CommandError(message=str(exp))
 
     def update(self):
         """Update the registration of an existing app."""
