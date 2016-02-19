@@ -570,16 +570,13 @@ Available commands:
     solum app delete <NAME|ID>
         Delete an application and all related artifacts.
 
-<<<<<<< HEAD
     solum app scale <NAME|ID> <scaling target>
 
-=======
     solum app logs <NAME|UUID> [--wf-id <wf-id>]
         Show the logs of an application for all the workflows.
         wf-id is optional flag which can be used to pass in id of one of
         the existing workflows. If provided, the logs only for that workflow
         are displayed.
->>>>>>> Added logs support for apps
     """
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
@@ -1818,16 +1815,11 @@ Available commands:
     solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
 
-<<<<<<< HEAD
-    solum app logs <NAME|UUID>
-        Show the logs of an application for all the deployments.
-=======
     solum app logs <NAME|UUID> [--wf-id <wf-id>]
         Show the logs of an application for all the workflows.
         wf-id is optional flag which can be used to pass in id of one of
         the existing workflows. If provided, the logs only for that workflow
         are displayed.
->>>>>>> Added logs support for apps
 
     solum app scale <APP_NAME|UUID> <target>
 
