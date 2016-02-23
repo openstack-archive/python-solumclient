@@ -564,8 +564,11 @@ Available commands:
 
         Register a new application with Solum.
 
-    solum app deploy <NAME|ID>
+    solum app deploy <NAME|ID> --du-id <du-id>
         Deploy an application, building any applicable artifacts first.
+        du-id is optional flag. It can be used to pass in id of a previously
+        created deployment unit. If passed, this command will deploy that
+        du instead of building one first.
 
     solum app delete <NAME|ID>
         Delete an application and all related artifacts.
@@ -1023,12 +1026,24 @@ Available commands:
                   'source', 'id', 'created_at', 'updated_at']
         self._print_dict(wf, fields, wrap=72)
 
-    def _create_workflow(self, actions):
-        self.parser.add_argument('name')
-        args = self.parser.parse_args()
-        app = self.client.apps.find(name_or_id=args.name)
+    def _create_workflow(self, actions, app_name_id=''):
+        if not app_name_id:
+            app = self.client.apps.find(name_or_id=app_name_id)
+        else:
+            self.parser.add_argument('name')
+            args = self.parser.parse_args()
+            app = self.client.apps.find(name_or_id=args.name)
         wf = (cli_wf.WorkflowManager(self.client,
                                      app_id=app.id).create(actions=actions))
+        fields = ['wf_id', 'app_id', 'actions', 'config',
+                  'source', 'id', 'created_at', 'updated_at']
+        self._print_dict(wf, fields, wrap=72)
+
+    def _create_workflow_for_prebuilt_du(self, actions, app_name_id, du_id):
+        app = self.client.apps.find(name_or_id=app_name_id)
+        wf = (cli_wf.WorkflowManager(self.client,
+                                     app_id=app.id).create(actions=actions,
+                                                           du_id=du_id))
         fields = ['wf_id', 'app_id', 'actions', 'config',
                   'source', 'id', 'created_at', 'updated_at']
         self._print_dict(wf, fields, wrap=72)
@@ -1045,8 +1060,18 @@ Available commands:
 
     def deploy(self):
         """Create a new workflow for an app."""
-        actions = ['unittest', 'build', 'deploy']
-        self._create_workflow(actions)
+        self.parser.add_argument("name")
+        self.parser.add_argument('--du-id',
+                                 dest="du_id",
+                                 help="ID of the DU image.")
+        args = self.parser.parse_args()
+        if args.du_id:
+            actions = ['deploy']
+            self._create_workflow_for_prebuilt_du(actions, args.name,
+                                                  args.du_id)
+        else:
+            actions = ['unittest', 'build', 'deploy']
+            self._create_workflow(actions, args.name)
 
     def scale(self):
         """Scale the app."""
@@ -1811,6 +1836,9 @@ Available commands:
 
     solum app deploy <NAME|UUID>
         Deploy an application, building any applicable artifacts first.
+        du-id is optional flag. It can be used to pass in id of a previously
+        created deployment unit. If passed, this command will deploy the du
+        referenced by the provided du-id instead of building one first.
 
     solum app delete <NAME|UUID>
         Delete an application and all related artifacts.
