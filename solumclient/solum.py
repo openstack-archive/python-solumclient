@@ -629,6 +629,10 @@ Available commands:
         # If it's neither of those places, prompt for it and update the
         # app data.
 
+        if args.no_languagepack:
+            app_data['languagepack'] = "False"
+            return
+
         languagepack = None
         if args.languagepack is not None:
             languagepack = args.languagepack
@@ -812,6 +816,11 @@ Available commands:
                                  action='store_true',
                                  dest='setup_trigger',
                                  help="Set up app trigger on git repo")
+        self.parser.add_argument('--no-languagepack',
+                                 action='store_true',
+                                 dest='no_languagepack',
+                                 help="Flag to register an app without"
+                                      " a languagepack")
 
         trigger_help = ("Which of stages build, unittest, deploy to trigger "
                         "from git. For example: "
