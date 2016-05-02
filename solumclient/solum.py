@@ -19,10 +19,6 @@ Initial M1 Solum CLI commands implemented (but not REST communications):
 * plan delete plan_name
 * plan list
 * plan show plan_id
-* assembly create assembly_name plan_name
-* assembly delete assembly_name
-* assembly list
-* assembly show assembly_id
 * languagepack create <NAME> <GIT_REPO_URL>
 * languagepack list
 * languagepack show <LP_ID>
@@ -57,7 +53,6 @@ from solumclient.common import github
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.v1 import app as cli_app
-from solumclient.v1 import assembly as cli_assem
 from solumclient.v1 import languagepack as cli_lp
 from solumclient.v1 import pipeline as cli_pipe
 from solumclient.v1 import plan as cli_plan
@@ -238,89 +233,6 @@ Available commands:
         fields = ['uuid', 'name', 'description']
         plans = self.client.plans.list()
         self._print_list(plans, fields)
-
-
-class AssemblyCommands(cli_utils.CommandsBase):
-    """Commands for working with assemblies.
-
-Available commands:
-
-    solum assembly list
-        Print an index of all available assemblies.
-
-    solum assembly show <NAME|UUID>
-        Print the details of an assembly.
-
-    solum assembly create <NAME|UUID> <PLAN_URI> [--description <DESCRIPTION>]
-        Create an assembly from a registered plan.
-
-    solum assembly logs <NAME|UUID>
-        Print an index of all operation logs for an assembly.
-
-    solum assembly delete <NAME|UUID>
-        Destroy an assembly.
-    """
-
-    def create(self):
-        """Create an assembly."""
-        self.parser.add_argument('name',
-                                 type=ValidName,
-                                 help="Assembly name")
-        self.parser.add_argument('plan_uri',
-                                 help="Tenant/project-wide unique "
-                                 "plan (uri/uuid or name)")
-        self.parser.add_argument('--description',
-                                 help="Assembly description")
-        self.parser._names['plan_uri'] = 'plan URI'
-        args = self.parser.parse_args()
-        name = args.name
-        plan_uri = args.plan_uri
-        if '/' not in plan_uri:
-            # might be a plan uuid/name
-            # let's try and be helpful and get the real plan_uri.
-            plan = self.client.plans.find(name_or_id=args.plan_uri)
-            plan_uri = plan.uri
-            print('Note: using plan_uri=%s' % plan_uri)
-
-        assembly = self.client.assemblies.create(name=name,
-                                                 description=args.description,
-                                                 plan_uri=plan_uri)
-        fields = ['uuid', 'name', 'description', 'status', 'application_uri',
-                  'trigger_uri']
-        self._print_dict(assembly, fields, wrap=72)
-
-    def delete(self):
-        """Delete an assembly."""
-        self.parser.add_argument('assembly_uuid',
-                                 help="Assembly uuid or name")
-        self.parser._names['assembly_uuid'] = 'assembly'
-        args = self.parser.parse_args()
-        assem = self.client.assemblies.find(name_or_id=args.assembly_uuid)
-        cli_assem.AssemblyManager(self.client).delete(
-            assembly_id=str(assem.uuid))
-
-    def list(self):
-        """List all assemblies."""
-        fields = ['uuid', 'name', 'description', 'status', 'created_at',
-                  'updated_at']
-        assemblies = self.client.assemblies.list()
-        self._print_list(assemblies, fields, sortby_index=5)
-
-    def logs(self):
-        """Get Logs."""
-        print("Not Supported: Logs moved to workflows. Use  following command."
-              "\nsolum workflow logs app_id wf_id")
-
-    def show(self):
-        """Show an assembly's resource."""
-        self.parser.add_argument('assembly_uuid',
-                                 help="Assembly uuid or name")
-        self.parser._names['assembly_uuid'] = 'assembly'
-        args = self.parser.parse_args()
-        assemblies = self.client.assemblies.find(name_or_id=args.assembly_uuid)
-        fields = ['uuid', 'name', 'description', 'status', 'application_uri',
-                  'created_at', 'updated_at', 'workflow']
-        self._print_dict(assemblies, fields, wrap=72)
 
 
 class ComponentCommands(cli_utils.CommandsBase):
@@ -1323,43 +1235,6 @@ Available commands:
         plans = self.client.plans.list()
         self._print_list(plans, fields)
 
-    def logs(self):
-        """Print a list of all logs belonging to a single app."""
-        self.parser.add_argument('app',
-                                 help="Application name")
-        self.parser._names['app'] = 'application'
-        args = self.parser.parse_args()
-        assemblies = self.client.assemblies.list()
-
-        all_logs_list = []
-        fields = ["resource_uuid", "created_at"]
-        for a in assemblies:
-            plan_uuid = a.plan_uri.split('/')[-1]
-            if args.app not in [plan_uuid, a.name]:
-                continue
-            loglist = cli_assem.AssemblyManager(self.client).logs(
-                assembly_id=str(a.uuid))
-
-            for log in loglist:
-                all_logs_list.append(log)
-                strategy_info = json.loads(log.strategy_info)
-                if log.strategy == 'local':
-                    if 'local_storage' not in fields:
-                        fields.append('local_storage')
-                    log.local_storage = log.location
-                elif log.strategy == 'swift':
-                    if 'swift_container' not in fields:
-                        fields.append('swift_container')
-                    if 'swift_path' not in fields:
-                        fields.append('swift_path')
-                    log.swift_container = strategy_info['container']
-                    log.swift_path = log.location
-                else:
-                    if 'location' not in fields:
-                        fields.append('location')
-
-        self._print_list(all_logs_list, fields)
-
     def show(self):
         """Print detailed information about one application."""
         # This is just "plan show <PLAN>".
@@ -1910,14 +1785,6 @@ Available commands:
                      [--trigger-workflow <WORKFLOW>]
         Register a new application with Solum.
 
-    solum assembly list
-        Print an index of all available assemblies.
-
-    solum assembly create <NAME|UUID> <PLAN_URI> [--description <DESCRIPTION>]
-        Create an assembly from a registered plan.
-
-    solum assembly delete <NAME|UUID>
-        Destroy an assembly.
     """
 
     parser = PermissiveParser()
@@ -1926,7 +1793,6 @@ Available commands:
         'oldapp': OldAppCommands,
         'app': AppCommands,
         'plan': PlanCommands,
-        'assembly': AssemblyCommands,
         'pipeline': PipelineCommands,
         'lp': LanguagePackCommands,
         'languagepack': LanguagePackCommands,

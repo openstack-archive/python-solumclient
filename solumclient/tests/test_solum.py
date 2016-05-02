@@ -28,7 +28,6 @@ from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import auth
 from solumclient import solum
 from solumclient.tests import base
-from solumclient.v1 import assembly
 from solumclient.v1 import component
 from solumclient.v1 import languagepack
 from solumclient.v1 import pipeline
@@ -121,93 +120,6 @@ class TestSolum(base.TestCase):
             self.assertThat(help_text,
                             matchers.MatchesRegex(r,
                                                   self.re_options))
-
-    # Assembly Tests #
-    @mock.patch.object(assembly.AssemblyManager, "list")
-    def test_assembly_list(self, mock_assembly_list):
-        self.make_env()
-        self.shell("assembly list")
-        mock_assembly_list.assert_called_once_with()
-
-    @mock.patch.object(assembly.AssemblyManager, "create")
-    def test_assembly_create(self, mock_assembly_create):
-        self.make_env()
-        self.shell("assembly create assembly_name http://example.com/a.yaml")
-        mock_assembly_create.assert_called_once_with(
-            name='assembly_name',
-            description=None,
-            plan_uri='http://example.com/a.yaml')
-
-    @mock.patch.object(assembly.AssemblyManager, "create")
-    def test_assembly_create_with_bogus_params(self, mock_assembly_create):
-        self.make_env()
-        self.shell("assembly create app_name http://example.com/a.yaml "
-                   "--BOGUS=False",
-                   exit_code=2)
-
-    @mock.patch.object(assembly.AssemblyManager, "create")
-    def test_assembly_create_without_name(self, mock_assembly_create):
-        self.make_env()
-        self.shell("assembly create http://example.com/a.yaml",
-                   exit_code=2)
-
-    @mock.patch.object(plan.PlanManager, "find")
-    @mock.patch.object(assembly.AssemblyManager, "create")
-    def test_assembly_create_with_plan_name(self, mock_assembly_create,
-                                            mock_plan_find):
-        class FakePlan(object):
-            uri = 'http://example.com/the-plan.yaml'
-
-        self.make_env()
-        mock_plan_find.return_value = FakePlan()
-        self.shell("assembly create assembly_name the-plan-name")
-        mock_plan_find.assert_called_once_with(name_or_id='the-plan-name')
-        mock_assembly_create.assert_called_once_with(
-            name='assembly_name',
-            description=None,
-            plan_uri='http://example.com/the-plan.yaml')
-
-    @mock.patch.object(assembly.AssemblyManager, "create")
-    def test_assembly_create_with_description(self, mock_assembly_create):
-        self.make_env()
-        self.shell("""assembly create assembly_name http://example.com/a.yaml
-                  --description=description""")
-        mock_assembly_create.assert_called_once_with(
-            name='assembly_name',
-            description='description',
-            plan_uri='http://example.com/a.yaml')
-
-    @mock.patch.object(assembly.AssemblyManager, "create")
-    def test_assembly_create_without_description(self, mock_assembly_create):
-        self.make_env()
-        self.shell("assembly create assembly_name http://example.com/a.yaml")
-        mock_assembly_create.assert_called_once_with(
-            name='assembly_name',
-            description=None,
-            plan_uri='http://example.com/a.yaml')
-
-    @mock.patch.object(assembly.AssemblyManager, "delete")
-    @mock.patch.object(assembly.AssemblyManager, "find")
-    def test_assembly_delete(self, mock_assembly_find, mock_assembly_delete):
-        self.make_env()
-        the_id = str(uuid.uuid4())
-        self.shell("assembly delete %s" % the_id)
-        mock_assembly_find.assert_called_once_with(
-            name_or_id=the_id)
-        self.assertEqual(1, mock_assembly_delete.call_count)
-
-    @mock.patch.object(assembly.AssemblyManager, "find")
-    def test_assembly_get(self, mock_assembly_find):
-        self.make_env()
-        the_id = str(uuid.uuid4())
-        self.shell("assembly show %s" % the_id)
-        mock_assembly_find.assert_called_once_with(name_or_id=the_id)
-
-    @mock.patch.object(assembly.AssemblyManager, "find")
-    def test_assembly_get_by_name(self, mock_assembly_find):
-        self.make_env()
-        self.shell("assembly show app2")
-        mock_assembly_find.assert_called_once_with(name_or_id='app2')
 
     # Workflow Tests #
     def test_workflow_error(self):
@@ -394,11 +306,6 @@ class TestSolum(base.TestCase):
             self.make_env()
             out = self.shell("oldapp create --plan-file /dev/null")
             self.assertEqual("ERROR: Artifact content missing\n", out)
-
-    def test_oldapp_logs_need_an_identifier(self):
-        self.make_env()
-        out = self.shell("oldapp logs")
-        self.assertEqual("ERROR: You must specify an application.\n", out)
 
     # Plan Tests #
     @mock.patch.object(plan.PlanManager, "create")
