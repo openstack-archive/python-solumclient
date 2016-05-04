@@ -66,7 +66,7 @@ from solumclient.v1 import workflow as cli_wf
 
 def name_is_valid(string):
     try:
-        re.match(r'^([a-zA-Z0-9-_]{1,100})$', string).group(0)
+        re.match(r'^([a-z0-9-_]{1,100})$', string).group(0)
     except AttributeError:
         return False
     return True
@@ -75,7 +75,7 @@ def name_is_valid(string):
 def ValidName(string):
     if not name_is_valid(string):
         raise AttributeError("Names must be 1-100 characters long and must "
-                             "only contain a-z,A-Z,0-9,-,_")
+                             "only contain a-z,0-9,-,_")
     return string
 
 
@@ -864,7 +864,6 @@ Available commands:
         self._get_parameters(app_data, args)
 
         self._validate_app_data(app_data)
-
         app = self.client.apps.create(**app_data)
 
         self._setup_github_trigger(app_data, app, args)
