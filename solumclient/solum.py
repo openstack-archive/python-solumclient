@@ -79,6 +79,9 @@ def ValidName(string):
 
 
 def lpname_is_valid(string):
+    if not string or not string[0].isalpha():
+        return False
+
     try:
         re.match(r'^([a-z0-9-_]{1,100})$', string).group(0)
     except (TypeError, AttributeError):
@@ -88,8 +91,9 @@ def lpname_is_valid(string):
 
 def ValidLPName(string):
     if not lpname_is_valid(string):
-        raise AttributeError("LP names must be 1-100 characters long and "
-                             "must only contain a-z,0-9,-,_")
+        raise AttributeError("LP names must be 1-100 characters long, only "
+                             "contain a-z,0-9,-,_ and start with an alphabet "
+                             "character.")
     return string
 
 
