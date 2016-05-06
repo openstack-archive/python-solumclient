@@ -223,8 +223,8 @@ class TestSolum(base.TestCase):
             out = self.shell("app create --app-file /dev/null")
 
             self.assertEqual("ERROR: Application name must be 1-100 "
-                             "characters and must only contain "
-                             "a-z,A-Z,0-9,-,_\n", out)
+                             "characters long, only contain a-z,0-9,-,_ and "
+                             "start with an alphabet character.\n", out)
 
     # OldApp Tests #
     def test_oldapp_create_with_missing_artifacts(self):
@@ -257,8 +257,8 @@ class TestSolum(base.TestCase):
             out = self.shell("oldapp create --plan-file /dev/null")
 
             self.assertEqual("ERROR: Application name must be 1-100 "
-                             "characters and must only contain "
-                             "a-z,A-Z,0-9,-,_\n", out)
+                             "characters long, only contain a-z,0-9,-,_ and "
+                             "start with an alphabet character.\n", out)
 
     def test_oldapp_create_with_bad_artifact_name(self):
         raw_data = '\n'.join([
