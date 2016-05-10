@@ -60,6 +60,9 @@ from solumclient.v1 import workflow as cli_wf
 
 
 def name_is_valid(string):
+    if not string or not string[0].isalpha():
+        return False
+
     try:
         re.match(r'^([a-z0-9-_]{1,100})$', string).group(0)
     except AttributeError:
@@ -69,8 +72,9 @@ def name_is_valid(string):
 
 def ValidName(string):
     if not name_is_valid(string):
-        raise AttributeError("Names must be 1-100 characters long and must "
-                             "only contain a-z,0-9,-,_")
+        raise AttributeError("Names must be 1-100 characters long, only "
+                             "contain a-z,0-9,-,_ and start with an alphabet "
+                             "character.")
     return string
 
 
@@ -504,8 +508,9 @@ Available commands:
                 msg = "Trigger actions cannot be empty"
                 raise exc.CommandException(message=msg)
 
-        error_message = ("Application name must be 1-100 characters and must "
-                         "only contain a-z,A-Z,0-9,-,_")
+        error_message = ("Application name must be 1-100 characters long, "
+                         "only contain a-z,0-9,-,_ and start with an alphabet "
+                         "character.")
 
         if app_data.get('name') is not None:
             if not name_is_valid(app_data.get('name')):
@@ -516,8 +521,9 @@ Available commands:
 
     def _get_and_validate_app_name(self, app_data, args):
         # Check the appfile-supplied name first.
-        error_message = ("Application name must be 1-100 characters and must "
-                         "only contain a-z,A-Z,0-9,-,_")
+        error_message = ("Application name must be 1-100 characters long, "
+                         "only contain a-z,0-9,-,_ and start with an alphabet "
+                         "character.")
         app_name = ''
         if app_data.get('name') is not None:
             if not name_is_valid(app_data.get('name')):
@@ -1227,8 +1233,9 @@ Available commands:
         elif 'content' not in plan_definition['artifacts'][0]:
             raise exc.CommandException(message="Artifact content missing")
 
-        error_message = ("Application name must be 1-100 characters and must "
-                         "only contain a-z,A-Z,0-9,-,_")
+        error_message = ("Application name must be 1-100 characters long, "
+                         "only contain a-z,0-9,-,_ and start with an alphabet "
+                         "character.")
 
         if plan_definition.get('name') is not None:
             if not name_is_valid(plan_definition.get('name')):
@@ -1384,8 +1391,9 @@ Available commands:
         # NOTE: This assumes the plan contains exactly one artifact.
 
         # Check the planfile-supplied name first.
-        error_message = ("Application name must be 1-100 characters and must "
-                         "only contain a-z,A-Z,0-9,-,_")
+        error_message = ("Application name must be 1-100 characters long, "
+                         "only contain a-z,0-9,-,_ and start with an alphabet "
+                         "character.")
         app_name = ''
         if plan_definition.get('name') is not None:
             if not name_is_valid(plan_definition.get('name')):
