@@ -345,8 +345,11 @@ class LanguagePackCommands(cli_utils.CommandsBase):
 
 Available commands:
 
-    solum lp create <NAME> <GIT_REPO_URL>
+    solum lp create <NAME> <GIT_REPO_URL> [--param-file <param-file-name>]
         Create a new language pack from a git repo.
+        You can pass an optional parameter file containing a dictionary.
+        One use of the parameter file is to pass in credentials for
+        infrastructure that should be used to build the lp.
 
     solum lp list
         Print and index of all available language packs.
@@ -363,6 +366,9 @@ Available commands:
 
     def create(self):
         """Create a language pack."""
+        self.parser.add_argument('--param-file',
+                                 dest='paramfile',
+                                 help="Local parameter file location")
         self.parser.add_argument('name',
                                  type=ValidLPName,
                                  help="Language pack name.")
@@ -381,6 +387,15 @@ Available commands:
                                  help="Language pack metadata file.")
         self.parser._names['git_url'] = 'repo URL'
         args = self.parser.parse_args()
+
+        param_data = {}
+        if args.paramfile is not None:
+            try:
+                with open(args.paramfile, 'r') as inf:
+                    param_data = yamlutils.load(inf.read())
+            except Exception as exp:
+                raise exc.CommandException(str(exp))
+
         lp_metadata = None
 
         if args.lp_metadata:
@@ -390,11 +405,13 @@ Available commands:
                 except ValueError as excp:
                     message = ("Malformed metadata file: %s" % str(excp))
                     raise exc.CommandError(message=message)
+
         languagepack = {}
         try:
             languagepack = self.client.languagepacks.create(
                 name=args.name, source_uri=args.git_url,
-                lp_metadata=lp_metadata)
+                lp_metadata=lp_metadata,
+                lp_params=param_data)
         except exceptions.Conflict as conflict:
             message = ("%s" % conflict.message)
             raise exc.CommandError(message=message)
