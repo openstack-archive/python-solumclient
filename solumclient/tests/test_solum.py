@@ -407,7 +407,8 @@ class TestSolum(base.TestCase):
             mock_lp_create.assert_called_once_with(
                 name='lp_name',
                 source_uri='github.com/test',
-                lp_metadata=lp_metadata)
+                lp_metadata=lp_metadata,
+                lp_params={})
 
     @mock.patch.object(languagepack.LanguagePackManager, "delete")
     def test_languagepack_delete(self, mock_lp_delete):
