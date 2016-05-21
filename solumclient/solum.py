@@ -59,6 +59,12 @@ from solumclient.v1 import plan as cli_plan
 from solumclient.v1 import workflow as cli_wf
 
 
+def name_error_message(name_type):
+    return name_type + (" must be 1-100 characters long, only "
+                        "contain a-z,0-9,-,_ and start with "
+                        "an alphabet character.")
+
+
 def name_is_valid(string):
     if not string or not string[0].isalpha():
         return False
@@ -72,28 +78,17 @@ def name_is_valid(string):
 
 def ValidName(string):
     if not name_is_valid(string):
-        raise AttributeError("Names must be 1-100 characters long, only "
-                             "contain a-z,0-9,-,_ and start with an alphabet "
-                             "character.")
+        raise AttributeError(name_error_message("Names"))
     return string
 
 
 def lpname_is_valid(string):
-    if not string or not string[0].isalpha():
-        return False
-
-    try:
-        re.match(r'^([a-z0-9-_]{1,100})$', string).group(0)
-    except (TypeError, AttributeError):
-        return False
-    return True
+    return name_is_valid(string)
 
 
 def ValidLPName(string):
     if not lpname_is_valid(string):
-        raise AttributeError("LP names must be 1-100 characters long, only "
-                             "contain a-z,0-9,-,_ and start with an alphabet "
-                             "character.")
+        raise AttributeError(name_error_message("LP names"))
     return string
 
 
@@ -1528,8 +1523,7 @@ Available commands:
         if not lpname_is_valid(a_name):
             # https://github.com/docker/compose/issues/941
             # Docker build only allows lowercase names for now.
-            msg = ("Artifact names must be 1-100 characters long and "
-                   "must only contain a-z,0-9,-,_")
+            msg = name_error_message("Artifact names")
             raise exc.CommandError(msg)
         plan_definition['artifacts'][0]['name'] = a_name
 
