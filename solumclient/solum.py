@@ -973,8 +973,8 @@ Available commands:
         args = self.parser.parse_args()
         app = self.client.apps.find(name_or_id=args.name)
 
-        fields = ['name', 'id', 'created_at', 'description', 'languagepack',
-                  'entry_points', 'ports', 'source',
+        fields = ['name', 'id', 'created_at', 'updated_at', 'description',
+                  'languagepack', 'entry_points', 'ports', 'source',
                   'trigger_uuid', 'trigger', 'app_url']
 
         app.trigger = app.trigger_actions
