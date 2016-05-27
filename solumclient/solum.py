@@ -604,6 +604,15 @@ Available commands:
                                        "Create a languagepack first.")
 
     def _get_app_repo_details(self, app_data, args):
+        def read_private_sshkey(sshkey_file):
+            private_sshkey = ''
+            try:
+                with open(sshkey_file, 'r') as inf:
+                    private_sshkey = inf.read()
+            except Exception as exp:
+                raise exc.CommandException(str(exp))
+            return private_sshkey
+
         git_rev = 'master'
         git_url = None
         if (app_data.get('source') is not None and
@@ -628,8 +637,36 @@ Available commands:
         assert(git_url is not None)
         assert(git_rev is not None)
 
+        # check if given repo is a private repository
+        is_private = (args.private_repo or
+                      app_data['source'].get('private'))
+
+        git_url = transform_git_url(git_url, is_private)
+
+        if (app_data['source'].get('repo_token') is None or
+                app_data['source']['repo_token'] is ''):
+            gha = github.GitHubAuth(git_url, repo_token=None)
+            repo_token = gha.repo_token
+        else:
+            repo_token = app_data['source']['repo_token']
+
+        private_sshkey = ''
+        if is_private and (app_data['source'].get('private_ssh_key') is None or
+                           app_data['source']['private_ssh_key'] is ''):
+            sshkey_file = raw_input("Please specify private  sshkey file full "
+                                    "path: ")
+            sshkey_file = sshkey_file.strip()
+            private_sshkey = read_private_sshkey(sshkey_file)
+
+        if is_private and private_sshkey == '':
+            msg = "Must provide private sshkey for private repositories."
+            raise exc.CommandError(message=msg)
+
         git_src = dict()
-        git_src['repository'] = transform_git_url(git_url, False)
+        git_src['private'] = is_private
+        git_src['private_ssh_key'] = private_sshkey
+        git_src['repo_token'] = repo_token
+        git_src['repository'] = git_url
         git_src['revision'] = git_rev
         app_data['source'] = git_src
 
@@ -755,6 +792,10 @@ Available commands:
                                  dest='no_languagepack',
                                  help="Flag to register an app without"
                                       " a languagepack")
+        self.parser.add_argument('--private-repo',
+                                 action='store_true',
+                                 dest='private_repo',
+                                 help="Source repo requires authentication.")
 
         trigger_help = ("Which of stages build, unittest, deploy to trigger "
                         "from git. For example: "
@@ -782,6 +823,7 @@ Available commands:
                     'repository': '',
                     'revision': 'master',
                     'private': False,
+                    'private_ssh_key': '',
                     'repo_token': ''
                 },
                 'workflow_config': {
@@ -850,6 +892,9 @@ Available commands:
                             "type": "boolean"
                         },
                         "repo_token": {
+                            "type": "string"
+                        },
+                        "private_ssh_key": {
                             "type": "string"
                         }
                     }
