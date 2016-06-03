@@ -1020,8 +1020,8 @@ Available commands:
         app.trigger = app.trigger_actions
         app.workflow = app.workflow_config
         if app.scale_config:
-            if app.scale_config[args.name]['target']:
-                app.target_instances = app.scale_config[args.name]['target']
+            if app.scale_config[app.name]['target']:
+                app.target_instances = app.scale_config[app.name]['target']
                 fields.append('target_instances')
 
         self._print_dict(app, fields, wrap=72)
