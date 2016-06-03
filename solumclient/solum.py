@@ -489,6 +489,9 @@ Available commands:
                      [--lp <LANGUAGEPACK>]
                      [--param-file <PARAMFILE>]
                      [--setup-trigger]
+                     [--port <PORT>]
+                     [--private-repo]
+                     [--no-languagepack]
                      [--trigger-workflow <CUSTOM-WORKFLOW>]
                       <CUSTOM-WORKFLOW>=(unittest | build | unittest+build)
                       Without the --trigger-workflow flag,
