@@ -642,21 +642,18 @@ Available commands:
 
         # check if given repo is a private repository
         is_private = (args.private_repo or
-                      app_data['source'].get('private'))
+                      app_data['source'].get('private', False))
 
         git_url = transform_git_url(git_url, is_private)
 
-        if (app_data['source'].get('repo_token') is None or
-                app_data['source']['repo_token'] is ''):
+        repo_token = app_data['source'].get('repo_token', '')
+        if args.setup_trigger and not repo_token:
             gha = github.GitHubAuth(git_url, repo_token=None)
             repo_token = gha.repo_token
-        else:
-            repo_token = app_data['source']['repo_token']
 
-        private_sshkey = ''
-        if is_private and (app_data['source'].get('private_ssh_key') is None or
-                           app_data['source']['private_ssh_key'] is ''):
-            sshkey_file = raw_input("Please specify private  sshkey file full "
+        private_sshkey = app_data['source'].get('private_ssh_key', '')
+        if is_private and not private_sshkey:
+            sshkey_file = raw_input("Please specify private sshkey file full "
                                     "path: ")
             sshkey_file = sshkey_file.strip()
             private_sshkey = read_private_sshkey(sshkey_file)
