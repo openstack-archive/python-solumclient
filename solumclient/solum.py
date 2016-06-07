@@ -447,7 +447,7 @@ Available commands:
         self._print_dict(languagepack, fields, wrap=72)
 
     def logs(self):
-        """Get Logs."""
+        """Get language pack Logs."""
         self.parser.add_argument('lp_id',
                                  help="languagepack uuid or name")
         args = self.parser.parse_args()
@@ -1169,7 +1169,7 @@ Available commands:
 def display_logs_for_single_workflow(ref, app, revision):
     wfman = cli_wf.WorkflowManager(ref.client, app_id=app.id)
     loglist = wfman.logs(revision_or_id=revision)
-    fields = ["resource_uuid"]
+    fields = ["resource_uuid", "created_at"]
     for log in loglist:
         strategy_info = json.loads(log.strategy_info)
         if log.strategy == 'local':
@@ -1236,7 +1236,7 @@ Available commands:
         self._print_dict(wf, fields, wrap=72)
 
     def logs(self):
-        """Get Logs."""
+        """Show one of an app's live workflows logs."""
         self.parser.add_argument('app',
                                  help="App uuid or name")
         self.parser.add_argument('workflow',
