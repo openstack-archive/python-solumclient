@@ -73,18 +73,23 @@ class TestGitHubAuth(base.TestCase):
                                 repo_token=self.fake_token)
         fake_request.return_value = ({'status': '200'},
                                      '{"token": "%s"}' % self.fake_token)
+        gha.create_repo_token = mock.MagicMock()
+        gha.create_repo_token.return_value = 'token123'
+
         gha.create_webhook(self.fake_trigger)
         fake_request.assert_called_once_with(
             'https://api.github.com/repos/fakeuser/fakerepo/hooks',
             'POST',
             headers=mock.ANY,
             body=mock.ANY)
+
         expected_body = {
             "config": {
                 "url": self.fake_trigger,
                 "content_type": "json"},
             "name": "web",
             "events": ["pull_request", "commit_comment"]}
+
         actual_body = json.loads(fake_request.call_args[1]['body'])
         self.assertEqual(expected_body, actual_body)
 
@@ -95,6 +100,10 @@ class TestGitHubAuth(base.TestCase):
                                 password=self.fake_password)
         fake_request.return_value = ({'status': '200'},
                                      '{"token": "foo"}')
+
+        gha.create_repo_token = mock.MagicMock()
+        gha.create_repo_token.return_value = 'token123'
+
         gha.create_webhook(self.fake_trigger, workflow=['unittest'])
         fake_request.assert_called_once_with(
             'https://api.github.com/repos/fakeuser/fakerepo/hooks',
@@ -117,6 +126,10 @@ class TestGitHubAuth(base.TestCase):
                                 password=self.fake_password)
         fake_request.return_value = ({'status': '200'},
                                      '{"token": "foo"}')
+
+        gha.create_repo_token = mock.MagicMock()
+        gha.create_repo_token.return_value = 'token123'
+
         gha.create_webhook(self.fake_trigger, workflow=['unittest', 'build'])
         fake_request.assert_called_once_with(
             'https://api.github.com/repos/fakeuser/fakerepo/hooks',

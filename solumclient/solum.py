@@ -544,20 +544,19 @@ Available commands:
                          "only contain a-z,0-9,-,_ and start with an alphabet "
                          "character.")
         app_name = ''
-        if app_data.get('name') is not None:
-            if not name_is_valid(app_data.get('name')):
-                raise exc.CommandError(message=error_message)
-            app_name = app_data.get('name')
-        # Check the arguments next.
-        elif args.name:
+        if args.name:
             app_name = args.name
-        # Just ask.
-        else:
+        elif app_data.get('name') is None:
             while True:
                 app_name = raw_input("Please name the application.\n> ")
                 if name_is_valid(app_name):
                     break
                 print(error_message)
+        else:
+            app_name = app_data.get('name')
+
+        if not name_is_valid(app_name):
+            raise exc.CommandError(message=error_message)
 
         return app_name
 
@@ -646,11 +645,6 @@ Available commands:
 
         git_url = transform_git_url(git_url, is_private)
 
-        repo_token = app_data['source'].get('repo_token', '')
-        if args.setup_trigger and not repo_token:
-            gha = github.GitHubAuth(git_url, repo_token=None)
-            repo_token = gha.repo_token
-
         private_sshkey = app_data['source'].get('private_ssh_key', '')
         if is_private and not private_sshkey:
             sshkey_file = raw_input("Please specify private sshkey file full "
@@ -665,7 +659,6 @@ Available commands:
         git_src = dict()
         git_src['private'] = is_private
         git_src['private_ssh_key'] = private_sshkey
-        git_src['repo_token'] = repo_token
         git_src['repository'] = git_url
         git_src['revision'] = git_rev
         app_data['source'] = git_src
@@ -732,9 +725,10 @@ Available commands:
 
     def _setup_github_trigger(self, app_data, app, args):
         # If a token is supplied, we won't need to generate one.
-        repo_token = ''
-        if hasattr(app_data, 'repo_token'):
-            repo_token = app_data['repo_token']
+        provided_token = ''
+        obtained_token = ''
+        if 'repo_token' in app_data:
+            provided_token = app_data['repo_token']
 
         if args.setup_trigger or args.workflow:
             trigger_uri = vars(app).get('trigger_uri', '')
@@ -744,8 +738,22 @@ Available commands:
                     workflow = args.workflow.replace('+', ' ').split(' ')
                 try:
                     git_url = app_data['source']['repository']
-                    gha = github.GitHubAuth(git_url, repo_token=repo_token)
+
+                    gha = github.GitHubAuth(git_url,
+                                            repo_token=provided_token)
                     gha.create_webhook(trigger_uri, workflow=workflow)
+
+                    if not provided_token:
+                        try:
+                            obtained_token = gha.create_repo_token()
+                            # Update the app with the generated repo_token
+                            to_update = {}
+                            to_update['repo_token'] = obtained_token
+                            self.client.apps.patch(app_id=app.id, **to_update)
+                        except Exception:
+                            print("Error in obtaining github token.")
+                            return ''
+
                 except github.GitHubException as ghe:
                     raise exc.CommandError(message=str(ghe))
 
@@ -758,6 +766,7 @@ Available commands:
                                  dest='appfile',
                                  help="Local appfile location")
         self.parser.add_argument('--name',
+                                 dest='name',
                                  type=ValidName,
                                  help="Application name")
         self.parser.add_argument('--languagepack',
@@ -849,6 +858,11 @@ Available commands:
         self._get_parameters(app_data, args)
 
         self._validate_app_data(app_data)
+
+        if args.workflow:
+            app_data['trigger_actions'] = (
+                args.workflow.replace('+', ' ').split(' '))
+
         app = self.client.apps.create(**app_data)
 
         self._setup_github_trigger(app_data, app, args)

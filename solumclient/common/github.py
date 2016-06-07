@@ -151,6 +151,7 @@ class GitHubAuth(object):
         if status_code in [200, 201]:
             self._repo_token = response_body.get('token')
             print("Successfully created repo token %s." % auth_info['note'])
+            return self._repo_token
         elif status_code >= 400 and status_code < 600:
             message = response_body.get('message',
                                         'No error message provided.')
