@@ -517,6 +517,13 @@ Available commands:
         the existing workflows. If provided, the logs only for that workflow
         are displayed.
     """
+
+    username = ''
+    password = ''
+    tenant = ''
+    auth_url = ''
+    tenant_name = ''
+
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
                 app_data.get('workflow_config') is None):
@@ -758,6 +765,11 @@ Available commands:
                     raise exc.CommandError(message=str(ghe))
 
     def create(self):
+
+        parsed, _ = self.parser.parse_known_args()
+        AppCommands.username = parsed.os_username
+        AppCommands.password = parsed.os_password
+        AppCommands.tenant = parsed.os_tenant_name
         self.register()
 
     def register(self):
