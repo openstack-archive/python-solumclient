@@ -53,7 +53,10 @@ class ClientTest(base.TestCase):
                 headers={
                     "User-Agent": http_client.user_agent,
                     "Content-Type": "application/json",
-                    "X-Auth-Token": "token-0"
+                    "X-Auth-Token": "token-0",
+                    "X-Password": "",
+                    "X-User-ID": "",
+                    "X-Project": ""
                 },
                 data='{"1": "2"}',
                 verify=True)
