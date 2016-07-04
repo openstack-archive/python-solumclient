@@ -28,6 +28,7 @@ import string
 import tempfile
 
 import httplib2
+import six
 import yaml
 
 from solumclient import client as solum_client
@@ -73,8 +74,8 @@ def _get_token(git_url):
         exit(1)
 
     full_repo_name = '/'.join([user_org_name, repo])
-    username = raw_input("Username for repo '%s' [%s]: " % (full_repo_name,
-                                                            user_org_name))
+    username = six.moves.input("Username for repo '%s' [%s]: " %
+                               (full_repo_name, user_org_name))
     if not username:
         username = user_org_name
     password = getpass.getpass("Password: ")
