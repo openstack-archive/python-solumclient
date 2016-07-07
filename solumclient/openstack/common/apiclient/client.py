@@ -242,20 +242,20 @@ class HTTPClient(object):
         try:
             return self.request(
                 method, self.concat_url(endpoint, url), **kwargs)
-        except exceptions.ConnectionRefused as refused_ex:
+        except exceptions.ConnectionRefused:
             print('ERROR: Cannot connect to %s.  Make sure it ' +
                   'is valid: %s.' % endpoint)
-            raise refused_ex
-        except exceptions.EndpointException as endpoint_ex:
+            raise
+        except exceptions.EndpointException:
             print('ERROR: Service catalog endpoint is invalid. ' +
                   'Please check your ' +
                   'endpoint is valid: %s.' % endpoint)
-            raise endpoint_ex
-        except requests.ConnectionError as conn_err:
+            raise
+        except requests.ConnectionError:
             print('ERROR: Unable to connect to endpoint.  ' +
                   'Make sure that ' +
                   'your endpoint (%s) is valid.' % endpoint)
-            raise conn_err
+            raise
         except exceptions.Unauthorized as unauth_ex:
             if just_authenticated:
                 raise
