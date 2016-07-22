@@ -15,8 +15,8 @@
 import logging
 import time
 
-import solumclient
 from solumclient.common import exc
+from solumclient import config
 from solumclient.openstack.common.apiclient import client as api_client
 
 
@@ -36,14 +36,12 @@ class HTTPClient(api_client.HTTPClient):
 '            requests.Session.request (such as `headers`) or `json`
              that will be encoded as JSON and used as `data` argument
         """
+
         kwargs.setdefault("headers", kwargs.get("headers", {}))
         kwargs["headers"]["User-Agent"] = self.user_agent
-        kwargs["headers"]["X-User-ID"] = (
-            solumclient.solum.AppCommands.username)
-        kwargs["headers"]["X-Password"] = (
-            solumclient.solum.AppCommands.password)
-        kwargs["headers"]["X-Project"] = (
-            solumclient.solum.AppCommands.tenant)
+        kwargs["headers"]["X-User-ID"] = config.username
+        kwargs["headers"]["X-Password"] = config.password
+        kwargs["headers"]["X-Project"] = config.tenant
         if self.original_ip:
             kwargs["headers"]["Forwarded"] = "for=%s;by=%s" % (
                 self.original_ip, self.user_agent)

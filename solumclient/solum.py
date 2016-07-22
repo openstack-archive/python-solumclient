@@ -51,6 +51,7 @@ from solumclient.common import cli_utils
 from solumclient.common import exc
 from solumclient.common import github
 from solumclient.common import yamlutils
+from solumclient import config
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.v1 import app as cli_app
 from solumclient.v1 import languagepack as cli_lp
@@ -518,12 +519,6 @@ Available commands:
         are displayed.
     """
 
-    username = ''
-    password = ''
-    tenant = ''
-    auth_url = ''
-    tenant_name = ''
-
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
                 app_data.get('workflow_config') is None):
@@ -767,9 +762,10 @@ Available commands:
     def create(self):
 
         parsed, _ = self.parser.parse_known_args()
-        AppCommands.username = parsed.os_username
-        AppCommands.password = parsed.os_password
-        AppCommands.tenant = parsed.os_tenant_name
+        config.username = parsed.os_username
+        config.password = parsed.os_password
+        config.tenant = parsed.os_tenant_name
+
         self.register()
 
     def register(self):
