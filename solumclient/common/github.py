@@ -23,6 +23,7 @@ import re
 import string
 
 import httplib2
+import six
 
 
 class GitHubException(Exception):
@@ -66,7 +67,7 @@ class GitHubAuth(object):
         if self._username is None:
             prompt = ("Username for repo '%s' [%s]:" %
                       (self.full_repo_name, self.user_org_name))
-            self._username = raw_input(prompt) or self.user_org_name
+            self._username = six.moves.input(prompt) or self.user_org_name
         return self._username
 
     @property
