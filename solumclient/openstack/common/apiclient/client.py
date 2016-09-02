@@ -25,7 +25,6 @@ OpenStack Client interface. Handles the REST calls and responses.
 # E0202: An attribute inherited from %s hide this method
 # pylint: disable=E0202
 
-import logging
 import time
 
 try:
@@ -34,6 +33,8 @@ except ImportError:
     import json
 
 import requests
+
+from oslo_log import log as logging
 
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.gettextutils import _

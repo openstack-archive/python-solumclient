@@ -14,8 +14,9 @@
 # limitations under the License.
 
 import json
-import logging
 import os
+
+from oslo_log import log as logging
 
 from solumclient import client as solum_client
 from solumclient.common import exc

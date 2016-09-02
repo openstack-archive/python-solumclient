@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 import time
+
+from oslo_log import log as logging
 
 from solumclient.common import exc
 from solumclient import config
