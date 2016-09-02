@@ -35,10 +35,10 @@ except ImportError:
 import requests
 
 from oslo_log import log as logging
+from oslo_utils import importutils
 
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.gettextutils import _
-from solumclient.openstack.common import importutils
 
 
 _logger = logging.getLogger(__name__)
