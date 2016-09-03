@@ -29,8 +29,8 @@ import copy
 import six
 from six.moves.urllib import parse
 
+from solumclient.i18n import _
 from solumclient.openstack.common.apiclient import exceptions
-from solumclient.openstack.common.gettextutils import _
 
 from oslo_utils import strutils
 

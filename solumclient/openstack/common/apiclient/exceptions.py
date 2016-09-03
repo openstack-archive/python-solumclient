@@ -25,7 +25,7 @@ import sys
 
 import six
 
-from solumclient.openstack.common.gettextutils import _
+from solumclient.i18n import _
 
 
 class ClientException(Exception):
