@@ -31,7 +31,8 @@ from six.moves.urllib import parse
 
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.gettextutils import _
-from solumclient.openstack.common import strutils
+
+from oslo_utils import strutils
 
 
 def getid(obj):
