@@ -16,7 +16,8 @@ from solumclient.common import base as solum_base
 from solumclient.common import exc
 from solumclient.openstack.common.apiclient import base as apiclient_base
 from solumclient.openstack.common.apiclient import exceptions
-from solumclient.openstack.common import uuidutils
+
+from oslo_utils import uuidutils
 
 
 class App(apiclient_base.Resource):

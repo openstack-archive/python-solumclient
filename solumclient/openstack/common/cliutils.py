@@ -30,10 +30,10 @@ from six import moves
 
 from solumclient.openstack.common.apiclient import exceptions
 from solumclient.openstack.common.gettextutils import _
-from solumclient.openstack.common import uuidutils
 
 from oslo_utils import encodeutils
 from oslo_utils import strutils
+from oslo_utils import uuidutils
 
 
 def validate_args(fn, *args, **kwargs):

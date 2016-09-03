@@ -19,7 +19,8 @@ from solumclient.common import exc
 from solumclient.common import yamlutils
 from solumclient.openstack.common.apiclient import base as apiclient_base
 from solumclient.openstack.common.apiclient import exceptions
-from solumclient.openstack.common import uuidutils
+
+from oslo_utils import uuidutils
 
 
 class Requirement(apiclient_base.Resource):
