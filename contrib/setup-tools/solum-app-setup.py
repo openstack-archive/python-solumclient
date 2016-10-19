@@ -32,7 +32,7 @@ import six
 import yaml
 
 from solumclient import client as solum_client
-from solumclient.openstack.common import cliutils
+from solumclient.common import cliutils
 
 
 SOLUM_API_VERSION = '1'
