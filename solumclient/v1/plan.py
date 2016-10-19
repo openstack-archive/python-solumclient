@@ -14,11 +14,11 @@
 
 import six
 
+from solumclient.common.apiclient import base as apiclient_base
+from solumclient.common.apiclient import exceptions
 from solumclient.common import base as solum_base
 from solumclient.common import exc
 from solumclient.common import yamlutils
-from solumclient.openstack.common.apiclient import base as apiclient_base
-from solumclient.openstack.common.apiclient import exceptions
 
 from oslo_utils import uuidutils
 

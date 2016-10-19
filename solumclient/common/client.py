@@ -16,9 +16,9 @@ import time
 
 from oslo_log import log as logging
 
+from solumclient.common.apiclient import client as api_client
 from solumclient.common import exc
 from solumclient import config
-from solumclient.openstack.common.apiclient import client as api_client
 
 
 _logger = logging.getLogger(__name__)

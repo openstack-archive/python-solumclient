@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solumclient.openstack.common.apiclient import exceptions
+from solumclient.common.apiclient import exceptions
 
 
 class CommandException(Exception):

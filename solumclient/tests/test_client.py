@@ -15,8 +15,8 @@
 import mock
 
 from solumclient import client
+from solumclient.common.apiclient import exceptions
 from solumclient.common import auth
-from solumclient.openstack.common.apiclient import exceptions
 from solumclient.tests import base
 
 

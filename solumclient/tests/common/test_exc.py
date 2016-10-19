@@ -14,8 +14,8 @@
 
 import six
 
+from solumclient.common.apiclient import exceptions
 from solumclient.common import exc
-from solumclient.openstack.common.apiclient import exceptions
 from solumclient.tests import base
 
 

@@ -14,8 +14,8 @@
 
 from keystoneclient.v2_0 import client as ksclient
 
-from solumclient.openstack.common.apiclient import auth
-from solumclient.openstack.common.apiclient import exceptions
+from solumclient.common.apiclient import auth
+from solumclient.common.apiclient import exceptions
 
 
 class KeystoneAuthPlugin(auth.BaseAuthPlugin):

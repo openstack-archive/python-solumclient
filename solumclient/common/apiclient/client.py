@@ -32,13 +32,12 @@ try:
 except ImportError:
     import json
 
-import requests
-
 from oslo_log import log as logging
 from oslo_utils import importutils
+import requests
 
+from solumclient.common.apiclient import exceptions
 from solumclient.i18n import _
-from solumclient.openstack.common.apiclient import exceptions
 
 
 _logger = logging.getLogger(__name__)
@@ -63,7 +62,7 @@ class HTTPClient(object):
       into terminal and send the same request with curl.
     """
 
-    user_agent = "solumclient.openstack.common.apiclient"
+    user_agent = "solumclient.common.apiclient"
 
     def __init__(self,
                  auth_plugin,
@@ -286,7 +285,7 @@ class HTTPClient(object):
 
         >>> def test_clients():
         ...     from keystoneclient.auth import keystone
-        ...     from openstack.common.apiclient import client
+        ...     from openstack.apiclient import client
         ...     auth = keystone.KeystoneAuthPlugin(
         ...         username="user", password="pass", tenant_name="tenant",
         ...         auth_url="http://auth:5000/v2.0")

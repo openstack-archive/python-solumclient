@@ -28,8 +28,8 @@ import prettytable
 import six
 from six import moves
 
+from solumclient.common.apiclient import exceptions
 from solumclient.i18n import _
-from solumclient.openstack.common.apiclient import exceptions
 
 from oslo_utils import encodeutils
 from oslo_utils import strutils

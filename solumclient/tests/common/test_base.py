@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solumclient.openstack.common.apiclient import base
-from solumclient.openstack.common.apiclient import client
-from solumclient.openstack.common.apiclient import fake_client
+from solumclient.common.apiclient import base
+from solumclient.common.apiclient import client
+from solumclient.common.apiclient import fake_client
 from solumclient.tests import base as test_base
 
 

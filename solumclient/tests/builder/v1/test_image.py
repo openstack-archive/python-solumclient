@@ -14,7 +14,7 @@
 
 from solumclient.builder.v1 import client as builder_client
 from solumclient.builder.v1 import image
-from solumclient.openstack.common.apiclient import fake_client
+from solumclient.common.apiclient import fake_client
 from solumclient.tests import base
 
 image_fixture = {
