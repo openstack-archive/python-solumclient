@@ -19,8 +19,8 @@ import os
 from oslo_log import log as logging
 
 from solumclient import client as solum_client
+from solumclient.common import cliutils
 from solumclient.common import exc
-from solumclient.openstack.common import cliutils
 
 
 class CommandsBase(object):
