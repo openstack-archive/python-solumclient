@@ -13,7 +13,7 @@
 # under the License.
 
 from solumclient.builder.v1 import image
-from solumclient.openstack.common.apiclient import client
+from solumclient.common.apiclient import client
 
 
 class Client(client.BaseClient):

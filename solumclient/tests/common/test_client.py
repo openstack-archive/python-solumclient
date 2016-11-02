@@ -15,10 +15,10 @@
 import mock
 import requests
 
+from solumclient.common.apiclient import auth
+from solumclient.common.apiclient import client as api_client
+from solumclient.common.apiclient import exceptions
 from solumclient.common import client
-from solumclient.openstack.common.apiclient import auth
-from solumclient.openstack.common.apiclient import client as api_client
-from solumclient.openstack.common.apiclient import exceptions
 from solumclient.tests import base
 
 

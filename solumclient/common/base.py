@@ -14,8 +14,8 @@
 
 from six.moves.urllib import parse as urlparse
 
-from solumclient.openstack.common.apiclient import base
-from solumclient.openstack.common.apiclient import exceptions
+from solumclient.common.apiclient import base
+from solumclient.common.apiclient import exceptions
 
 
 class FindMixin(object):

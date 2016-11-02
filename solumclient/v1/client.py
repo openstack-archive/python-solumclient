@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solumclient.openstack.common.apiclient import client
+from solumclient.common.apiclient import client
 from solumclient.v1 import app
 from solumclient.v1 import component
 from solumclient.v1 import languagepack

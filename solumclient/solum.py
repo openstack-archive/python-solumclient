@@ -48,12 +48,12 @@ from keystoneclient.v2_0 import client as keystoneclient
 import six
 
 import solumclient
+from solumclient.common.apiclient import exceptions
 from solumclient.common import cli_utils
 from solumclient.common import exc
 from solumclient.common import github
 from solumclient.common import yamlutils
 from solumclient import config
-from solumclient.openstack.common.apiclient import exceptions
 from solumclient.v1 import app as cli_app
 from solumclient.v1 import languagepack as cli_lp
 from solumclient.v1 import pipeline as cli_pipe

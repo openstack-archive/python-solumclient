@@ -24,8 +24,8 @@ from stevedore import extension
 from testtools import matchers
 
 from solumclient import client
+from solumclient.common.apiclient import auth
 from solumclient.common import yamlutils
-from solumclient.openstack.common.apiclient import auth
 from solumclient import solum
 from solumclient.tests import base
 from solumclient.v1 import component

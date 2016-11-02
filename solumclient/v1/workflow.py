@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.common.apiclient import base as apiclient_base
+from solumclient.common.apiclient import exceptions
 from solumclient.common import base as solum_base
 from solumclient.common import exc
-from solumclient.openstack.common.apiclient import base as apiclient_base
-from solumclient.openstack.common.apiclient import exceptions
 
 from oslo_utils import uuidutils
 

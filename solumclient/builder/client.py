@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.common.apiclient import client as api_client
 from solumclient.common import auth
 from solumclient.common import client
-from solumclient.openstack.common.apiclient import client as api_client
 
 API_NAME = 'builder'
 VERSION_MAP = {
