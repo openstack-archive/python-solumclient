@@ -323,18 +323,15 @@ class TestSolum(base.TestCase):
             self.shell("plan create /dev/null")
             mock_plan_create.assert_called_once_with(plan_data)
 
-    @mock.patch.object(solum, "show_public_keys")
     @mock.patch.object(plan.PlanManager, "create")
-    def test_plan_create_with_private_github_repo(self, mock_plan_create,
-                                                  mock_show_pub_keys):
+    def test_plan_create_with_private_github_repo(self, mock_plan_create):
         FakeResource = collections.namedtuple(
             "FakeResource", "uuid name description uri artifacts")
 
         mock_plan_create.return_value = FakeResource('foo', 'foo', 'foo',
                                                      'foo', 'artifacts')
-        expected_printed_dict_args = vars(mock_plan_create.return_value)
+        expected_printed_dict_args = mock_plan_create.return_value._asdict()
         expected_printed_dict_args.pop('artifacts')
-        expected_show_pub_keys_args = 'artifacts'
         raw_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         plan_data = yamlutils.dump(yamlutils.load(raw_data))
         mopen = mock.mock_open(read_data=raw_data)
@@ -342,8 +339,6 @@ class TestSolum(base.TestCase):
             self.make_env()
             self.shell("plan create /dev/null")
             mock_plan_create.assert_called_once_with(plan_data)
-            mock_show_pub_keys.assert_called_once_with(
-                expected_show_pub_keys_args)
 
     @mock.patch.object(plan.PlanManager, "list")
     def test_plan_list(self, mock_plan_list):
@@ -367,21 +362,16 @@ class TestSolum(base.TestCase):
         self.shell("plan show %s" % the_id)
         mock_plan_find.assert_called_once_with(name_or_id=the_id)
 
-    @mock.patch.object(solum, "show_public_keys")
     @mock.patch.object(plan.PlanManager, "find")
-    def test_plan_get_private_github_repo(self, mock_plan_find,
-                                          mock_show_pub_keys):
+    def test_plan_get_private_github_repo(self, mock_plan_find):
         self.make_env()
         the_id = str(uuid.uuid4())
         FakeResource = collections.namedtuple(
             "FakeResource", "uuid name description uri artifacts")
         mock_plan_find.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
                                                    'artifacts')
-        expected_show_pub_keys_args = 'artifacts'
         self.shell("plan show %s" % the_id)
         mock_plan_find.assert_called_once_with(name_or_id=the_id)
-        mock_show_pub_keys.assert_called_once_with(
-            expected_show_pub_keys_args)
 
     # LanguagePack Tests #
     @mock.patch.object(languagepack.LanguagePackManager, "list")
