@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six
-
 from solumclient.common.apiclient import exceptions
 from solumclient.common import exc
 from solumclient.tests import base
@@ -23,7 +21,7 @@ class FakeResponse(object):
     json_data = {}
 
     def __init__(self, **kwargs):
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
     def json(self):

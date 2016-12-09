@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six
-
 from solumclient.common.apiclient import base as apiclient_base
 from solumclient.common.apiclient import exceptions
 from solumclient.common import base as solum_base
@@ -42,7 +40,7 @@ class Artifact(apiclient_base.Resource):
                 for res in req_list if req_list]
 
     def _add_details(self, info):
-        for (k, v) in six.iteritems(info):
+        for (k, v) in info.items():
             try:
                 if k == 'requirements':
                     v = self._add_requirements_details(v)
@@ -66,7 +64,7 @@ class Plan(apiclient_base.Resource):
                 for res in serv_list if serv_list]
 
     def _add_details(self, info):
-        for (k, v) in six.iteritems(info):
+        for (k, v) in info.items():
             try:
                 if k == 'artifacts':
                     v = self._add_artifact_details(v)
