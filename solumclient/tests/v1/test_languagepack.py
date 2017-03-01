@@ -13,9 +13,9 @@
 # under the License.
 
 from solumclient.builder.v1 import image
+from solumclient.common.apiclient import client
 from solumclient.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as sclient
 from solumclient.v1 import languagepack
 
 languagepack_list = [
@@ -121,7 +121,7 @@ class LanguagePackManagerTest(base.TestCase):
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = languagepack.LanguagePackManager(api_client)
         languagepacks = mgr.list()
         self.assertEqual(2, len(languagepacks))
@@ -133,21 +133,21 @@ class LanguagePackManagerTest(base.TestCase):
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = languagepack.LanguagePackManager(api_client)
         languagepack_obj = mgr.create()
         self.assert_lp_object(languagepack_obj)
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = languagepack.LanguagePackManager(api_client)
         languagepack_obj = mgr.get(lp_id='x1')
         self.assert_lp_object(languagepack_obj)
 
     def test_build(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_build)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = image.ImageManager(api_client)
         image_obj = mgr.create(name='lp1',
                                source_uri='github.com/test',

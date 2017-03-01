@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.common.apiclient import client
 from solumclient.common.apiclient import exceptions
 from solumclient.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as sclient
 from solumclient.v1 import component
 
 
@@ -116,7 +116,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         self.mgr = component.ComponentManager(api_client)
         components = self.mgr.list()
         self.assertEqual(2, len(components))
@@ -128,7 +128,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.create()
         self.assertIn('Component', repr(component_obj))
@@ -143,7 +143,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.get(component_id='c1')
         self.assertIn('Component', repr(component_obj))
@@ -158,7 +158,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = component.ComponentManager(api_client)
         component_obj = mgr.put(component_id='c1')
         self.assertIn('Component', repr(component_obj))
@@ -173,7 +173,7 @@ class ComponentManagerTest(base.TestCase):
 
     def test_find_one(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = component.ComponentManager(api_client)
         components = mgr.findall(name='php-web-app')
         self.assertEqual(1, len(components))
@@ -182,13 +182,13 @@ class ComponentManagerTest(base.TestCase):
 
     def test_find_one_only(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = component.ComponentManager(api_client)
         result = mgr.find(name_or_id='php-web-app')
         self.assertEqual(component_list[0]['uri'], result.uri)
 
     def test_find_none(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = component.ComponentManager(api_client)
         self.assertRaises(exceptions.NotFound, mgr.find, name_or_id='test')

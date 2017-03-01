@@ -79,6 +79,40 @@ class CommandsBase(object):
                                  default=env('OS_TENANT_NAME'),
                                  help='Defaults to env[OS_TENANT_NAME]')
 
+        self.parser.add_argument('--os-tenant-id',
+                                 default=env('OS_TENANT_ID'),
+                                 help='Defaults to env[OS_TENANT_ID]')
+
+        self.parser.add_argument('--os-project-name',
+                                 default=env('OS_PROJECT_NAME'),
+                                 help='Defaults to env[OS_PROJECT_NAME]')
+
+        self.parser.add_argument('--os-project-id',
+                                 default=env('OS_PROJECT_ID'),
+                                 help='Defaults to env[OS_PROJECT_ID]')
+
+        self.parser.add_argument('--os-project-domain-name',
+                                 default=env('OS_PROJECT_DOMAIN_NAME'),
+                                 help='Defaults to '
+                                      'env[OS_PROJECT_DOMAIN_NAME]')
+
+        self.parser.add_argument('--os-project-domain-id',
+                                 default=env('OS_PROJECT_DOMAIN_ID'),
+                                 help='Defaults to '
+                                      'env[OS_PROJECT_DOMAIN_NAME]')
+
+        self.parser.add_argument('--os-user-domain-name',
+                                 default=env('OS_USER_DOMAIN_NAME'),
+                                 help='Defaults to env[OS_USER_DOMAIN_NAME]')
+
+        self.parser.add_argument('--os-user-domain-id',
+                                 default=env('OS_USER_DOMAIN_ID'),
+                                 help='Defaults to env[OS_USER_DOMAIN_NAME]')
+
+        self.parser.add_argument('--os-region-name',
+                                 default=env('OS_REGION_NAME'),
+                                 help='Defaults to env[OS_REGION_NAME]')
+
         self.parser.add_argument('--os-auth-url',
                                  default=env('OS_AUTH_URL'),
                                  help='Defaults to env[OS_AUTH_URL]')
@@ -116,7 +150,7 @@ class CommandsBase(object):
                                        "either --os-password or via "
                                        "env[OS_PASSWORD]")
 
-            if not parsed.os_tenant_name:
+            if not (parsed.os_tenant_name or parsed.os_project_name):
                 raise exc.CommandError("You must provide a tenant_name via "
                                        "either --os-tenant-name or via "
                                        "env[OS_TENANT_NAME]")

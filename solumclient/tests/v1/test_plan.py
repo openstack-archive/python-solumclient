@@ -14,9 +14,9 @@
 
 import mock
 
+from solumclient.common.apiclient import client
 from solumclient.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as sclient
 from solumclient.v1 import plan
 
 
@@ -138,7 +138,7 @@ class PlanManagerTest(base.TestCase):
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         plan.PlanManager(api_client)
         # NOTE(stannie): will re-enable this test once
         # https://bugs.launchpad.net/solum/+bug/1331093 is committed.
@@ -149,13 +149,13 @@ class PlanManagerTest(base.TestCase):
     def test_list_empty(self):
         fake_http_client = fake_client.FakeHTTPClient(
             fixtures=fixtures_list_empty)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = plan.PlanManager(api_client)
         self.assertEqual([], mgr.list())
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.create('version: 1\nname: ex_plan1\ndescription: dsc1.')
         self.assert_plan_obj(plan_obj)
@@ -187,14 +187,14 @@ class PlanManagerTest(base.TestCase):
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.get(plan_id='p1')
         self.assert_plan_obj(plan_obj)
 
     def test_update(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = plan.PlanManager(api_client)
         plan_obj = mgr.update('version: 1\nname: ex_plan1\ndescription: dsc1.',
                               plan_id='p1')

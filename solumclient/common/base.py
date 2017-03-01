@@ -51,7 +51,7 @@ class FindMixin(object):
         found = []
         searches = kwargs.items()
 
-        for obj in self.list():
+        for obj in self.list(app_id=kwargs.get('app_id')):
             try:
                 if all(getattr(obj, attr) == value
                        for (attr, value) in searches):

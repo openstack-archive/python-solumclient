@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solumclient.common.apiclient import client
 from solumclient.common.apiclient import exceptions
 from solumclient.common.apiclient import fake_client
 from solumclient.tests import base
-from solumclient.v1 import client as sclient
 from solumclient.v1 import pipeline
 
 pipeline_list = [
@@ -124,7 +124,7 @@ class PipelineManagerTest(base.TestCase):
 
     def test_list_all(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipelines = mgr.list()
         self.assertEqual(2, len(pipelines))
@@ -134,7 +134,7 @@ class PipelineManagerTest(base.TestCase):
 
     def test_find_one(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipelines = mgr.findall(name='database')
         self.assertEqual(1, len(pipelines))
@@ -143,41 +143,41 @@ class PipelineManagerTest(base.TestCase):
 
     def test_find_one_only(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         result = mgr.find(name_or_id='database')
         self.assertEqual(pipeline_list[0]['uri'], result.uri)
 
     def test_find_none(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_list)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         self.assertRaises(exceptions.NotFound, mgr.find, name_or_id='what')
 
     def test_create(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_create)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipeline_obj = mgr.create()
         self.assert_pipeline_object(pipeline_obj)
 
     def test_get(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_get)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipeline_obj = mgr.get(pipeline_id='x1')
         self.assert_pipeline_object(pipeline_obj)
 
     def test_put(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_put)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         pipeline_obj = mgr.put(pipeline_id='x1')
         self.assert_pipeline_object(pipeline_obj)
 
     def test_delete(self):
         fake_http_client = fake_client.FakeHTTPClient(fixtures=fixtures_delete)
-        api_client = sclient.Client(fake_http_client)
+        api_client = client.BaseClient(fake_http_client)
         mgr = pipeline.PipelineManager(api_client)
         mgr.delete(pipeline_id='x1')
         fake_http_client.assert_called('DELETE', '/v1/pipelines/x1')
