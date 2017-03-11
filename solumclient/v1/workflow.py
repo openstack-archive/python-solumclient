@@ -35,28 +35,27 @@ class WorkflowManager(solum_base.CrudManager, solum_base.FindMixin):
     collection_key = 'workflows'
     key = 'workflow'
 
-    def __init__(self, client, *args, **kwargs):
-        super(WorkflowManager, self).__init__(client)
-        self.app_id = kwargs.get('app_id')
-        self.base_url = '/v1/apps/%s' % self.app_id
-
     def list(self, **kwargs):
+        self.app_id = kwargs.pop('app_id')
+        self.base_url = '/v1/apps/%s' % self.app_id
         return (super(WorkflowManager, self).list(
                 base_url=self.base_url, **kwargs))
 
     def create(self, **kwargs):
-        # kwargs = self._filter_kwargs(kwargs)
-        # kwargs['json'] = {'actions': actions}
-        # post_url = self.build_url(base_url=self.base_url, **kwargs)
-        # return self.client.create(post_url, **kwargs)
+        self.app_id = kwargs.get('app_id')
+        self.base_url = '/v1/apps/%s' % self.app_id
         return (super(WorkflowManager, self).create(
                 base_url=self.base_url, **kwargs))
 
     def get(self, **kwargs):
+        self.app_id = kwargs.pop('app_id')
+        self.base_url = '/v1/apps/%s' % self.app_id
         return (super(WorkflowManager, self).get(
                 base_url=self.base_url, **kwargs))
 
     def logs(self, **kwargs):
+        self.app_id = kwargs.get('app_id')
+        self.base_url = '/v1/apps/%s' % self.app_id
         self.resource_class = UserLog
         url = self.build_url(self.base_url, **kwargs)
         rev_or_uuid = kwargs['revision_or_id']
@@ -73,6 +72,8 @@ class WorkflowManager(solum_base.CrudManager, solum_base.FindMixin):
         return self._list(url)
 
     def find(self, **kwargs):
+        self.app_id = kwargs.get('app_id')
+        self.base_url = '/v1/apps/%s' % self.app_id
         if 'workflow_id' in kwargs:
             return (super(WorkflowManager, self).get(
                     base_url=self.base_url, **kwargs))

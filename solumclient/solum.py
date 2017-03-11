@@ -54,11 +54,6 @@ from solumclient.common import exc
 from solumclient.common import github
 from solumclient.common import yamlutils
 from solumclient import config
-from solumclient.v1 import app as cli_app
-from solumclient.v1 import languagepack as cli_lp
-from solumclient.v1 import pipeline as cli_pipe
-from solumclient.v1 import plan as cli_plan
-from solumclient.v1 import workflow as cli_wf
 
 
 def name_error_message(name_type):
@@ -219,7 +214,7 @@ Available commands:
         self.parser._names['plan_uuid'] = 'plan'
         args = self.parser.parse_args()
         plan = self.client.plans.find(name_or_id=args.plan_uuid)
-        cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
+        self.client.plans.delete(plan_id=str(plan.uuid))
 
     def show(self):
         """Show a plan's resource."""
@@ -324,8 +319,7 @@ Available commands:
         self.parser._names['pipeline_uuid'] = 'pipeline'
         args = self.parser.parse_args()
         pipeline = self.client.pipelines.find(name_or_id=args.pipeline_uuid)
-        cli_pipe.PipelineManager(self.client).delete(
-            pipeline_id=str(pipeline.uuid))
+        self.client.pipelines.delete(pipeline_id=str(pipeline.uuid))
 
     def list(self):
         """List all pipelines."""
@@ -453,8 +447,7 @@ Available commands:
         self.parser.add_argument('lp_id',
                                  help="languagepack uuid or name")
         args = self.parser.parse_args()
-        loglist = cli_lp.LanguagePackManager(self.client).logs(
-            lp_id=str(args.lp_id))
+        loglist = self.client.languagepacks.logs(lp_id=str(args.lp_id))
 
         fields = ["resource_uuid", "created_at"]
         for log in loglist:
@@ -1050,8 +1043,7 @@ Available commands:
 
         self._print_dict(app, fields, wrap=72)
 
-        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
-        wfs = wfman.list()
+        wfs = self.client.workflows.list(app_id=app.id)
         fields = ['wf_id', 'id', 'status']
         print("'%s' workflows and their status:" % args.name)
         self._print_list(wfs, fields)
@@ -1061,14 +1053,13 @@ Available commands:
         self.parser.add_argument('name')
         args = self.parser.parse_args()
         app = self.client.apps.find(name_or_id=args.name)
-        cli_app.AppManager(self.client).delete(
-            app_id=str(app.id))
+        self.client.apps.delete(app_id=str(app.id))
 
     def _create_scaling_workflow(self, actions, app_name_id, tgt):
         app = self.client.apps.find(name_or_id=app_name_id)
-        wf = (cli_wf.WorkflowManager(self.client,
-                                     app_id=app.id).create(actions=actions,
-                                                           scale_target=tgt))
+        kwargs = {'app_id': app.id, 'actions': actions,
+                  'scale_target': tgt}
+        wf = self.client.workflows.create(**kwargs)
         fields = ['wf_id', 'app_id', 'actions', 'config',
                   'source', 'id', 'created_at', 'updated_at']
         self._print_dict(wf, fields, wrap=72)
@@ -1080,17 +1071,17 @@ Available commands:
             self.parser.add_argument('name')
             args = self.parser.parse_args()
             app = self.client.apps.find(name_or_id=args.name)
-        wf = (cli_wf.WorkflowManager(self.client,
-                                     app_id=app.id).create(actions=actions))
+        kwargs = {'app_id': app.id, 'actions': actions}
+        wf = self.client.workflows.create(**kwargs)
         fields = ['wf_id', 'app_id', 'actions', 'config',
                   'source', 'id', 'created_at', 'updated_at']
         self._print_dict(wf, fields, wrap=72)
 
     def _create_workflow_for_prebuilt_du(self, actions, app_name_id, du_id):
         app = self.client.apps.find(name_or_id=app_name_id)
-        wf = (cli_wf.WorkflowManager(self.client,
-                                     app_id=app.id).create(actions=actions,
-                                                           du_id=du_id))
+        kwargs = {'app_id': app.id, 'actions': actions,
+                  'du_id': du_id}
+        wf = self.client.workflows.create(**kwargs)
         fields = ['wf_id', 'app_id', 'actions', 'config',
                   'source', 'id', 'created_at', 'updated_at']
         self._print_dict(wf, fields, wrap=72)
@@ -1141,14 +1132,14 @@ Available commands:
         self._create_scaling_workflow(actions, args.name, target)
 
     def _display_logs_for_all_workflows(self, app):
-        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
-        wfs = wfman.list()
+        wfs = self.client.workflows.list(app_id=app.id)
 
         all_logs_list = []
         fields = ["resource_uuid", "created_at"]
         for wf in wfs:
             revision = wf.wf_id
-            loglist = wfman.logs(revision_or_id=revision)
+            kwargs = {'app_id': app.id, 'revision_or_id': revision}
+            loglist = self.client.workflows.logs(**kwargs)
             for log in loglist:
                 all_logs_list.append(log)
                 strategy_info = json.loads(log.strategy_info)
@@ -1190,9 +1181,9 @@ Available commands:
             self._display_logs_for_all_workflows(app)
 
 
-def display_logs_for_single_workflow(ref, app, revision):
-    wfman = cli_wf.WorkflowManager(ref.client, app_id=app.id)
-    loglist = wfman.logs(revision_or_id=revision)
+def display_logs_for_single_workflow(self, app, revision):
+    kwargs = {'app_id': app.id, 'revision_or_id': revision}
+    loglist = self.client.workflows.logs(**kwargs)
     fields = ["resource_uuid", "created_at"]
     for log in loglist:
         strategy_info = json.loads(log.strategy_info)
@@ -1211,7 +1202,7 @@ def display_logs_for_single_workflow(ref, app, revision):
             if 'location' not in fields:
                 fields.append('location')
 
-    ref._print_list(loglist, fields)
+    self._print_list(loglist, fields)
 
 
 class WorkflowCommands(cli_utils.CommandsBase):
@@ -1234,8 +1225,8 @@ Available commands:
         self.parser.add_argument('app')
         args = self.parser.parse_args()
         app = self.client.apps.find(name_or_id=args.app)
-        wfs = cli_wf.WorkflowManager(self.client, app_id=app.id).list()
-        fields = ['wf_id', 'id', 'actions', 'status',
+        wfs = self.client.workflows.list(app_id=app.id)
+        fields = ['wf_id', 'id', 'actiONs', 'status',
                   'created_at', 'updated_at']
         self._print_list(wfs, fields)
 
@@ -1253,8 +1244,9 @@ Available commands:
             revision = args.workflow
         app = self.client.apps.find(name_or_id=args.app)
 
-        wfman = cli_wf.WorkflowManager(self.client, app_id=app.id)
-        wf = wfman.find(revision_or_id=revision)
+        kwargs = {'app_id': app.id, 'revision_or_id': revision}
+        wf = self.client.workflows.find(**kwargs)
+
         fields = ['wf_id', 'app_id', 'actions', 'config',
                   'source', 'id', 'created_at', 'updated_at', 'status']
         self._print_dict(wf, fields, wrap=72)
@@ -1681,7 +1673,7 @@ Available commands:
         except exceptions.NotFound:
             message = "No app named '%s'." % args.app
             raise exceptions.NotFound(message=message)
-        cli_plan.PlanManager(self.client).delete(plan_id=str(plan.uuid))
+        self.client.plans.delete(plan_id=str(plan.uuid))
 
 
 class InfoCommands(cli_utils.NoSubCommands):

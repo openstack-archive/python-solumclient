@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solumclient.common.apiclient import client
+from solumclient import client as solum_client
 from solumclient.v1 import app
 from solumclient.v1 import component
 from solumclient.v1 import languagepack
@@ -22,18 +22,22 @@ from solumclient.v1 import platform
 from solumclient.v1 import workflow
 
 
-class Client(client.BaseClient):
+class Client(object):
     """Client for the Solum v1 API."""
 
     service_type = "application_deployment"
 
-    def __init__(self, http_client, extensions=None):
+    def __init__(self, *args, **kwargs):
         """Initialize a new client for the Solum v1 API."""
-        super(Client, self).__init__(http_client, extensions)
-        self.apps = app.AppManager(self)
-        self.components = component.ComponentManager(self)
-        self.pipelines = pipeline.PipelineManager(self)
-        self.platform = platform.PlatformManager(self)
-        self.plans = plan.PlanManager(self)
-        self.languagepacks = languagepack.LanguagePackManager(self)
-        self.workflows = workflow.WorkflowManager(self)
+        if not kwargs.get('auth_plugin'):
+            kwargs['auth_plugin'] = solum_client.get_auth_plugin(**kwargs)
+        self.auth_plugin = kwargs.get('auth_plugin')
+
+        self.http_client = solum_client.construct_http_client(**kwargs)
+        self.apps = app.AppManager(self.http_client)
+        self.components = component.ComponentManager(self.http_client)
+        self.pipelines = pipeline.PipelineManager(self.http_client)
+        self.platform = platform.PlatformManager(self.http_client)
+        self.plans = plan.PlanManager(self.http_client)
+        self.languagepacks = languagepack.LanguagePackManager(self.http_client)
+        self.workflows = workflow.WorkflowManager(self.http_client)
