@@ -81,7 +81,7 @@ def get_client(version, **kwargs):
             or (DEPRECATED):
 
             * os_token: pre-existing token to re-use
-            * os_endpoint: Cloudkitty API endpoint
+            * os_endpoint: Solum API endpoint
 
             or (DEPRECATED):
 
@@ -136,6 +136,7 @@ def get_auth_plugin(**kwargs):
         service_type=kwargs.get('service_type'),
         token=kwargs.get('token'),
         endpoint_type=kwargs.get('endpoint_type'),
+        endpoint=kwargs.get('endpoint'),
         cacert=kwargs.get('cacert'),
         tenant_id=kwargs.get('project_id') or kwargs.get('tenant_id'),
         username=kwargs.get('username'),
