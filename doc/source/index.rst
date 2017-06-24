@@ -1,16 +1,12 @@
-Welcome to python-solumclient's documentation!
-==============================================
+================================
+python-solumclient documentation
+================================
 
-Contents:
+This is a client for the OpenStack Application Lifecycle Management API.
+There's a Python API (the :mod:`solumclient` module) and a command-line
+script (installed as :program:`solum`).
 
 .. toctree::
    :maxdepth: 2
 
-   readme
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   cli/index
