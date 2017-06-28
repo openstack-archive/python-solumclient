@@ -24,3 +24,7 @@ variables::
 
 Once you've configured your authentication parameters, you can run
 ``solum help`` to see a complete listing of available commands.
+
+.. toctree::
+
+   solum
