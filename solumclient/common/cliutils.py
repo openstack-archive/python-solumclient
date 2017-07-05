@@ -193,6 +193,8 @@ def print_dict(dct, dict_property="Property", wrap=0):
             v = six.text_type(v)
         if wrap > 0:
             v = textwrap.fill(six.text_type(v), wrap)
+        elif wrap < 0:
+            raise ValueError(_("Wrap argument should be a positive integer"))
         # if value has a newline, add in multiple rows
         # e.g. fault with stacktrace
         if v and isinstance(v, six.string_types) and r'\n' in v:
