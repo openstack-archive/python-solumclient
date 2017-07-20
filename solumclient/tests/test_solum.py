@@ -15,10 +15,12 @@
 import collections
 import re
 import sys
-import uuid
 
 import fixtures
 import mock
+
+from oslo_utils import uuidutils
+
 import six
 from stevedore import extension
 import testtools
@@ -172,7 +174,7 @@ class TestSolum(base.TestCase):
     @mock.patch.object(pipeline.PipelineManager, "find")
     def test_pipeline_delete(self, mock_pipeline_find, mock_pipeline_delete):
         self.make_env()
-        the_id = str(uuid.uuid4())
+        the_id = uuidutils.generate_uuid()
         self.shell("pipeline delete %s" % the_id)
         mock_pipeline_find.assert_called_once_with(
             name_or_id=the_id)
@@ -181,7 +183,7 @@ class TestSolum(base.TestCase):
     @mock.patch.object(pipeline.PipelineManager, "find")
     def test_pipeline_get(self, mock_pipeline_find):
         self.make_env()
-        the_id = str(uuid.uuid4())
+        the_id = uuidutils.generate_uuid()
         self.shell("pipeline show %s" % the_id)
         mock_pipeline_find.assert_called_once_with(name_or_id=the_id)
 
@@ -354,7 +356,7 @@ class TestSolum(base.TestCase):
     @mock.patch.object(plan.PlanManager, "find")
     def test_plan_delete(self, mock_plan_find, mock_plan_delete):
         self.make_env()
-        the_id = str(uuid.uuid4())
+        the_id = uuidutils.generate_uuid()
         self.shell("plan delete %s" % the_id)
         mock_plan_find.assert_called_once_with(name_or_id=the_id)
         self.assertEqual(1, mock_plan_delete.call_count)
@@ -362,14 +364,14 @@ class TestSolum(base.TestCase):
     @mock.patch.object(plan.PlanManager, "find")
     def test_plan_get(self, mock_plan_find):
         self.make_env()
-        the_id = str(uuid.uuid4())
+        the_id = uuidutils.generate_uuid()
         self.shell("plan show %s" % the_id)
         mock_plan_find.assert_called_once_with(name_or_id=the_id)
 
     @mock.patch.object(plan.PlanManager, "find")
     def test_plan_get_private_github_repo(self, mock_plan_find):
         self.make_env()
-        the_id = str(uuid.uuid4())
+        the_id = uuidutils.generate_uuid()
         FakeResource = collections.namedtuple(
             "FakeResource", "uuid name description uri artifacts")
         mock_plan_find.return_value = FakeResource('foo', 'foo', 'foo', 'foo',
@@ -426,7 +428,7 @@ class TestSolum(base.TestCase):
     @mock.patch.object(component.ComponentManager, "find")
     def test_component_get(self, mock_component_find):
         self.make_env()
-        the_id = str(uuid.uuid4())
+        the_id = uuidutils.generate_uuid()
         self.shell("component show %s" % the_id)
         mock_component_find.assert_called_once_with(name_or_id=the_id)
 
