@@ -1,6 +1,6 @@
-=============================
- Command-line Tool Reference
-=============================
+===========================
+Command-line Tool Reference
+===========================
 
 In order to use the CLI, you must provide your OpenStack username,
 password, tenant, and auth endpoint. Use the corresponding
