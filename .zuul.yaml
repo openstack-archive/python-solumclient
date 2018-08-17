@@ -4,7 +4,7 @@
       - openstack-python35-jobs
       - check-requirements
       - openstack-pypy-jobs-nonvoting
-      - publish-openstack-sphinx-docs
+      - publish-openstack-docs-pti
     check:
       jobs:
         - openstack-tox-lower-constraints
