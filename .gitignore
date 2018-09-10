@@ -27,7 +27,7 @@ pip-log.txt
 .idea
 cover
 nosetests.xml
-.testrepository
+.stestr/
 
 # Translations
 *.mo
