@@ -91,8 +91,8 @@ class FakeHTTPClient(client.HTTPClient):
         """Assert than an API method was just called."""
         expected = (method, url)
         called = self.callstack[pos][0:2]
-        assert (self.callstack,
-                "Expected %s %s but no calls were made." % expected)
+        assert self.callstack, \
+            "Expected %s %s but no calls were made." % expected
 
         assert expected == called, 'Expected %s %s; got %s %s' % (
             expected + called)
@@ -106,8 +106,8 @@ class FakeHTTPClient(client.HTTPClient):
         """Assert than an API method was called anytime in the test."""
         expected = (method, url)
 
-        assert (self.callstack,
-                "Expected %s %s but no calls were made." % expected)
+        assert self.callstack, \
+            "Expected %s %s but no calls were made." % expected
 
         found = False
         entry = None

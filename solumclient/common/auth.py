@@ -186,7 +186,7 @@ class KeystoneAuthPlugin(auth.BaseAuthPlugin):
 
             # retrieve session
             ks_session = _get_keystone_session(**ks_kwargs)
-            token = lambda: ks_session.get_token()
+            token = ks_session.get_token()
             endpoint = (self.opts.get('endpoint') or
                         _get_endpoint(ks_session, **ks_kwargs))
         self.opts['token'] = token

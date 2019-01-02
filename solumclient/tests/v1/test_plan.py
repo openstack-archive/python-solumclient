@@ -172,7 +172,7 @@ class PlanManagerTest(base.TestCase):
     def test_plan_create_post_success(self):
         api_client = mock.MagicMock()
         dummy_data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
-        response = lambda: None
+        response = mock.MagicMock()
         setattr(response, 'content', dummy_data)
         api_client.post.return_value = response
         try:
