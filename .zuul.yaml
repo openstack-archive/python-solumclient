@@ -5,6 +5,5 @@
       - openstack-lower-constraints-jobs
       - openstack-pypy-jobs-nonvoting
       - openstack-python-jobs
-      - openstack-python35-jobs
       - openstack-python36-jobs
       - publish-openstack-docs-pti
