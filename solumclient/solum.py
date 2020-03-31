@@ -516,12 +516,12 @@ Available commands:
     def _validate_app_file(self, app_data):
         if ('workflow_config' in app_data and
                 app_data.get('workflow_config') is None):
-                msg = "Workflow config cannot be empty"
-                raise exc.CommandException(message=msg)
+            msg = "Workflow config cannot be empty"
+            raise exc.CommandException(message=msg)
         if ('trigger_actions' in app_data and
                 app_data.get('trigger_actions') is None):
-                msg = "Trigger actions cannot be empty"
-                raise exc.CommandException(message=msg)
+            msg = "Trigger actions cannot be empty"
+            raise exc.CommandException(message=msg)
 
         error_message = ("Application name must be 1-100 characters long, "
                          "only contain a-z,0-9,-,_ and start with an alphabet "
@@ -616,19 +616,19 @@ Available commands:
         git_url = None
         if (app_data.get('source') is not None and
                 app_data.get('source').get('repository') is not None):
-                    git_url = app_data['source']['repository']
+            git_url = app_data['source']['repository']
         # Commandline flag overrides stuff in the app-file
         if args.git_url is not None:
             git_url = args.git_url
         # Take input from user
         elif (app_data.get('source') is None or
                 app_data['source'].get('repository') is None or
-                app_data['source']['repository'] is ''):
+                app_data['source']['repository'] == ''):
             git_url = six.moves.input("Please specify a git repository URL "
                                       "for your application.\n> ")
             git_rev_i = six.moves.input("Please specify revision"
                                         "(default is master).\n> ")
-            if git_rev_i is '':
+            if git_rev_i == '':
                 git_rev = 'master'
             else:
                 git_rev = git_rev_i
@@ -666,7 +666,7 @@ Available commands:
         if args.run_cmd is not None:
             run_cmd = args.run_cmd
         elif (app_data.get('workflow_config') is None or
-                app_data['workflow_config'].get('run_cmd') is '' or
+                app_data['workflow_config'].get('run_cmd') == '' or
                 app_data['workflow_config'].get('run_cmd') is None):
             run_cmd = six.moves.input("Please specify start/run command for "
                                       "your application.\n> ")
@@ -675,7 +675,7 @@ Available commands:
             run_cmd_dict = dict()
             run_cmd_dict['run_cmd'] = run_cmd
             app_data['workflow_config'] = run_cmd_dict
-        elif (app_data['workflow_config'].get('run_cmd') is '' or
+        elif (app_data['workflow_config'].get('run_cmd') == '' or
               app_data['workflow_config'].get('run_cmd') is None):
             app_data['workflow_config']['run_cmd'] = run_cmd
 
@@ -688,7 +688,7 @@ Available commands:
                 unittest_cmd_dict = dict()
                 unittest_cmd_dict['test_cmd'] = unittest_cmd
                 app_data['workflow_config'] = unittest_cmd_dict
-            elif (app_data['workflow_config'].get('test_cmd') is '' or
+            elif (app_data['workflow_config'].get('test_cmd') == '' or
                   app_data['workflow_config'].get('test_cmd') is None):
                 app_data['workflow_config']['test_cmd'] = unittest_cmd
 
@@ -696,7 +696,7 @@ Available commands:
         port_list = []
 
         if (app_data.get('ports') is None or
-                app_data['ports'] is '' or app_data['ports'] == [None]):
+                app_data['ports'] == '' or app_data['ports'] == [None]):
             if args.port:
                 port_list.append(int(args.port))
             else:
@@ -1577,7 +1577,7 @@ Available commands:
         # Update name and description if specified.
         a_name = ''
         if (plan_definition['artifacts'][0].get('name') is not None
-                and plan_definition['artifacts'][0]['name'] is not ''):
+                and plan_definition['artifacts'][0]['name'] != ''):
             a_name = plan_definition['artifacts'][0]['name']
             a_name = a_name.lower()
         else:
@@ -1931,6 +1931,7 @@ Available commands:
 
     else:
         print(main.__doc__)
+
 
 if __name__ == '__main__':
     sys.exit(main())
