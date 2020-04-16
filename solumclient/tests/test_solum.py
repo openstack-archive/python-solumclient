@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from io import StringIO
+
 import collections
 import re
 import sys
@@ -21,7 +23,6 @@ import mock
 
 from oslo_utils import uuidutils
 
-import six
 from stevedore import extension
 import testtools
 from testtools import matchers
@@ -82,7 +83,7 @@ class TestSolum(base.TestCase):
 
         orig = sys.stdout
         try:
-            sys.stdout = six.StringIO()
+            sys.stdout = StringIO()
             argv = [__file__, ]
             argv.extend(argstr.split())
             self.useFixture(

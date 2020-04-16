@@ -45,7 +45,6 @@ import sys
 import httplib2
 import jsonschema
 from keystoneclient.v2_0 import client as keystoneclient
-import six
 
 import solumclient
 from solumclient.common.apiclient import exceptions
@@ -544,7 +543,7 @@ Available commands:
             app_name = args.name
         elif app_data.get('name') is None:
             while True:
-                app_name = six.moves.input("Please name the application.\n> ")
+                app_name = input("Please name the application.\n> ")
                 if name_is_valid(app_name):
                     break
                 print(error_message)
@@ -591,12 +590,12 @@ Available commands:
                 fields = ['uuid', 'name', 'description',
                           'status', 'source_uri']
                 self._print_list(filtered_list, fields)
-                languagepack = six.moves.input("Please choose a languagepack "
-                                               "from the above list.\n> ")
+                languagepack = input("Please choose a languagepack "
+                                     "from the above list.\n> ")
                 while languagepack not in lpnames + lp_uuids:
-                    languagepack = six.moves.input("You must choose one of "
-                                                   "the named  language "
-                                                   "packs.\n> ")
+                    languagepack = input("You must choose one of "
+                                         "the named  language "
+                                         "packs.\n> ")
                 app_data['languagepack'] = languagepack
             else:
                 raise exc.CommandError("No languagepack in READY state. "
@@ -624,10 +623,10 @@ Available commands:
         elif (app_data.get('source') is None or
                 app_data['source'].get('repository') is None or
                 app_data['source']['repository'] == ''):
-            git_url = six.moves.input("Please specify a git repository URL "
-                                      "for your application.\n> ")
-            git_rev_i = six.moves.input("Please specify revision"
-                                        "(default is master).\n> ")
+            git_url = input("Please specify a git repository URL "
+                            "for your application.\n> ")
+            git_rev_i = input("Please specify revision"
+                              "(default is master).\n> ")
             if git_rev_i == '':
                 git_rev = 'master'
             else:
@@ -644,8 +643,8 @@ Available commands:
 
         private_sshkey = app_data['source'].get('private_ssh_key', '')
         if is_private and not private_sshkey:
-            sshkey_file = six.moves.input("Please specify private sshkey file "
-                                          "full path: ")
+            sshkey_file = input("Please specify private sshkey file "
+                                "full path: ")
             sshkey_file = sshkey_file.strip()
             private_sshkey = read_private_sshkey(sshkey_file)
 
@@ -668,8 +667,8 @@ Available commands:
         elif (app_data.get('workflow_config') is None or
                 app_data['workflow_config'].get('run_cmd') == '' or
                 app_data['workflow_config'].get('run_cmd') is None):
-            run_cmd = six.moves.input("Please specify start/run command for "
-                                      "your application.\n> ")
+            run_cmd = input("Please specify start/run command for "
+                            "your application.\n> ")
 
         if app_data.get('workflow_config') is None:
             run_cmd_dict = dict()
@@ -1483,7 +1482,7 @@ Available commands:
         # Just ask.
         else:
             while True:
-                app_name = six.moves.input("Please name the application.\n> ")
+                app_name = input("Please name the application.\n> ")
                 if name_is_valid(app_name):
                     break
                 print(error_message)
@@ -1508,12 +1507,12 @@ Available commands:
                 fields = ['uuid', 'name', 'description',
                           'status', 'source_uri']
                 self._print_list(filtered_list, fields)
-                languagepack = six.moves.input("Please choose a languagepack "
-                                               "from the above list.\n> ")
+                languagepack = input("Please choose a languagepack "
+                                     "from the above list.\n> ")
                 while languagepack not in lpnames + lp_uuids:
-                    languagepack = six.moves.input("You must choose one of "
-                                                   "the named language "
-                                                   "packs.\n> ")
+                    languagepack = input("You must choose one of "
+                                         "the named language "
+                                         "packs.\n> ")
                 plan_definition['artifacts'][0]['language_pack'] = languagepack
             else:
                 raise exc.CommandError("No languagepack in READY state. "
@@ -1527,8 +1526,8 @@ Available commands:
         if args.git_url is not None:
             plan_definition['artifacts'][0]['content']['href'] = args.git_url
         if plan_definition['artifacts'][0]['content'].get('href') is None:
-            git_url = six.moves.input("Please specify a git repository URL "
-                                      "for your application.\n> ")
+            git_url = input("Please specify a git repository URL "
+                            "for your application.\n> ")
             plan_definition['artifacts'][0]['content']['href'] = git_url
         git_url = plan_definition['artifacts'][0]['content']['href']
 
@@ -1560,8 +1559,8 @@ Available commands:
         if args.run_cmd is not None:
             plan_definition['artifacts'][0]['run_cmd'] = args.run_cmd
         if plan_definition['artifacts'][0].get('run_cmd') is None:
-            run_cmd = six.moves.input("Please specify start/run command for "
-                                      "your application.\n> ")
+            run_cmd = input("Please specify start/run command for "
+                            "your application.\n> ")
             plan_definition['artifacts'][0]['run_cmd'] = run_cmd
 
         # Check for unit test command

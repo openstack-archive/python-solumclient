@@ -26,8 +26,7 @@ Base utilities to build API operation managers and objects on top of.
 import abc
 import copy
 
-import six
-from six.moves.urllib import parse
+from urllib import parse
 
 from solumclient.common.apiclient import exceptions
 from solumclient.i18n import _
@@ -211,8 +210,7 @@ class BaseManager(HookableMixin):
         return self.client.delete(url)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ManagerWithFind(BaseManager):
+class ManagerWithFind(BaseManager, metaclass=abc.ABCMeta):
     """Manager with additional `find()`/`findall()` methods."""
 
     @abc.abstractmethod

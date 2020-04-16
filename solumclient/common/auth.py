@@ -18,7 +18,7 @@ from keystoneclient import discover
 from keystoneclient import exceptions as ks_exc
 from keystoneclient import session
 from oslo_utils import strutils
-import six.moves.urllib.parse as urlparse
+from urllib import parse as urlparse
 
 from solumclient.common.apiclient import auth
 from solumclient.common.apiclient import exceptions

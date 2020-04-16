@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from six.moves.urllib import parse as urlparse
+from urllib import parse as urlparse
 
 from solumclient.common.apiclient import base
 from solumclient.common.apiclient import exceptions

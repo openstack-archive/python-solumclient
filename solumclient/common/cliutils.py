@@ -25,8 +25,6 @@ import sys
 import textwrap
 
 import prettytable
-import six
-from six import moves
 
 from solumclient.common.apiclient import exceptions
 from solumclient.i18n import _
@@ -190,14 +188,14 @@ def print_dict(dct, dict_property="Property", wrap=0):
     for k, v in dct.items():
         # convert dict to str to check length
         if isinstance(v, dict):
-            v = six.text_type(v)
+            v = str(v)
         if wrap > 0:
-            v = textwrap.fill(six.text_type(v), wrap)
+            v = textwrap.fill(str(v), wrap)
         elif wrap < 0:
             raise ValueError(_("Wrap argument should be a positive integer"))
         # if value has a newline, add in multiple rows
         # e.g. fault with stacktrace
-        if v and isinstance(v, six.string_types) and r'\n' in v:
+        if v and isinstance(v, str) and r'\n' in v:
             lines = v.strip().split(r'\n')
             col1 = k
             for line in lines:
@@ -215,7 +213,7 @@ def get_password(max_password_prompts=3):
     if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
         # Check for Ctrl-D
         try:
-            for __ in moves.range(max_password_prompts):
+            for __ in range(max_password_prompts):
                 pw1 = getpass.getpass("OS Password: ")
                 if verify:
                     pw2 = getpass.getpass("Please verify: ")
@@ -249,7 +247,7 @@ def find_resource(manager, name_or_id, **find_args):
 
     # now try to get entity as uuid
     try:
-        if six.PY2:
+        if isinstance(name_or_id, str):
             tmp_id = encodeutils.safe_encode(name_or_id)
         else:
             tmp_id = encodeutils.safe_decode(name_or_id)
