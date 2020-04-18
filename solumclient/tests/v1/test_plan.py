@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
 
 from solumclient.common.apiclient import client
 from solumclient.common.apiclient import fake_client

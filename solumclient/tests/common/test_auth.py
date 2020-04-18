@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from unittest import mock
+
 from keystoneclient.v2_0 import client as ksclient
-import mock
 import testtools
 
 from solumclient.common import auth

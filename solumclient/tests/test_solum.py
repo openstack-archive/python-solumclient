@@ -13,13 +13,13 @@
 # under the License.
 
 from io import StringIO
+from unittest import mock
 
 import collections
 import re
 import sys
 
 import fixtures
-import mock
 
 from oslo_utils import uuidutils
 
