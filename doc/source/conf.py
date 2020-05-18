@@ -46,7 +46,7 @@ add_function_parentheses = True
 add_module_names = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -62,9 +62,9 @@ pygments_style = 'sphinx'
 html_theme = 'openstackdocs'
 
 # openstackdocstheme options
-repository_name = 'openstack/python-solumclient'
-bug_project = 'python-solumclient'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/python-solumclient'
+openstackdocs_bug_project = 'python-solumclient'
+openstackdocs_bug_tag = ''
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'python-solumclientdoc'
