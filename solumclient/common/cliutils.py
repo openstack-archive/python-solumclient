@@ -16,8 +16,6 @@
 # W0621: Redefining name %s from outer scope
 # pylint: disable=W0603,W0621
 
-from __future__ import print_function
-
 import getpass
 import inspect
 import os

@@ -34,8 +34,6 @@ Notes:
 * Internationalization will not be added in M1 since this is a prototype
 """
 
-from __future__ import print_function
-
 import argparse
 import copy
 import json
