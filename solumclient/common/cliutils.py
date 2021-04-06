@@ -313,8 +313,8 @@ def get_service_type(f):
     return getattr(f, 'service_type', None)
 
 
-def pretty_choice_list(l):
-    return ', '.join("'%s'" % i for i in l)
+def pretty_choice_list(value):
+    return ', '.join("'%s'" % i for i in value)
 
 
 def exit(msg=''):
