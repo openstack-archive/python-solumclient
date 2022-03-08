@@ -100,13 +100,9 @@ class GitHubAuth(object):
 
         # This will prompt the user if either name or pass is missing.
         authstring = '%s:%s' % (self.username, self.password)
-        basic_auth = ''
-        try:
-            basic_auth = base64.encodestring(authstring)
-        except TypeError:
-            # Python 3
-            basic_auth = base64.encodestring(bytes(authstring, 'utf-8'))
-            basic_auth = basic_auth.decode('utf-8')
+
+        basic_auth = base64.encodebytes(bytes(authstring, 'utf-8'))
+        basic_auth = basic_auth.decode('utf-8')
         basic_auth = basic_auth.strip()
         header['Authorization'] = 'Basic %s' % basic_auth
 
